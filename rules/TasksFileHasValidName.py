@@ -42,8 +42,7 @@ class TasksFileHasValidNameRule(ansiblelint.AnsibleLintRule):
 
     tested = set()  # acc.
 
-    # pylint: disable=unused-argument
-    def match(self, file, text):
+    def match(self, file, _text):
         """Test tasks files.
         """
         if file["type"] != "tasks":
