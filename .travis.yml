@@ -3,16 +3,6 @@ language: python
 python:
     - 3.7
     - 3.8
-# .. seealso:: https://github.com/travis-ci/travis-ci/issues/9815
-matrix:
-  include:
-    - python: 3.7
-      env: TOXENV=py37
-# .. todo:: It does not work yet.
-#    - python: 3.7
-#      env: TOXENV=py37-ansiblelint-HEAD
-    - python: 3.8
-      env: TOXENV=py38
 # see: http://docs.travis-ci.com/user/caching/#pip-cache
 cache: pip
 # see: http://docs.travis-ci.com/user/migrating-from-legacy/
