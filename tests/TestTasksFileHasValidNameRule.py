@@ -14,7 +14,7 @@ _OS_ENVIRON_PATCH = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_2_TASKS_FILENAME_RE":
                      "\\S+"}
 
 
-class TestTasksFileHasValidName(C.AnsibleLintRuleTestBase):
+class TestTasksFileHasValidNameRule(C.AnsibleLintRuleTestBase):
 
     rule = TT.TasksFileHasValidNameRule()
 
