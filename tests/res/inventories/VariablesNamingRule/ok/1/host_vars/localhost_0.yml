@@ -1,0 +1,7 @@
+---
+foo_1: 1
+BAR_baz: bar_baz
+__xyz:
+  - 1
+  - 2
+  - 3
