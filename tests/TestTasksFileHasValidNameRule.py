@@ -6,7 +6,7 @@
 import os
 import mock
 
-from rules import TasksFileHasValidName as TT
+from rules import TasksFileHasValidNameRule as TT
 from tests import common as C
 
 
