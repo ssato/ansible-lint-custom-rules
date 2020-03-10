@@ -3,13 +3,13 @@
 # Requirements:
 #   - bats: https://github.com/sstephenson/bats
 #
-function setup () {
-    cd $BATS_TEST_DIRNAME
-    export CUSTOM_RULES_DIR=../rules/
-}
+cd ${BATS_TEST_DIRNAME:?}
+export CUSTOM_RULES_DIR=../rules/
 
 function check_results () {
-    [[ ${status} -eq 0 ]] || {
+    local exp_rc=${1:-0}
+
+    [[ ${status} -eq ${exp_rc} ]] || {
         cat << EOM
 output:
 ${output}
