@@ -53,6 +53,7 @@ class TasksFileHasValidNameRule(ansiblelint.AnsibleLintRule):
 
         if filepath not in self.tested:
             self.tested.add(filepath)
-            return is_invalid_filename(filename)
+            if is_invalid_filename(filename):
+                return "Invalid filename: " + filename
 
         return False
