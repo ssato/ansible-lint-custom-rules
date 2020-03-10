@@ -63,7 +63,8 @@ def task_has_a_invalid_name(_self, _file, task):
     :param task: task object
     """
     if is_named_task(task):
-        return is_invalid_task_name(task["name"])
+        if is_invalid_task_name(task["name"]):
+            return "Task name was: '{name}'".format(**task)
 
     return False
 
