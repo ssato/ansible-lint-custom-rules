@@ -24,7 +24,7 @@ variables.
     _ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE="\\w+"
 
 .. note::
-   This class assume that variable names cosists of Unicode but ASCII chars.
+   This class assume that variable names consist of only ASCII chars.
 """
 import collections.abc
 import itertools
