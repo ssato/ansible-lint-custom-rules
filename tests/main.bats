@@ -24,13 +24,13 @@ function test_failure () {
 }
 
 @test "Test lint with custom rules should not fail" {
-    playbooks="$(ls -1t ./res/*_ok_*.yml)"
+    playbooks="$(ls -1t ./res/*_ok*.yml)"
     run ansible-lint -v --parseable-severity -r ${CUSTOM_RULES_DIR} "${playbooks}"
     test_success
 }
 
 @test "Test lint with custom rules should fail" {
-    playbooks="$(ls -1t ./res/*_ng_*.yml)"
+    playbooks="$(ls -1t ./res/*_ng*.yml)"
     run ansible-lint -v --parseable-severity -r ${CUSTOM_RULES_DIR} "${playbooks}"
     test_failure
 }
