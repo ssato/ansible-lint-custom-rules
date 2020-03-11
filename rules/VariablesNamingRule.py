@@ -153,8 +153,8 @@ def list_invalid_var_names_in_play(_self, file, _play):
 
 class VariablesNamingRule(ansiblelint.AnsibleLintRule):
     """
-    Lint rule class to test if some variables follow namging conventions and
-    guildelines.
+    Lint rule class to test if variables defined by users follow the namging
+    conventions and guildelines.
     """
     id = _RULE_ID
     shortdesc = "All variables should be named correctly"
