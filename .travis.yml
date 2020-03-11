@@ -5,8 +5,6 @@ python:
     - 3.8
 # see: http://docs.travis-ci.com/user/caching/#pip-cache
 cache: pip
-# see: http://docs.travis-ci.com/user/migrating-from-legacy/
-sudo: false
 install:
     - pip install tox-travis
 script:
