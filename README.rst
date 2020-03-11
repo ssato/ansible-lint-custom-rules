@@ -12,7 +12,7 @@ About
 Some code examples to extend ansible-lint [#]_ by adding custom rule
 implementations along with some CI stuff.
 
-- Author: Satoru SATOh <ssato@redhat.com>
+- Author: Satoru SATOH <ssato@redhat.com>
 - License: MIT
 
 .. [#] https://github.com/ansible/ansible-lint
