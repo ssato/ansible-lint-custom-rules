@@ -6,24 +6,21 @@
 cd ${BATS_TEST_DIRNAME:?}
 export CUSTOM_RULES_DIR=../rules/
 
-function test_success () {
-    [[ ${status} -eq 0 ]] || {
-        cat << EOM
+function _dump_output_and_exit () {
+    local output=$1
+    local status=$2
+    cat << EOM
 output:
 ${output}
 EOM
-        exit ${status}
-    }
+}
+
+function test_success () {
+    [[ ${status} -eq 0 ]] || _dump_output ${output} ${status}
 }
 
 function test_failure () {
-    [[ ${status} -ne 0 ]] || {
-        cat << EOM
-output:
-${output}
-EOM
-        exit 0
-    }
+    [[ ${status} -ne 0 ]] || _dump_output ${output} 0
 }
 
 @test "Test lint with custom rules should not fail" {
