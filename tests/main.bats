@@ -16,11 +16,11 @@ EOM
 }
 
 function test_success () {
-    [[ ${status} -eq 0 ]] || _dump_output ${output} ${status}
+    [[ ${status} -eq 0 ]] || _dump_output_and_exit ${output} ${status}
 }
 
 function test_failure () {
-    [[ ${status} -ne 0 ]] || _dump_output ${output} 0
+    [[ ${status} -ne 0 ]] || _dump_output_and_exit ${output} 0
 }
 
 @test "Test lint with custom rules should not fail" {
@@ -31,8 +31,8 @@ function test_failure () {
 
 @test "Test lint with custom rules should fail" {
     playbooks="$(ls -1t ./res/*_ng_*.yml)"
-    # run ansible-lint -v --parseable-severity -r ${CUSTOM_RULES_DIR} "${playbooks}"
-    # test_failure
+    run ansible-lint -v --parseable-severity -r ${CUSTOM_RULES_DIR} "${playbooks}"
+    test_failure
 }
 
 # vim:sw=4:ts=4:et:filetype=sh:
