@@ -10,8 +10,33 @@ from rules import VariablesNamingRule as TT
 from tests import common as C
 
 
+INV_1 = "inventories/VariablesNamingRule/ok/1/host_vars/localhost_0.yml"
+PLAY_1 = "VariablesNamingRule_ok_1.yml"
+
 _OS_ENVIRON_PATCH = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE":
                      "___x\\w+"}  # Must starts with '___x'
+
+
+class TestFunctions(C.unittest.TestCase):
+
+    def test_list_var_names_from_yaml_file_itr__ok_simple_yaml_file(self):
+        ypath = C.list_res_files(INV_1)[0]  # == INV_1
+        ref = set(["foo_1", "BAR_baz", "bar_BAR", "__xyz"])  # see INV_1
+        res = set(TT.list_var_names_from_yaml_file_itr(ypath))
+
+        self.assertEqual(ref, res)
+
+    def test_list_var_names_from_yaml_file_itr__ok_vars_name(self):
+        ypath = C.list_res_files(PLAY_1)[0]
+        ref = set(["foo", "BAR_1", "_foo_bar", "_baz"])  # see INV_1
+        res = set(TT.list_var_names_from_yaml_file_itr(ypath, "vars"))
+        self.assertEqual(ref, res)
+
+    def test_list_var_names_from_yaml_files_itr__ok_simple_yaml_files(self):
+        ypaths = C.list_res_files(INV_1)
+        ref = set(["foo_1", "BAR_baz", "bar_BAR", "__xyz"])
+        res = set(TT.list_var_names_from_yaml_files_itr(ypaths))
+        self.assertEqual(ref, res)
 
 
 class TestVariablesNamingRule(C.AnsibleLintRuleTestBase):

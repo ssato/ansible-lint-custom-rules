@@ -180,6 +180,39 @@ def try_load_yaml_file(filepath):
     return None
 
 
+def list_var_names_from_yaml_file_itr(filepath, vars_key=None):
+    """
+    :param files: A list of YAML file paths
+    :param vars_key: A str to find variables like "vars"
+
+    :return: A generator yields a variable names in the YAML files
+    """
+    obj = try_load_yaml_file(filepath)
+    if not obj:
+        return
+
+    for key, val in nested_objs_items(obj):
+        if vars_key is None:
+            yield key
+        else:
+            if key == vars_key and isinstance(val, collections.abc.Mapping):
+                for ckey in nested_obj_keys(val):
+                    yield ckey
+
+
+def list_var_names_from_yaml_files_itr(files, vars_key=None):
+    """
+    :param files: A list of YAML file paths
+    :param vars_key: A str to find variables like "vars"
+
+    :return: A generator yields a variable names in the YAML files
+    """
+    for filepath in files:
+        for key in list_var_names_from_yaml_file_itr(filepath,
+                                                     vars_key=vars_key):
+            yield key
+
+
 def list_invalid_var_names_in_play(_self, file, _play):
     """
     .. seealso:: ansiblelint.AnsibleLintRule.matchyaml
