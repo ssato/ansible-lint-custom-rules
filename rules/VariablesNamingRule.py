@@ -98,20 +98,44 @@ def test_if_name_not_match(name=None, reg=None):
     return reg.match(name) is None
 
 
-def nested_dict_keys(ndict):
+def nested_objs_items(obj):
     """
-    :param ndict: A nested dict or dict-like (mapping) object
+    :param obj: A nested dict or dict-like (mapping) object or iterables
     :return: A whole list of dict key names including children's
 
     >>> nd0 = dict(a=1, b=dict(c=2, d=dict(e=3, f=dict(g=4))))
-    >>> list(nested_dict_keys(nd0))
+    >>> res = list(nested_objs_items(nd0))
+    >>> res  # doctest: +NORMALIZE_WHITESPACE
+    [('a', 1), ('b', {'c': 2, 'd': {'e': 3, 'f': {'g': 4}}}), ('c', 2),
+     ('d', {'e': 3, 'f': {'g': 4}}), ('e', 3), ('f', {'g': 4}), ('g', 4)]
+
+    >>> list(nested_objs_items([nd0])) == res
+    True
+    """
+    if not obj or obj is None:
+        return
+
+    objs = [obj] if isinstance(obj, collections.abc.Mapping) else obj
+
+    for item in objs:
+        for key, val in item.items():
+            yield (key, val)
+            if isinstance(val, collections.abc.Mapping):
+                for ckey, cval in nested_objs_items(val):
+                    yield (ckey, cval)
+
+
+def nested_obj_keys(obj):
+    """
+    :param obj: A nested dict or dict-like (mapping) object or iterables
+    :return: A whole list of dict key names including children's
+
+    >>> nd0 = dict(a=1, b=dict(c=2, d=dict(e=3, f=dict(g=4))))
+    >>> list(nested_obj_keys(nd0))
     ['a', 'b', 'c', 'd', 'e', 'f', 'g']
     """
-    for key, val in ndict.items():
+    for key, _val in nested_objs_items(obj):
         yield key
-        if isinstance(val, collections.abc.Mapping):
-            for ckey in nested_dict_keys(val):
-                yield ckey
 
 
 def is_special_var_name(name):
@@ -133,7 +157,7 @@ def list_invalid_var_names_from_playbook(playbook):
     # :raises: ansible.errors.AnsibleParserError("Invalid variable name...")
     playbook = ansible.playbook.Playbook.load(playbook, vmgr, loader)
 
-    vss = (nested_dict_keys(vs) for vs
+    vss = (nested_obj_keys(vs) for vs
            in (vmgr.get_vars(play) for play in playbook.get_plays()))
 
     return [v for v in set(itertools.chain.from_iterable(vss))
