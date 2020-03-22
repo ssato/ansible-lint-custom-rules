@@ -40,6 +40,9 @@ import ansible.playbook
 import ansible.vars.manager
 import ansiblelint
 
+import yaml
+import yaml.parser
+
 
 _RULE_ID = "Custom_2020_3"
 _ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
@@ -162,6 +165,19 @@ def list_invalid_var_names_from_playbook(playbook):
 
     return [v for v in set(itertools.chain.from_iterable(vss))
             if not is_special_var_name(v) and test_if_name_not_match(v)]
+
+
+def try_load_yaml_file(filepath):
+    """
+    :param filepath: YAML file path
+    :return: Loaded data if it suceeded to load given YAML file or None
+    """
+    try:
+        return yaml.safe_load(open(filepath))
+    except yaml.parser.ParserError:
+        pass
+
+    return None
 
 
 def list_invalid_var_names_in_play(_self, file, _play):
