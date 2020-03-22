@@ -81,7 +81,7 @@ vars
 """.split())
 
 
-def test_if_name_not_match(name, reg=None):
+def test_if_name_not_match(name=None, reg=None):
     """Test if given name does *not* match the regex pattern.
 
     :param name: A str tries to try matching with `reg`
@@ -91,6 +91,9 @@ def test_if_name_not_match(name, reg=None):
     """
     if reg is None:
         reg = NAME_RE
+
+    if name is None:
+        return False
 
     return reg.match(name) is None
 
