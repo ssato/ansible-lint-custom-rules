@@ -266,10 +266,16 @@ def find_var_names_from_inventory():
     :return: A set of variable names
     """
     inventory = inventory_filepath()
-    if not inventory or inventory == INVENTORY_DEFAULT:
+    if not inventory:
         return set()
 
-    return set(find_var_names_from_inventory_var_files_itr(inventory))
+    vnames = set(list_var_names_from_inventory_file_itr(inventory))
+
+    if inventory == INVENTORY_DEFAULT:  # No {host,group}_vars/*.yml
+        return vnames
+
+    vnames.update(set(find_var_names_from_inventory_var_files_itr(inventory)))
+    return vnames
 
 
 def list_invalid_var_names_in_play(_self, file, _play):
