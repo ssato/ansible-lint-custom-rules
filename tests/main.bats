@@ -71,4 +71,16 @@ function _ansible_lint_ng () {
         _ansible_lint_ng "res/VariablesNamingRule_ok*.yml"
 }
 
+@test "Test validating var names in inventory using ansible internal APIs, should succeed" {
+    run _ANSIBLE_LINT_RULE_CUSTOM_2020_3_USE_ANSIBLE=1 \
+        _ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY="res/inventories/VariablesNamingRule/ok/1/hosts" \
+        _ansible_lint_ok "res/VariablesNamingRule_ok*.yml"
+}
+
+@test "Test validating var names in inventory using ansible internal APIs, should fail" {
+    run _ANSIBLE_LINT_RULE_CUSTOM_2020_3_USE_ANSIBLE=1 \
+        _ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY="res/inventories/VariablesNamingRule/ng/1/hosts" \
+        _ansible_lint_ng "res/VariablesNamingRule_ok*.yml"
+}
+
 # vim:sw=4:ts=4:et:filetype=sh:
