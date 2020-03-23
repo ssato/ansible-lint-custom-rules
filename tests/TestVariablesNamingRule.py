@@ -43,7 +43,7 @@ class TestFunctions(C.unittest.TestCase):
 
     def test_list_var_names_from_inventory_file_itr(self):
         inv = C.list_res_files(INV_1)[0]
-        ref = set(["BAR_baz", ])  # see INV_1
+        ref = set(["BAZ_2", ])  # see INV_1
         res = set(TT.list_var_names_from_inventory_file_itr(inv))
         self.assertTrue(res)
         self.assertEqual(res, ref, res)
@@ -51,9 +51,9 @@ class TestFunctions(C.unittest.TestCase):
     @mock.patch.dict(os.environ, _ENV_PATCH_INV_1)
     def test_find_var_names_from_inventory(self):
         ref = set(["foo_1", "BAR_baz", "bar_BAR",
-                   "__xyz"])  # see HVARS_1
+                   "__xyz", "BAZ_2"])  # see INV_1 and HVARS_1
         res = TT.find_var_names_from_inventory()
-        self.assertEqual(ref, res)
+        self.assertEqual(res, ref)
 
 
 class TestVariablesNamingRule(C.AnsibleLintRuleTestBase):
