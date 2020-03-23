@@ -75,6 +75,15 @@ class TestFunctions(C.unittest.TestCase):
         self.assertTrue(res)
         self.assertEqual(res, ref, res)
 
+    def test_find_var_names_from_role_files_itr(self):
+        playbook = C.list_res_files(PLAY_2)[0]
+        # see defaults/main.yml and vars/main.yml
+        # in tests/res/roles/variable_naming_rule_test_ok_1/
+        ref = set(["foo", "BAR_1", "_foo_bar_baz"])
+        res = set(TT.find_var_names_from_role_files_itr(playbook))
+        self.assertTrue(res)
+        self.assertEqual(res, ref, res)
+
 
 class TestVariablesNamingRule(C.AnsibleLintRuleTestBase):
 

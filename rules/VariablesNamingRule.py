@@ -303,6 +303,30 @@ def list_role_names_itr(playbook):
                 yield role
 
 
+def find_var_names_from_role_files_itr(playbook, vars_file=None):
+    """
+    .. note::
+       This function assume that roles' variables are only defined in
+       <playbook_dir>/roles/*/{defaults,vars}/`var_file`.
+
+    :param playbook: An abosolute path of the playbook file
+    :param vars_file: File glob pattern or file name which define[s] vars
+
+    :return: A generator yields variable names from roles' var files
+    """
+    if vars_file is None:
+        vars_file = "*.yml"
+
+    for rname in list_role_names_itr(playbook):
+        roledir = os.path.join(os.path.dirname(playbook), "roles", rname)
+
+        dfs = glob.glob(os.path.join(roledir, "defaults", vars_file))
+        vfs = glob.glob(os.path.join(roledir, "vars", vars_file))
+
+        for vname in list_var_names_from_yaml_files_itr(dfs + vfs):
+            yield vname
+
+
 def list_invalid_var_names_in_play(_self, file, _play):
     """
     .. seealso:: ansiblelint.AnsibleLintRule.matchyaml
