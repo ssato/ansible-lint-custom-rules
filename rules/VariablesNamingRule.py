@@ -57,7 +57,6 @@ _RULE_ID = "Custom_2020_3"
 _ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
 
 USE_ANSIBLE_ENVVAR = _ENVVAR_PREFIX + "_USE_ANSIBLE"
-USE_ANSIBLE = bool(os.environ.get(USE_ANSIBLE_ENVVAR, False))
 
 # Ugh! there is no constant global var define this in ansible.constants...
 INVENTORY_ENVVAR = _ENVVAR_PREFIX + "_INVENTORY"
@@ -92,6 +91,13 @@ user
 username
 vars
 """.split())
+
+
+def use_ansible():
+    """
+    :return: True if to use ansible internal functions to find var names
+    """
+    return bool(os.environ.get(USE_ANSIBLE_ENVVAR, False))
 
 
 def name_re(envvar=None, name_re_s=None):
@@ -363,7 +369,7 @@ def list_invalid_var_names_in_play(_self, file, _play):
     """
     .. seealso:: ansiblelint.AnsibleLintRule.matchyaml
     """
-    if USE_ANSIBLE:
+    if use_ansible():
         ffn = list_invalid_var_names_from_playbook
     else:
         ffn = list_invalid_var_names_from_playbook_natively
