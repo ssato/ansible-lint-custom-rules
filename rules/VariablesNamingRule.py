@@ -27,6 +27,7 @@ variables.
    This class assume that variable names consist of only ASCII chars.
 """
 import collections.abc
+import configparser
 import glob
 import itertools
 import os.path
@@ -188,6 +189,26 @@ def try_load_yaml_file(filepath):
         pass
 
     return None
+
+
+def list_var_names_from_inventory_file_itr(inventory):
+    """
+    .. note:: This function only lists var names in [*:vars] sections.
+
+    :param inventory: A inventory file path
+    :return: A generator yields a variable names from the inventory file
+    """
+    psr = configparser.ConfigParser()
+    psr.optionxform = str  # Preserve (upper) cases
+    try:
+        psr.read(inventory)
+        for sect in psr:
+            if sect.endswith(":vars"):
+                for key in psr[sect]:
+                    yield key
+
+    except configparser.Error:
+        raise TypeError("It does not look an inventory file: " + inventory)
 
 
 def list_var_names_from_yaml_file_itr(filepath, vars_key=None):
