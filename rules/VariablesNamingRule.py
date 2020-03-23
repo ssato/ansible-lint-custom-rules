@@ -244,16 +244,13 @@ def list_var_names_from_yaml_files_itr(files, vars_key=None):
             yield key
 
 
-def find_var_names_from_inventory_itr():
+def find_var_names_from_inventory_itr(inventory):
     """
     .. note:: This function does not find var names in inventory file itself.
 
+    :param inventory: A inventory file path
     :return: A generator yields a variable names from {host,group}_vars/*.yml
     """
-    inventory = inventory_filepath()
-    if not inventory or inventory == INVENTORY_DEFAULT:
-        return
-
     invdir = os.path.dirname(inventory)
     hfs = glob.glob(os.path.join(invdir, "host_vars", "*.yml"))
     gfs = glob.glob(os.path.join(invdir, "group_vars", "*.yml"))
@@ -268,7 +265,11 @@ def find_var_names_from_inventory():
 
     :return: A set of variable names
     """
-    return set(find_var_names_from_inventory_itr())
+    inventory = inventory_filepath()
+    if not inventory or inventory == INVENTORY_DEFAULT:
+        return set()
+
+    return set(find_var_names_from_inventory_itr(inventory))
 
 
 def list_invalid_var_names_in_play(_self, file, _play):
