@@ -49,7 +49,7 @@ _ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
 
 # Ugh! there is no constant global var define this in ansible.constants...
 INVENTORY_ENVVAR = _ENVVAR_PREFIX + "_INVENTORY"
-INVENTORY = os.environ.get(INVENTORY_ENVVAR, "/etc/ansible/hosts")
+INVENTORY_DEFAULT = "/etc/ansible/hosts"
 
 NAME_RE_S = r"[a-zA-Z_]\w+"
 NAME_RE_ENVVAR = _ENVVAR_PREFIX + "_VAR_NAME_RE"
@@ -148,13 +148,22 @@ def is_special_var_name(name):
     return name in SPECIAL_VAR_NAMES or name.startswith("ansible_")
 
 
+def inventory_filepath():
+    """
+    :return: A path to inventory file
+    """
+    return os.environ.get(INVENTORY_ENVVAR, INVENTORY_DEFAULT)
+
+
 def list_invalid_var_names_from_playbook(playbook):
     """
     :param playbook: An abosolute path of the playbook file
     :return: A list of variable names don't match with valid regexp patterns
     """
+    ipath = inventory_filepath()
+
     loader = ansible.parsing.dataloader.DataLoader()
-    inventory = ansible.inventory.manager.InventoryManager(loader, INVENTORY)
+    inventory = ansible.inventory.manager.InventoryManager(loader, ipath)
     vmgr = ansible.vars.manager.VariableManager(loader, inventory)
 
     # :raises: ansible.errors.AnsibleParserError("Invalid variable name...")
