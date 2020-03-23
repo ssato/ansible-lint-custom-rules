@@ -244,7 +244,7 @@ def list_var_names_from_yaml_files_itr(files, vars_key=None):
             yield key
 
 
-def find_var_names_from_inventory_itr(inventory):
+def find_var_names_from_inventory_var_files_itr(inventory):
     """
     .. note:: This function does not find var names in inventory file itself.
 
@@ -269,7 +269,7 @@ def find_var_names_from_inventory():
     if not inventory or inventory == INVENTORY_DEFAULT:
         return set()
 
-    return set(find_var_names_from_inventory_itr(inventory))
+    return set(find_var_names_from_inventory_var_files_itr(inventory))
 
 
 def list_invalid_var_names_in_play(_self, file, _play):
