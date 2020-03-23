@@ -61,10 +61,7 @@ function _ansible_lint_ng () {
         _ansible_lint_ng "res/VariablesNamingRule_ok*.yml"
 }
 
-# FIXME:
-#   ... _ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY=res/inventories/VariablesNamingRule/ok/1/hosts: No such file or directory
 @test "Test validating var names in inventory, should succeed" {
-    skip
     run _ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY="res/inventories/VariablesNamingRule/ok/1/hosts" \
         _ansible_lint_ok "res/VariablesNamingRule_ok*.yml"
 }
