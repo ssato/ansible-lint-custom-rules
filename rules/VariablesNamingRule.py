@@ -27,6 +27,7 @@ variables.
    This class assume that variable names consist of only ASCII chars.
 """
 import collections.abc
+import glob
 import itertools
 import os.path
 import os
@@ -220,6 +221,33 @@ def list_var_names_from_yaml_files_itr(files, vars_key=None):
         for key in list_var_names_from_yaml_file_itr(filepath,
                                                      vars_key=vars_key):
             yield key
+
+
+def find_var_names_from_inventory_itr():
+    """
+    .. note:: This function does not find var names in inventory file itself.
+
+    :return: A generator yields a variable names from {host,group}_vars/*.yml
+    """
+    inventory = inventory_filepath()
+    if not inventory or inventory == INVENTORY_DEFAULT:
+        return
+
+    invdir = os.path.dirname(inventory)
+    hfs = glob.glob(os.path.join(invdir, "host_vars", "*.yml"))
+    gfs = glob.glob(os.path.join(invdir, "group_vars", "*.yml"))
+
+    for vname in list_var_names_from_yaml_files_itr(hfs + gfs):
+        yield vname
+
+
+def find_var_names_from_inventory():
+    """
+    .. note:: This function does not find var names in inventory file itself.
+
+    :return: A set of variable names
+    """
+    return set(find_var_names_from_inventory_itr())
 
 
 def list_invalid_var_names_in_play(_self, file, _play):

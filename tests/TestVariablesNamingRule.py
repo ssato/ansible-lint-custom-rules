@@ -10,9 +10,12 @@ from rules import VariablesNamingRule as TT
 from tests import common as C
 
 
+INV_1 = "inventories/VariablesNamingRule/ok/1/hosts"
 HVARS_1 = "inventories/VariablesNamingRule/ok/1/host_vars/localhost_0.yml"
 PLAY_1 = "VariablesNamingRule_ok_1.yml"
 
+_ENV_PATCH_INV_1 = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY":
+                    C.list_res_files(INV_1)[0]}
 _OS_ENVIRON_PATCH = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE":
                      "___x\\w+"}  # Must starts with '___x'
 
@@ -36,6 +39,13 @@ class TestFunctions(C.unittest.TestCase):
         ypaths = C.list_res_files(HVARS_1)
         ref = set(["foo_1", "BAR_baz", "bar_BAR", "__xyz"])
         res = set(TT.list_var_names_from_yaml_files_itr(ypaths))
+        self.assertEqual(ref, res)
+
+    @mock.patch.dict(os.environ, _ENV_PATCH_INV_1)
+    def test_find_var_names_from_inventory(self):
+        ref = set(["foo_1", "BAR_baz", "bar_BAR",
+                   "__xyz"])  # see HVARS_1
+        res = TT.find_var_names_from_inventory()
         self.assertEqual(ref, res)
 
 
