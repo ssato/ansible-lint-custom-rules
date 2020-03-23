@@ -9,6 +9,13 @@ guildelines.
 Users can change the behavior of this class by specifying some envrionment
 variables.
 
+- Users can switch the way to find variable names with the environment
+  variable, _ANSIBLE_LINT_RULE_CUSTOM_2020_3_USE_ANSIBLE, for exampke,
+
+  ::
+
+      _ANSIBLE_LINT_RULE_CUSTOM_2020_3_USE_ANSIBLE=1
+
 - Users can specify the inventory file path with the environment variable,
   _ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY, for exampke,
 
@@ -48,6 +55,9 @@ import yaml.parser
 
 _RULE_ID = "Custom_2020_3"
 _ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+
+USE_ANSIBLE_ENVVAR = _ENVVAR_PREFIX + "_USE_ANSIBLE"
+USE_ANSIBLE = bool(os.environ.get(USE_ANSIBLE_ENVVAR, False))
 
 # Ugh! there is no constant global var define this in ansible.constants...
 INVENTORY_ENVVAR = _ENVVAR_PREFIX + "_INVENTORY"
@@ -326,16 +336,33 @@ def find_var_names_from_role_files_itr(playbook, vars_file=None):
             yield vname
 
 
+def list_invalid_var_names_from_playbook_natively(playbook):
+    """
+    :param playbook: An abosolute path of the playbook file
+    :return: A list of variable names don't match with valid regexp patterns
+    """
+    vs_1 = find_var_names_from_inventory()
+    vs_2 = find_var_names_from_playbook_file(playbook)
+    vs_3 = find_var_names_from_role_files_itr(playbook)
+
+    return [v for v in set(itertools.chain(vs_1, vs_2, vs_3))
+            if not is_special_var_name(v) and test_if_name_not_match(v)]
+
+
 def list_invalid_var_names_in_play(_self, file, _play):
     """
     .. seealso:: ansiblelint.AnsibleLintRule.matchyaml
     """
+    if USE_ANSIBLE:
+        ffn = list_invalid_var_names_from_playbook
+    else:
+        ffn = list_invalid_var_names_from_playbook_natively
+
     if file["type"] == "playbook":
         playbook = file["path"]
 
         return [({"Playbook may have invalid var name[s]": playbook},
-                 "Invalid var name: {}".format(n))
-                for n in list_invalid_var_names_from_playbook(playbook)]
+                 "Invalid var name: {}".format(n)) for n in ffn(playbook)]
 
     return []
 

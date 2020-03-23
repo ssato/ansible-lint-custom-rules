@@ -17,8 +17,13 @@ PLAY_2 = "VariablesNamingRule_ok_2.yml"
 
 _ENV_PATCH_INV_1 = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY":
                     C.list_res_files(INV_1)[0]}
-_OS_ENVIRON_PATCH = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE":
-                     "___x\\w+"}  # Must starts with '___x'
+_ENV_PATCH_UA = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_USE_ANSIBLE": "1"}
+_ENV_PATCH_RE = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE":
+                 "___x\\w+"}  # Must starts with '___x'
+
+_OS_ENVIRON_PATCH = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_USE_ANSIBLE": "1",
+                     "_ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE":
+                     "___x\\w+"}
 
 
 class TestFunctions(C.unittest.TestCase):
@@ -99,9 +104,27 @@ class TestVariablesNamingRule(C.AnsibleLintRuleTestBase):
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertEqual(0, len(res), res)
 
+    @mock.patch.dict(os.environ, _ENV_PATCH_UA)
+    def test_playbook_refering_invalid_var_names__use_ansible(self):
+        pats = "VariablesNamingRule*ng*.yml"
+        for res in self._lint_results_for_playbooks_itr(pats):
+            self.assertTrue(len(res) > 0, res)
+
+    @mock.patch.dict(os.environ, _ENV_PATCH_UA)
+    def test_playbook_refering_only_valid_var_names__use_ansible(self):
+        pats = "VariablesNamingRule*ok*.yml"
+        for res in self._lint_results_for_playbooks_itr(pats):
+            self.assertEqual(0, len(res), res)
+
+    @mock.patch.dict(os.environ, _ENV_PATCH_RE)
+    def test_playbook_refering_invalid_var_names__env(self):
+        pats = "VariablesNamingRule*ok*.yml"
+        for res in self._lint_results_for_playbooks_itr(pats):
+            self.assertTrue(len(res) > 0, res)
+
     @C.unittest.skip("Not implemented correctly yet")
     @mock.patch.dict(os.environ, _OS_ENVIRON_PATCH)
-    def test_playbook_refering_invalid_var_names__env(self):
+    def test_playbook_refering_invalid_var_names__env__use_ansible(self):
         pats = "VariablesNamingRule*ok*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertTrue(len(res) > 0, res)
