@@ -9,14 +9,14 @@ guildelines.
 Users can change the behavior of this class by specifying some envrionment
 variables.
 
-- Users can specify the inventory file path with the enviornment variable,
+- Users can specify the inventory file path with the environment variable,
   _ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY, for exampke,
 
   ::
 
       _ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY="/tmp/hosts.ini"
 
-- Users can specify the variable name regex pattern by the enviornment
+- Users can specify the variable name regex pattern by the environment
   variable, _ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE, for example,
 
   ::
