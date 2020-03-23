@@ -21,10 +21,6 @@ _ENV_PATCH_UA = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_USE_ANSIBLE": "1"}
 _ENV_PATCH_RE = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE":
                  "___x\\w+"}  # Must starts with '___x'
 
-_OS_ENVIRON_PATCH = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_USE_ANSIBLE": "1",
-                     "_ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE":
-                     "___x\\w+"}
-
 
 class TestFunctions(C.unittest.TestCase):
 
@@ -122,8 +118,8 @@ class TestVariablesNamingRule(C.AnsibleLintRuleTestBase):
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertTrue(len(res) > 0, res)
 
-    @C.unittest.skip("Not implemented correctly yet")
-    @mock.patch.dict(os.environ, _OS_ENVIRON_PATCH)
+    @mock.patch.dict(os.environ, _ENV_PATCH_UA)
+    @mock.patch.dict(os.environ, _ENV_PATCH_RE)
     def test_playbook_refering_invalid_var_names__env__use_ansible(self):
         pats = "VariablesNamingRule*ok*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
