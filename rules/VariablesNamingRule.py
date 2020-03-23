@@ -278,6 +278,14 @@ def find_var_names_from_inventory():
     return vnames
 
 
+def find_var_names_from_playbook_file(filepath):
+    """
+    :param filepath: A playbook file path
+    :return: A set of variable names
+    """
+    return set(list_var_names_from_yaml_file_itr(filepath, vars_key="vars"))
+
+
 def list_invalid_var_names_in_play(_self, file, _play):
     """
     .. seealso:: ansiblelint.AnsibleLintRule.matchyaml

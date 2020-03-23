@@ -55,6 +55,13 @@ class TestFunctions(C.unittest.TestCase):
         res = TT.find_var_names_from_inventory()
         self.assertEqual(res, ref)
 
+    def test_find_var_names_from_playbook_file(self):
+        playbook = C.list_res_files(PLAY_1)[0]
+        ref = set(["foo", "BAR_1", "_foo_bar", "_baz"])  # see PLAY_1
+        res = TT.find_var_names_from_playbook_file(playbook)
+        self.assertTrue(res)
+        self.assertEqual(res, ref, res)
+
 
 class TestVariablesNamingRule(C.AnsibleLintRuleTestBase):
 
