@@ -65,8 +65,6 @@ INVENTORY_DEFAULT = "/etc/ansible/hosts"
 
 NAME_RE_S = r"[a-zA-Z_]\w+"
 NAME_RE_ENVVAR = _ENVVAR_PREFIX + "_VAR_NAME_RE"
-NAME_RE = re.compile(os.environ.get(NAME_RE_ENVVAR, NAME_RE_S),
-                     re.ASCII)
 
 SPECIAL_VAR_NAMES = frozenset("""
 all
@@ -96,6 +94,18 @@ vars
 """.split())
 
 
+def name_re(envvar=None, name_re_s=None):
+    """
+    :return: compiled regex object to try match
+    """
+    if envvar is None:
+        envvar = NAME_RE_ENVVAR
+    if name_re_s is None:
+        name_re_s = NAME_RE_S
+
+    return re.compile(os.environ.get(envvar, name_re_s), re.ASCII)
+
+
 def test_if_name_not_match(name=None, reg=None):
     """Test if given name does *not* match the regex pattern.
 
@@ -105,7 +115,7 @@ def test_if_name_not_match(name=None, reg=None):
     :return: True if `name` does *not* match with `reg`
     """
     if reg is None:
-        reg = NAME_RE
+        reg = name_re()
 
     if name is None:
         return False
