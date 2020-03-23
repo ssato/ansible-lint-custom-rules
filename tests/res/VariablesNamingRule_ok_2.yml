@@ -3,3 +3,4 @@
   gather_facts: false
   roles:
     - variable_naming_rule_test_ok_1
+    - role: variable_naming_rule_test_ok_1

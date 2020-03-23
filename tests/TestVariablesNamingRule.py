@@ -13,6 +13,7 @@ from tests import common as C
 INV_1 = "inventories/VariablesNamingRule/ok/1/hosts"
 HVARS_1 = "inventories/VariablesNamingRule/ok/1/host_vars/localhost_0.yml"
 PLAY_1 = "VariablesNamingRule_ok_1.yml"
+PLAY_2 = "VariablesNamingRule_ok_2.yml"
 
 _ENV_PATCH_INV_1 = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY":
                     C.list_res_files(INV_1)[0]}
@@ -59,6 +60,18 @@ class TestFunctions(C.unittest.TestCase):
         playbook = C.list_res_files(PLAY_1)[0]
         ref = set(["foo", "BAR_1", "_foo_bar", "_baz"])  # see PLAY_1
         res = TT.find_var_names_from_playbook_file(playbook)
+        self.assertTrue(res)
+        self.assertEqual(res, ref, res)
+
+    def test_list_role_names_itr__empty(self):
+        playbook = C.list_res_files(PLAY_1)[0]
+        res = set(TT.list_role_names_itr(playbook))
+        self.assertFalse(res)  # It should be an empty set().
+
+    def test_list_role_names_itr__found(self):
+        playbook = C.list_res_files(PLAY_2)[0]
+        ref = set(("variable_naming_rule_test_ok_1", ))
+        res = set(TT.list_role_names_itr(playbook))
         self.assertTrue(res)
         self.assertEqual(res, ref, res)
 

@@ -286,6 +286,23 @@ def find_var_names_from_playbook_file(filepath):
     return set(list_var_names_from_yaml_file_itr(filepath, vars_key="vars"))
 
 
+def list_role_names_itr(playbook):
+    """
+    :param playbook: An abosolute path of the playbook file
+    :return: A generator yields role names
+    """
+    plays = try_load_yaml_file(playbook)
+    if not plays:
+        return
+
+    for play in plays:
+        for role in play.get("roles", []):
+            if isinstance(role, collections.abc.Mapping):
+                yield role["role"]  # It should have this.
+            else:
+                yield role
+
+
 def list_invalid_var_names_in_play(_self, file, _play):
     """
     .. seealso:: ansiblelint.AnsibleLintRule.matchyaml
