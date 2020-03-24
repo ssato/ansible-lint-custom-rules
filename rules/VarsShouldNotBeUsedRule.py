@@ -12,7 +12,7 @@ _DESC = """vars and include_vars should not be used and replaced with
 variables defined in inventory and related data instead."""
 
 
-def vars_is_used(_self, file_, line):
+def vars_is_used(_self, _file, line):
     """
     .. seealso:: ansiblelint.AnsibleLintRule.matchlines
     """
