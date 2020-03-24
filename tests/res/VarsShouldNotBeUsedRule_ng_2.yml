@@ -1,10 +1,9 @@
 - hosts: localhost
   connection: local
   gather_facts: false
-  vars:
-    items:
-      - pong
   tasks:
+    - include_vars:
+        file: vars/VarsShouldNotBeUsedRule_1.yml
     - name: Try ping
       ping:
       loop: "{{ items }}"
