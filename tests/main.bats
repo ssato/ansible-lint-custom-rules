@@ -83,4 +83,9 @@ function _ansible_lint_ng () {
         _ansible_lint_ng "res/VariablesNamingRule_ok*.yml"
 }
 
+@test "Test playbook filename pattern with env var, should fail" {
+    run _ANSIBLE_LINT_RULE_CUSTOM_2020_4_PLAYBOOK_FILENAME_RE="\\S+" \
+        _ansible_lint_ng "res/TaskHasValidNamePatternRule_ok*.yml"
+}
+
 # vim:sw=4:ts=4:et:filetype=sh:
