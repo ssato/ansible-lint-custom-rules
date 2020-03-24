@@ -11,6 +11,5 @@ from tests import common as C
 class TestVarsShouldNotBeUsedRule(C.AutoTestCasesForAnsibleLintRule):
     """Test cases for the rule class, VarsShouldNotBeUsedRule.
     """
-
     rule = TT.VarsShouldNotBeUsedRule()
     prefix = "VarsShouldNotBeUsedRule"
