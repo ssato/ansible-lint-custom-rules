@@ -1,8 +1,9 @@
 # Copyright (C) 2020 Red Hat, Inc.
 # SPDX-License-Identifier: MIT
 #
-# pylint: disable=invalid-name,missing-module-docstring
-# pylint: disable=missing-class-docstring,missing-function-docstring
+# pylint: disable=invalid-name,missing-function-docstring
+"""Test cases for the rule, VariablesNamingRule.
+"""
 import os
 import mock
 
@@ -23,6 +24,8 @@ _ENV_PATCH_RE = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_VAR_NAME_RE":
 
 
 class TestFunctions(C.unittest.TestCase):
+    """test cases for some utility functions.
+    """
 
     def test_list_var_names_from_yaml_file_itr__ok_simple_yaml_file(self):
         ypath = C.list_res_files(HVARS_1)[0]  # == HVARS_1
@@ -86,19 +89,11 @@ class TestFunctions(C.unittest.TestCase):
         self.assertEqual(res, ref, res)
 
 
-class TestVariablesNamingRule(C.AnsibleLintRuleTestBase):
-
+class TestVariablesNamingRule(C.AutoTestCasesForAnsibleLintRule):
+    """Test cases for the rule class, VariablesNamingRule.
+    """
     rule = TT.VariablesNamingRule()
-
-    def test_playbook_refering_invalid_var_names(self):
-        pats = "VariablesNamingRule*ng*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            self.assertTrue(len(res) > 0, res)
-
-    def test_playbook_refering_only_valid_var_names(self):
-        pats = "VariablesNamingRule*ok*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            self.assertEqual(0, len(res), res)
+    prefix = "VariablesNamingRule"
 
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     def test_playbook_refering_invalid_var_names__use_ansible(self):
