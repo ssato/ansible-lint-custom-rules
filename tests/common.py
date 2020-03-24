@@ -1,7 +1,9 @@
 # Copyright (C) 2020 Red Hat, Inc.
 # SPDX-License-Identifier: MIT
 #
-# pylint: disable=invalid-name,missing-module-docstring
+# pylint: disable=invalid-name,missing-function-docstring
+"""Common utility test routines and classes.
+"""
 import glob
 import os.path
 import unittest
@@ -58,7 +60,6 @@ class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
     prefix = None
 
     def test_10_ok_cases(self):
-        """OK test cases"""
         if self.rule is None or self.prefix is None:
             return
 
@@ -67,7 +68,6 @@ class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
             self.assertEqual(0, len(res), res)  # No errors
 
     def test_20_ng_cases(self):
-        """NG test cases"""
         if self.rule is None or self.prefix is None:
             return
 
