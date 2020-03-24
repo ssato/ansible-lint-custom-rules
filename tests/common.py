@@ -57,7 +57,7 @@ class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
     rule = None
     prefix = None
 
-    def test_ok_cases(self):
+    def test_10_ok_cases(self):
         """OK test cases"""
         if self.rule is None or self.prefix is None:
             return
@@ -66,7 +66,7 @@ class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertEqual(0, len(res), res)  # No errors
 
-    def test_ng_cases(self):
+    def test_20_ng_cases(self):
         """NG test cases"""
         if self.rule is None or self.prefix is None:
             return
