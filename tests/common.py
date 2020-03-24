@@ -48,3 +48,29 @@ class AnsibleLintRuleTestBase(unittest.TestCase):
             with open(filepath) as fobj:
                 runner = ansiblelint.Runner(self.rules, fobj.name, [], [], [])
                 yield runner.run()
+
+
+class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
+    """Run ok and ng test cases automatically.
+    """
+
+    rule = None
+    prefix = None
+
+    def test_ok_cases(self):
+        """OK test cases"""
+        if self.rule is None or self.prefix is None:
+            return
+
+        pats = self.prefix + "*ok*.yml"
+        for res in self._lint_results_for_playbooks_itr(pats):
+            self.assertEqual(0, len(res), res)  # No errors
+
+    def test_ng_cases(self):
+        """NG test cases"""
+        if self.rule is None or self.prefix is None:
+            return
+
+        pats = self.prefix + "*ng*.yml"
+        for res in self._lint_results_for_playbooks_itr(pats):
+            self.assertTrue(len(res) > 0, res)  # something goes wrong
