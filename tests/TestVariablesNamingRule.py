@@ -55,6 +55,8 @@ class TestFunctions(C.unittest.TestCase):
 
     @mock.patch.dict(os.environ, _ENV_PATCH_INV_1)
     def test_find_var_names_from_inventory(self):
+        TT.name_re.cache_clear()
+
         ref = set(["foo_1", "BAR_baz", "bar_BAR",
                    "__xyz", "BAZ_2"])  # see INV_1 and HVARS_1
         res = TT.find_var_names_from_inventory()
@@ -97,18 +99,26 @@ class TestVariablesNamingRule(C.AutoTestCasesForAnsibleLintRule):
 
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     def test_playbook_refering_invalid_var_names__use_ansible(self):
+        TT.use_ansible.cache_clear()
+        TT.name_re.cache_clear()
+
         pats = "VariablesNamingRule*ng*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertTrue(len(res) > 0, res)
 
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     def test_playbook_refering_only_valid_var_names__use_ansible(self):
+        TT.use_ansible.cache_clear()
+        TT.name_re.cache_clear()
+
         pats = "VariablesNamingRule*ok*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertEqual(0, len(res), res)
 
     @mock.patch.dict(os.environ, _ENV_PATCH_RE)
     def test_playbook_refering_invalid_var_names__env(self):
+        TT.name_re.cache_clear()
+
         pats = "VariablesNamingRule*ok*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertTrue(len(res) > 0, res)
@@ -116,6 +126,9 @@ class TestVariablesNamingRule(C.AutoTestCasesForAnsibleLintRule):
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     @mock.patch.dict(os.environ, _ENV_PATCH_RE)
     def test_playbook_refering_invalid_var_names__env__use_ansible(self):
+        TT.use_ansible.cache_clear()
+        TT.name_re.cache_clear()
+
         pats = "VariablesNamingRule*ok*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertTrue(len(res) > 0, res)

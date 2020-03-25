@@ -35,6 +35,7 @@ variables.
 """
 import collections.abc
 import configparser
+import functools
 import glob
 import itertools
 import os.path
@@ -93,6 +94,7 @@ vars
 """.split())
 
 
+@functools.lru_cache(maxsize=32)
 def use_ansible():
     """
     :return: True if to use ansible internal functions to find var names
@@ -100,6 +102,7 @@ def use_ansible():
     return bool(os.environ.get(USE_ANSIBLE_ENVVAR, False))
 
 
+@functools.lru_cache(maxsize=32)
 def name_re(envvar=None, name_re_s=None):
     """
     :return: compiled regex object to try match
