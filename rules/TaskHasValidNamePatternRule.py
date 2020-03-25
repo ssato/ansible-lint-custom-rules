@@ -10,10 +10,17 @@ r"""Lint rule class to test if tasks have valid names.
 
    _ANSIBLE_LINT_RULE_CUSTOM_2020_1_NAME_RE="\S+" ansible-lint ...
 """
+import functools
 import os
 import re
+
 import ansiblelint
 
+
+_RULE_ID = "Custom_2020_1"
+_ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+
+TASK_NAME_RE_ENVVAR = _ENVVAR_PREFIX + "_TASK_NAME_RE"
 
 VERBS = """\
 ask be become begin call can come could do feel find ensure get give go have
@@ -22,13 +29,21 @@ put run say see seem should show start take talk tell think try turn use want
 will work would\
 """.split()
 
-
-# .. todo:: Allow users to customize the regexp patterns.
-TASK_NAME_RE = (r"(" + '|'.join(VERBS + [v.title() for v in VERBS]) +
-                r")(\s+(\S+))+$")
-
 _NAMELESS_TASKS = ('meta', 'debug', 'include_role', 'import_role',
                    'include_tasks', 'import_tasks')
+
+
+@functools.lru_cache(maxsize=32)
+def task_name_re(default=None):
+    """
+    :param default: default regexp object to try match with task names
+    """
+    if default is None:
+        default = (r"(" + '|'.join(VERBS + [v.title() for v in VERBS]) +
+                   r")(\s+(\S+))+$")
+
+    return re.compile(os.environ.get(TASK_NAME_RE_ENVVAR, default),
+                      re.ASCII)
 
 
 def is_named_task(task, _nameless_tasks=_NAMELESS_TASKS):
@@ -51,9 +66,7 @@ def is_invalid_task_name(name):
     True
     """
     if name:
-        reg = os.environ.get("_ANSIBLE_LINT_RULE_CUSTOM_2020_1_NAME_RE",
-                             TASK_NAME_RE)
-        return re.match(reg, name) is None
+        return task_name_re().match(name) is None
 
     return True
 
@@ -74,8 +87,7 @@ class TaskHasValidNamePatternRule(ansiblelint.AnsibleLintRule):
     Rule class to test if given task has a valid name satisfies the naming rule
     in the organization.
     """
-
-    id = "Custom-2020-1"
+    id = _RULE_ID
     shortdesc = "All tasks should be named correctly"
     description = (
         "All tasks should have a valid name satisfies the naming rule"

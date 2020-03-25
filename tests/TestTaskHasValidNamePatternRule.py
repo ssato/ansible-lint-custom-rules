@@ -11,7 +11,7 @@ from rules import TaskHasValidNamePatternRule as TT
 from tests import common as C
 
 
-_OS_ENVIRON_PATCH = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_1_NAME_RE": "\\S+"}
+_OS_ENVIRON_PATCH = {TT.TASK_NAME_RE_ENVVAR: "\\S+"}
 
 
 class TestTaskHasValidNamePattern(C.AutoTestCasesForAnsibleLintRule):
@@ -22,6 +22,8 @@ class TestTaskHasValidNamePattern(C.AutoTestCasesForAnsibleLintRule):
 
     @mock.patch.dict(os.environ, _OS_ENVIRON_PATCH)
     def test_task_has_invalid_name_pattern__ok__setenv(self):
+        TT.task_name_re.cache_clear()
+
         pats = self.prefix + "_ng_1.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertEqual(0, len(res), res)
