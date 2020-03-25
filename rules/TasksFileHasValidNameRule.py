@@ -4,26 +4,37 @@
 #
 """Lint rule class to test if tasks files have valid filenames.
 """
+import functools
 import os
 import re
 
 import ansiblelint
 
 
-DEFAULT_VFN_RE = re.compile(r"^\w+\.ya?ml$", re.ASCII)  # TBD
+_RULE_ID = "Custom_2020_2"
+_ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+NAME_RE_ENVVAR = _ENVVAR_PREFIX + "_TASKS_FILENAME_RE"
 
 
-def is_invalid_filename(filename, regex=DEFAULT_VFN_RE):
+@functools.lru_cache(maxsize=32)
+def name_re(default=None):
+    """
+    :return: regex object to try match with names
+    """
+    if default is None:
+        default = r"^\w+\.ya?ml$"  # TBD
+
+    return re.compile(os.environ.get(NAME_RE_ENVVAR, default), re.ASCII)
+
+
+def is_invalid_filename(filename, reg=None):
     """
     :param filename: A str represents a file path
+    :param reg: A str gives a regexp to try match with valid filenames
+
     :return: True if given `filename` is invalid and does not satisfy the rule
     """
-    res = os.environ.get("_ANSIBLE_LINT_RULE_CUSTOM_2020_2_TASKS_FILENAME_RE",
-                         False)
-    if res:
-        regex = re.compile(res)
-
-    return regex.match(filename) is None
+    return name_re(reg).match(filename) is None
 
 
 class TasksFileHasValidNameRule(ansiblelint.AnsibleLintRule):
@@ -31,7 +42,7 @@ class TasksFileHasValidNameRule(ansiblelint.AnsibleLintRule):
     Rule class to test if tasks file has a valid filename satisfies the file
     naming rules in the organization.
     """
-    id = "Custom-2020-2"
+    id = _RULE_ID
     shortdesc = "Tasks files should have valid filenames"
     description = (
         "Tasks files (roles/tasks/*.yml) should have valid filenames."
