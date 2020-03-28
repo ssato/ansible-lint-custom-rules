@@ -3,4 +3,4 @@ localhost_0 ansible_host=127.0.0.1 foo_1=1
 
 [localhost:vars]
 BAR_baz=bar_baz
-invalid_な日本語変数=1
+invalid_var_１=1
