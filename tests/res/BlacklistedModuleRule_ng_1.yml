@@ -1,0 +1,7 @@
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+  tasks:
+    - name: Run shell (danger!)
+      shell: ls
