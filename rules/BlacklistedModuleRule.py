@@ -64,8 +64,8 @@ def blacklisted_modules(bmods=BLACKLISTED_MODULES):
     blacklist = os.environ.get(BLACKLIST_ENVVAR, False)
     if blacklist:
         try:
-            bmods = [l.strip() for l in open(blacklist)
-                     if not l.starswith("#")]
+            bmods = [line.strip() for line in open(blacklist)
+                     if not line.starswith("#")]
         except (IOError, OSError):
             pass
 
