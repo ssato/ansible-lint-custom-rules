@@ -10,15 +10,14 @@ cache: pip
 [testenv:]
 passenv = 
 whitelist_externals =
-    bash
-        bats
-            git
-                rpm
-                    systemctl
-                        nc
-                            grep
+  bash
+  bats
+  git
+  rpm
+  systemctl
+  nc
+  grep
 
-                            c
 install:
     - pip install tox-travis
 script:
