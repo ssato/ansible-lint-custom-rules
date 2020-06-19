@@ -3,8 +3,22 @@ language: python
 python:
     - 3.7
     - 3.8
+
 # see: http://docs.travis-ci.com/user/caching/#pip-cache
 cache: pip
+
+[testenv:]
+passenv = 
+whitelist_externals =
+    bash
+        bats
+            git
+                rpm
+                    systemctl
+                        nc
+                            grep
+
+                            c
 install:
     - pip install tox-travis
 script:
