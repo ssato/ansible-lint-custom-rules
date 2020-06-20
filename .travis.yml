@@ -7,17 +7,6 @@ python:
 # see: http://docs.travis-ci.com/user/caching/#pip-cache
 cache: pip
 
-[testenv:]
-passenv = 
-whitelist_externals =
-  bash
-  bats
-  git
-  rpm
-  systemctl
-  nc
-  grep
-
 install:
     - pip install tox-travis
 script:
