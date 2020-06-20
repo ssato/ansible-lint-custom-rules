@@ -30,7 +30,7 @@ class Test_functions(C.unittest.TestCase):
 
     @mock.patch.dict(os.environ, _ENV_PATCH_0)
     def test_20_blacklisted_modules__blacklist_file(self):
-        ref = [l.strip() for l in open(_BLACKLIST_PATH)]
+        ref = [line.strip() for line in open(_BLACKLIST_PATH)]
         self.assertEqual(TT.blacklisted_modules(), ref)
 
     @mock.patch.dict(os.environ, _ENV_PATCH_1)
