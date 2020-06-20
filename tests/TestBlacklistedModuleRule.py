@@ -8,8 +8,8 @@ from rules import BlacklistedModuleRule as TT
 from tests import common as C
 
 
-class TestLoopIsRecommendedRule(C.AutoTestCasesForAnsibleLintRule):
-    """Test cases for the rule class, LoopIsRecommendedRule.
+class TestBlacklistedModuleRule(C.AutoTestCasesForAnsibleLintRule):
+    """Test cases for the rule class, BlacklistedModuleRule.
     """
     rule = TT.BlacklistedModuleRule()
     prefix = "BlacklistedModuleRule"
