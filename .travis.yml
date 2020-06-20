@@ -1,8 +1,14 @@
 # see: http://about.travis-ci.org/docs/user/languages/python/
 language: python
 python:
+    - 3.6
     - 3.7
     - 3.8
+
+matrix:
+  include:
+    - python: 3.7
+      env: TOXENV=py37-ansible28
 
 # see: http://docs.travis-ci.com/user/caching/#pip-cache
 cache: pip
