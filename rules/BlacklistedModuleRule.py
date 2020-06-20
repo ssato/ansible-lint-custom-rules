@@ -61,18 +61,21 @@ def blacklisted_modules(bmods=BLACKLISTED_MODULES):
     """
     :return: True if to use ansible internal functions to find var names
     """
+    # Try to load blacklisted modules from the file user gave first.
     blacklist = os.environ.get(BLACKLIST_ENVVAR, False)
     if blacklist:
         try:
-            bmods = [line.strip() for line in open(blacklist)
-                     if not line.starswith("#")]
+            return [line.strip() for line in open(blacklist)
+                    if not line.startswith("#")]
         except (IOError, OSError):
             pass
 
-    if not bmods:
-        bmods = os.environ.get(BLACKLISTED_MODULES_ENVVAR, BLACKLISTED_MODULES)
+    # Next, try to load them from the env. var.
+    bmods_s = os.environ.get(BLACKLISTED_MODULES_ENVVAR, False)
+    if bmods_s:
+        return bmods_s.split()  # e.g. "shell raw ..." -> ["shell", "raw"]
 
-    return bmods
+    return BLACKLISTED_MODULES  # default
 
 
 class BlacklistedModuleRule(ansiblelint.AnsibleLintRule):
