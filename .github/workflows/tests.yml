@@ -1,7 +1,7 @@
 ---
 # .. seealso:: https://github.com/ymyzk/tox-gh-actions
 #
-name: Python package
+name: Tests
 on: [push]
 jobs:
   build:
