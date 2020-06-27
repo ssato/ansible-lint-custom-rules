@@ -3,7 +3,11 @@ About
 
 .. image:: https://img.shields.io/travis/ssato/ansible-lint-custom-rules.svg
    :target: https://travis-ci.org/ssato/ansible-lint-custom-rules
-   :alt: [Test status]
+   :alt: [Travis-CI Tests]
+
+.. image:: https://github.com/ssato/ansible-lint-custom-rules/workflows/Tests/badge.svg
+   :target: https://github.com/ssato/ansible-lint-custom-rules/actions?query=workflow%3ATests
+   :alt: [GHA Tests]
 
 .. .. image:: https://img.shields.io/coveralls/ssato/ansible-lint-custom-rules.svg
    :target: https://coveralls.io/r/ssato/ansible-lint-custom-rules
