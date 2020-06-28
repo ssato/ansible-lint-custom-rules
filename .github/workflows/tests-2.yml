@@ -1,7 +1,7 @@
 ---
 # .. seealso:: https://github.com/ymyzk/tox-gh-actions
 #
-name: Tests
+name: Tests inside container
 # yamllint disable-line rule:truthy
 on:
   - push
