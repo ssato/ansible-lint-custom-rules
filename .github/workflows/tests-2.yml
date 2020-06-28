@@ -11,7 +11,8 @@ jobs:
     container: pycontribs/centos:8
     strategy:
       matrix:
-        python-version: 3.6
+        python-version:
+          - 3.6
 
     steps:
       - uses: actions/checkout@v1
