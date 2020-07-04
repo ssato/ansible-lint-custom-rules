@@ -4,8 +4,6 @@
 # pylint: disable=invalid-name
 """Test cases for the rule, FileIsUnixFile.py.
 """
-import os
-
 from rules import FileIsUnixFileRule as TT
 from tests import common as C
 
