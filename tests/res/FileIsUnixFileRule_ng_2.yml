@@ -1,0 +1,1 @@
+- hosts: localhost  connection: local  gather_facts: false  tasks:    - name: Try ping      ping:- hosts: localhost  connection: local  gather_facts: false  roles:    - variable_naming_rule_test_ok_1
