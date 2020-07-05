@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 """
-Lint rule class to test if files are UNIX files of which lines end with LF.
+Lint rule class to test if files are UNIX files of which lines end only with
+LF, not CR+LF nor CR.
 """
 import functools
 import os.path
@@ -16,7 +17,7 @@ _RULE_ID = "Custom_2020_70"
 
 @functools.lru_cache(maxsize=32)
 def is_not_unix_file(filepath):
-    """Test if given file does not end with CR+LF.
+    """Test if given file does not end only with LF.
 
     .. seealso:: https://docs.python.org/3/library/functions.html#open
     """
@@ -35,7 +36,7 @@ def _matchplay(_self, file_, _play):
 
 
 def _match(_self, file_, _task):
-    """Test task files.
+    """Test task file is Unix file.
     """
     fpath = file_["path"]
     if is_not_unix_file(os.path.realpath(fpath)):
