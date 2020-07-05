@@ -5,12 +5,16 @@
 """
 Lint rule class to test if files are UNIX files of which lines end with LF.
 """
+import functools
+import os.path
+
 import ansiblelint
 
 
 _RULE_ID = "Custom_2020_70"
 
 
+@functools.lru_cache(maxsize=32)
 def is_not_unix_file(filepath):
     """Test if given file does not end with CR+LF.
 
@@ -24,7 +28,7 @@ def _matchplay(_self, file_, _play):
     """Test playbook is Unix file.
     """
     fpath = file_["path"]
-    if is_not_unix_file(fpath):
+    if is_not_unix_file(os.path.realpath(fpath)):
         return [({"File may not be a Unix file": fpath},
                  "Not a Unix file: {}".format(fpath))]
     return []
@@ -34,7 +38,7 @@ def _match(_self, file_, _task):
     """Test task files.
     """
     fpath = file_["path"]
-    if is_not_unix_file(fpath):
+    if is_not_unix_file(os.path.realpath(fpath)):
         return "Not a Unix style file: {}".format(fpath)
 
     return False
