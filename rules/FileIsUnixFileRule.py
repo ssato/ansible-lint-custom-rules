@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 """
-Lint rule class to test if files are UNIX files of which lines end with CR+LF.
+Lint rule class to test if files are UNIX files of which lines end with LF.
 """
 import ansiblelint
 
@@ -25,8 +25,8 @@ def _matchplay(_self, file_, _play):
     """
     fpath = file_["path"]
     if is_not_unix_file(fpath):
-        return [({"File may not be a Unix style file": fpath},
-                 "Not a Unix style file: {}".format(fpath))]
+        return [({"File may not be a Unix file": fpath},
+                 "Not a Unix file: {}".format(fpath))]
     return []
 
 
@@ -42,13 +42,13 @@ def _match(_self, file_, _task):
 
 class FileIsUnixFileRule(ansiblelint.AnsibleLintRule):
     """
-    Rule class to test if playbook and tasks files are small enough.
+    Rule class to test if playbook and tasks files are Unix files.
     """
     id = _RULE_ID
-    shortdesc = "Playbook and tasks files should be small enough"
+    shortdesc = "Playbook and tasks files must be Unix files"
     description = shortdesc
-    severity = "MEDIUM"
-    tags = ["playbook", "tasks", "readability"]
+    severity = "HIGH"
+    tags = ["playbook", "tasks", "safety", "formatting"]
     version_added = "4.2.99"  # dummy
 
     matchplay = _matchplay
