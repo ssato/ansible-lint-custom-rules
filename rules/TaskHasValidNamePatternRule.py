@@ -56,6 +56,7 @@ def is_invalid_task_name(name):
     """
     :param name: A str
 
+    >>> task_name_re.cache_clear()
     >>> is_invalid_task_name("Run something")
     False
     >>> is_invalid_task_name("ask something")
