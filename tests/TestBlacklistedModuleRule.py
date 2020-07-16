@@ -45,6 +45,7 @@ class TestBlacklistedModuleRule(C.AutoTestCasesForAnsibleLintRule):
     prefix = "BlacklistedModuleRule"
 
     def setUp(self):
+        super(TestBlacklistedModuleRule, self).setUp()
         TT.blacklisted_modules.cache_clear()
 
     @mock.patch.dict(os.environ, _ENV_PATCH_1)
