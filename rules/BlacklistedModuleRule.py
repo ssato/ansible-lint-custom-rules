@@ -75,7 +75,7 @@ def blacklisted_modules(bmods=BLACKLISTED_MODULES):
     if bmods_s:
         return bmods_s.split()  # e.g. "shell raw ..." -> ["shell", "raw"]
 
-    return BLACKLISTED_MODULES  # default
+    return bmods
 
 
 class BlacklistedModuleRule(ansiblelint.AnsibleLintRule):
