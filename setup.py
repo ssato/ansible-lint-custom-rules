@@ -36,7 +36,6 @@ class bdist_rpm(setuptools.command.bdist_rpm.bdist_rpm):
 
 
 setuptools.setup(name=NAME, version=VERSION,
-                 cmdclass=dict(bdist_rpm=bdist_rpm),
-                 packages=[NAME], package_dir={NAME: "rules"})
+                 cmdclass=dict(bdist_rpm=bdist_rpm))
 
 # vim:sw=4:ts=4:et:
