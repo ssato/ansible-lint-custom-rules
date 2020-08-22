@@ -15,6 +15,7 @@ import os
 import re
 
 import ansiblelint
+import ansiblelint.utils
 
 
 _RULE_ID = "Custom_2020_1"
@@ -77,7 +78,12 @@ def task_has_a_invalid_name(_self, _file, task):
     :param task: task object
     """
     if is_named_task(task):
-        if is_invalid_task_name(task["name"]):
+        name = task.get("name", False)
+        if not name:
+            return "Task has no name: {}".format(
+                ansiblelint.utils.task_to_str(task)
+            )
+        if is_invalid_task_name(name):
             return "Task name was: '{name}'".format(**task)
 
     return False
