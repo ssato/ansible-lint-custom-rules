@@ -8,7 +8,7 @@ import collections
 import functools
 import os
 
-import ansiblelint
+import ansiblelint.rules
 
 
 _RULE_ID = "Custom_2020_99"
@@ -28,7 +28,7 @@ def is_enabled(default=False):
     return bool(os.environ.get(ENABLE_THIS_RULE_ENVVAR, default))
 
 
-class DebugRule(ansiblelint.AnsibleLintRule):
+class DebugRule(ansiblelint.rules.AnsibleLintRule):
     """Rule class for debug use.
     """
     id = _RULE_ID
@@ -41,7 +41,7 @@ class DebugRule(ansiblelint.AnsibleLintRule):
 
     def match(self, file_, text):
         """
-        .. seealso:: ansiblelint.AnsibleLintRule.matchlines
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
 
         :param file_: A mapping object holding target file info
         :param text: The line to apply the rule and check
@@ -58,7 +58,7 @@ class DebugRule(ansiblelint.AnsibleLintRule):
 
     def matchtask(self, file_, task):
         """
-        .. seealso:: ansiblelint.AnsibleLintRule.matchtasks
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
 
         :param file_: A mapping object holding target file info
         :param task: A mapping object holding target task info
@@ -75,7 +75,7 @@ class DebugRule(ansiblelint.AnsibleLintRule):
 
     def matchplay(self, file_, play):
         """
-        .. seealso:: ansiblelint.AnsibleLintRule.matchyaml
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
 
         :param file_: A mapping object holding target file info
         :param play: A mapping object holding target play info

@@ -8,7 +8,8 @@ import glob
 import os.path
 import unittest
 
-import ansiblelint
+import ansiblelint.rules
+import ansiblelint.runner
 
 
 CURDIR = os.path.dirname(__file__)
@@ -35,9 +36,9 @@ class AnsibleLintRuleTestBase(unittest.TestCase):
         try:
             # Requires: ansible-lint > 4.2.0
             # pylint: disable=too-many-function-args
-            self.rules = ansiblelint.RulesCollection([RULES_DIR])
+            self.rules = ansiblelint.rules.RulesCollection([RULES_DIR])
         except TypeError:
-            self.rules = ansiblelint.RulesCollection()
+            self.rules = ansiblelint.rules.RulesCollection()
             if self.rule:
                 self.rules.register(self.rule)
 
@@ -48,7 +49,8 @@ class AnsibleLintRuleTestBase(unittest.TestCase):
         playbooks = list_res_files(playbook_fn_patterns)
         for filepath in playbooks:
             with open(filepath) as fobj:
-                runner = ansiblelint.Runner(self.rules, fobj.name, [], [], [])
+                runner = ansiblelint.runner.Runner(self.rules, fobj.name,
+                                                   [], [], [])
                 yield runner.run()
 
 

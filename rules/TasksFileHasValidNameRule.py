@@ -8,7 +8,7 @@ import functools
 import os
 import re
 
-import ansiblelint
+import ansiblelint.rules
 
 
 _RULE_ID = "Custom_2020_2"
@@ -37,7 +37,7 @@ def is_invalid_filename(filename, reg=None):
     return name_re(reg).match(filename) is None
 
 
-class TasksFileHasValidNameRule(ansiblelint.AnsibleLintRule):
+class TasksFileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if tasks file has a valid filename satisfies the file
     naming rules in the organization.

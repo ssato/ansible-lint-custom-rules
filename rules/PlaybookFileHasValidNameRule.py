@@ -8,7 +8,7 @@ import functools
 import os
 import re
 
-import ansiblelint
+import ansiblelint.rules
 
 
 _RULE_ID = "Custom_2020_4"
@@ -40,7 +40,7 @@ def is_invalid_filename(filepath, regex=None):
 
 def check_playbook_filename(_self, file_, _play):
     """
-    .. seealso:: ansiblelint.AnsibleLintRule.matchyaml
+    .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
     """
     if file_["type"] == "playbook":
         playbook = file_["path"]
@@ -52,7 +52,7 @@ def check_playbook_filename(_self, file_, _play):
     return []
 
 
-class PlaybookFileHasValidNameRule(ansiblelint.AnsibleLintRule):
+class PlaybookFileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if playbook file has a valid filename satisfies the file
     naming rules in the organization.

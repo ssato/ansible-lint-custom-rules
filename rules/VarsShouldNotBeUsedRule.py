@@ -4,7 +4,7 @@
 #
 """Lint rule class to test if vars and include_vars are used.
 """
-import ansiblelint
+import ansiblelint.rules
 
 
 _RULE_ID = "Custom_2020_6"
@@ -14,7 +14,7 @@ variables defined in inventory and related data instead."""
 
 def vars_is_used(_self, _file, line):
     """
-    .. seealso:: ansiblelint.AnsibleLintRule.matchlines
+    .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
     """
     line_s = line.strip()
     if line_s and "vars:" in line_s or "include_vars:" in line_s:
@@ -23,7 +23,7 @@ def vars_is_used(_self, _file, line):
     return False
 
 
-class VarsShouldNotBeUsedRule(ansiblelint.AnsibleLintRule):
+class VarsShouldNotBeUsedRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if any tasks use with_* loop directive.
     """

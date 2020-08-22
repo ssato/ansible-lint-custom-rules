@@ -16,7 +16,7 @@ variable, _ANSIBLE_LINT_RULE_CUSTOM_2020_30_MAX_LINES.
 import functools
 import os
 
-import ansiblelint
+import ansiblelint.rules
 
 
 _RULE_ID = "Custom_2020_40"
@@ -80,7 +80,7 @@ def _match(_self, file, _task):
     return False
 
 
-class FileIsSmallEnoughRule(ansiblelint.AnsibleLintRule):
+class FileIsSmallEnoughRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if playbook and tasks files are small enough.
     """
