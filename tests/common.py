@@ -33,14 +33,9 @@ class AnsibleLintRuleTestBase(unittest.TestCase):
     def setUp(self):
         """Initialize lint rules collection.
         """
-        try:
-            # Requires: ansible-lint > 4.2.0
-            # pylint: disable=too-many-function-args
-            self.rules = ansiblelint.rules.RulesCollection([RULES_DIR])
-        except TypeError:
-            self.rules = ansiblelint.rules.RulesCollection()
-            if self.rule:
-                self.rules.register(self.rule)
+        # Default rules only
+        self.rules = ansiblelint.rules.RulesCollection()
+        self.rules.register(self.rule)  # Register the rule explicitly.
 
     def _lint_results_for_playbooks_itr(self, playbook_fn_patterns):
         """
