@@ -14,7 +14,11 @@ import functools
 import os
 import re
 
-import ansiblelint.rules
+try:
+    from ansiblelint.rules import AnsibleLintRule
+except ImportError:
+    from ansiblelint import AnsibleLintRule
+
 import ansiblelint.utils
 
 
@@ -90,7 +94,7 @@ def task_has_a_invalid_name(_self, _file, task):
 
 
 # pylint: disable=too-few-public-methods
-class TaskHasValidNamePatternRule(ansiblelint.rules.AnsibleLintRule):
+class TaskHasValidNamePatternRule(AnsibleLintRule):
     """
     Rule class to test if given task has a valid name satisfies the naming rule
     in the organization.

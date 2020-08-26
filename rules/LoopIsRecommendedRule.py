@@ -4,7 +4,10 @@
 #
 """Lint rule class to test if tasks use with_* directives.
 """
-import ansiblelint.rules
+try:
+    from ansiblelint.rules import AnsibleLintRule
+except ImportError:
+    from ansiblelint import AnsibleLintRule
 
 
 _RULE_ID = "Custom_2020_5"
@@ -25,7 +28,7 @@ def with_directive_is_used(_self, _file, task):
     return False
 
 
-class LoopIsRecommendedRule(ansiblelint.rules.AnsibleLintRule):
+class LoopIsRecommendedRule(AnsibleLintRule):
     """
     Rule class to test if any tasks use with_* loop directive.
     """

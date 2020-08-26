@@ -8,7 +8,10 @@ import collections
 import functools
 import os
 
-import ansiblelint.rules
+try:
+    from ansiblelint.rules import AnsibleLintRule
+except ImportError:
+    from ansiblelint import AnsibleLintRule
 
 
 _RULE_ID = "Custom_2020_99"
@@ -28,7 +31,7 @@ def is_enabled(default=False):
     return bool(os.environ.get(ENABLE_THIS_RULE_ENVVAR, default))
 
 
-class DebugRule(ansiblelint.rules.AnsibleLintRule):
+class DebugRule(AnsibleLintRule):
     """Rule class for debug use.
     """
     id = _RULE_ID

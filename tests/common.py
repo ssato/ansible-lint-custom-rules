@@ -8,8 +8,15 @@ import glob
 import os.path
 import unittest
 
-import ansiblelint.rules
-import ansiblelint.runner
+try:
+    from ansiblelint.rules import RulesCollection
+except ImportError:
+    from ansiblelint import RulesCollection
+
+try:
+    from ansiblelint.runner import Runner
+except ImportError:
+    from ansiblelint import Runner
 
 
 CURDIR = os.path.dirname(__file__)
@@ -34,7 +41,7 @@ class AnsibleLintRuleTestBase(unittest.TestCase):
         """Initialize lint rules collection.
         """
         # Default rules only
-        self.rules = ansiblelint.rules.RulesCollection()
+        self.rules = RulesCollection()
         self.rules.register(self.rule)  # Register the rule explicitly.
 
     def _lint_results_for_playbooks_itr(self, playbook_fn_patterns):
@@ -44,8 +51,7 @@ class AnsibleLintRuleTestBase(unittest.TestCase):
         playbooks = list_res_files(playbook_fn_patterns)
         for filepath in playbooks:
             with open(filepath) as fobj:
-                runner = ansiblelint.runner.Runner(self.rules, fobj.name,
-                                                   [], [], [])
+                runner = Runner(self.rules, fobj.name, [], [], [])
                 yield runner.run()
 
 
@@ -71,3 +77,5 @@ class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
         pats = self.prefix + "*ng*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertTrue(len(res) > 0, res)  # something goes wrong
+
+# vim:sw=4:ts=4:et:

@@ -48,7 +48,11 @@ import ansible.inventory.manager
 import ansible.parsing.dataloader
 import ansible.playbook
 import ansible.vars.manager
-import ansiblelint.rules
+
+try:
+    from ansiblelint.rules import AnsibleLintRule
+except ImportError:
+    from ansiblelint import AnsibleLintRule
 
 import yaml
 import yaml.parser
@@ -386,7 +390,7 @@ def list_invalid_var_names_in_play(_self, file, _play):
     return []
 
 
-class VariablesNamingRule(ansiblelint.rules.AnsibleLintRule):
+class VariablesNamingRule(AnsibleLintRule):
     """
     Lint rule class to test if variables defined by users follow the namging
     conventions and guildelines.

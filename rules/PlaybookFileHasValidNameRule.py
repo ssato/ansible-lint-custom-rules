@@ -8,7 +8,10 @@ import functools
 import os
 import re
 
-import ansiblelint.rules
+try:
+    from ansiblelint.rules import AnsibleLintRule
+except ImportError:
+    from ansiblelint import AnsibleLintRule
 
 
 _RULE_ID = "Custom_2020_4"
@@ -52,7 +55,7 @@ def check_playbook_filename(_self, file_, _play):
     return []
 
 
-class PlaybookFileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
+class PlaybookFileHasValidNameRule(AnsibleLintRule):
     """
     Rule class to test if playbook file has a valid filename satisfies the file
     naming rules in the organization.

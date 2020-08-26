@@ -41,7 +41,10 @@ import functools
 import os
 
 # .. note:: Maybe it depends on specific versions of ansible.
-import ansiblelint.rules
+try:
+    from ansiblelint.rules import AnsibleLintRule
+except ImportError:
+    from ansiblelint import AnsibleLintRule
 
 
 _RULE_ID = "Custom_2020_20"
@@ -78,7 +81,7 @@ def blacklisted_modules(bmods=BLACKLISTED_MODULES):
     return bmods
 
 
-class BlacklistedModuleRule(ansiblelint.rules.AnsibleLintRule):
+class BlacklistedModuleRule(AnsibleLintRule):
     """
     Lint rule class to test if variables defined by users follow the namging
     conventions and guildelines.

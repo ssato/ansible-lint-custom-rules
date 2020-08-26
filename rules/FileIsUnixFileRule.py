@@ -9,7 +9,10 @@ LF, not CR+LF nor CR.
 import functools
 import os.path
 
-import ansiblelint.rules
+try:
+    from ansiblelint.rules import AnsibleLintRule
+except ImportError:
+    from ansiblelint import AnsibleLintRule
 
 
 _RULE_ID = "Custom_2020_70"
@@ -45,7 +48,7 @@ def _match(_self, file_, _task):
     return False
 
 
-class FileIsUnixFileRule(ansiblelint.rules.AnsibleLintRule):
+class FileIsUnixFileRule(AnsibleLintRule):
     """
     Rule class to test if playbook and tasks files are Unix files.
     """
