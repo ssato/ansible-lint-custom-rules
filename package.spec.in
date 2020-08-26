@@ -1,8 +1,7 @@
 %global pkgname ansiblelint_custom_rules
 
 %global desc \
-Some code examples to extend ansible-lint by adding custom rule \
-implementations.
+Some ansible-lint custom rule impolementations as examples.
 
 %bcond_with tests
 
@@ -20,7 +19,7 @@ BuildRequires:  python3-setuptools
 BuildRequires:  python3-coveralls
 BuildRequires:  python3-flake8
 BuildRequires:  python3-mock
-BuildRequires:  python3-nose
+BuildRequires:  python3-pytest
 BuildRequires:  python3-pycodestyle
 BuildRequires:  python3-pylint
 BuildRequires:  python3-tox
@@ -55,5 +54,5 @@ tox -e py$(python -c "import sys; sys.stdout.write(sys.version[:3].replace('.', 
 %{python3_sitelib}/*
 
 %changelog
-* Thu Mar 12 2020 Satoru SATOH <ssato@redhat.com> - 0.1.0-1
+* Wed Aug 26 2020 Satoru SATOH <ssato@redhat.com> - 0.1.0-1
 - Initial packaging
