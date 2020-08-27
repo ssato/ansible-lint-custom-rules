@@ -6,6 +6,8 @@
 """
 import glob
 import os.path
+import re
+import subprocess
 import unittest
 
 try:
@@ -77,5 +79,66 @@ class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
         pats = self.prefix + "*ng*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertTrue(len(res) > 0, res)  # something goes wrong
+
+
+_LIST_RULE_ID_RE = re.compile(r"^([^: ]+): .+")
+
+
+def _rule_ids_from_cli_output_itr(reg=_LIST_RULE_ID_RE):
+    """
+    Yield custom rule IDs extract from the output of 'ansible-lint -L'.
+    """
+    # Very ugly but it should work as expected.
+    res = subprocess.run(
+        "ansible-lint -L -r {}".format(RULES_DIR).split(),
+        capture_output=True, check=True
+    )
+    for line in res.stdout.decode("utf-8").splitlines():
+        match = reg.match(line)
+        if match:
+            yield match.groups()[0]
+
+
+class CliTestCasesForAnsibleLintRule(unittest.TestCase):
+    """Run ok and ng CLI test cases automatically.
+    """
+
+    rule = None
+    prefix = ''
+    clear_fn = False
+
+    def setUp(self):
+        super(CliTestCasesForAnsibleLintRule, self).setUp()
+        if getattr(self, "clear_fn", False) and callable(self.clear_fn):
+            self.clear_fn()
+
+        excl_opt = ' '.join(("-x {!s}".format(rid)
+                             for rid in _rule_ids_from_cli_output_itr()
+                             if rid != getattr(self.rule, "id", None)))
+        self.cmd = "ansible-lint -r {} {}".format(RULES_DIR, excl_opt).split()
+
+    def _run_for_playbooks(self, playbook_fn_patterns, res_ok=True, env=None):
+        """
+        :param playbook_fn_patterns: Glob filenames pattern to find playbooks
+        """
+        playbooks = list_res_files(playbook_fn_patterns)
+        for filepath in playbooks:
+            res = subprocess.run(
+                self.cmd + [filepath], capture_output=True, check=False,
+                env=env
+            )
+            if res_ok:
+                self.assertEqual(res.returncode, 0, res.stdout.decode("utf-8"))
+            else:
+                self.assertNotEqual(res.returncode, 0,
+                                    res.stdout.decode("utf-8"))
+
+    def test_10_ok_cases(self):
+        if self.prefix:
+            self._run_for_playbooks(self.prefix + "*ok*.yml")
+
+    def test_20_ng_cases(self):
+        if self.prefix:
+            self._run_for_playbooks(self.prefix + "*ng*.yml", False)
 
 # vim:sw=4:ts=4:et:

@@ -53,3 +53,15 @@ class TestBlacklistedModuleRule(C.AutoTestCasesForAnsibleLintRule):
         pats = self.prefix + "*ok*.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertTrue(len(res) > 0, res)
+
+
+class TestCliBlacklistedModuleRule(C.CliTestCasesForAnsibleLintRule):
+    """CLI Test cases for the rule class, BlacklistedModuleRule.
+    """
+    rule = TT.BlacklistedModuleRule()
+    prefix = "BlacklistedModuleRule"
+    clear_fn = TT.blacklisted_modules.cache_clear
+
+    def test_30_ng_cases__env(self):
+        self._run_for_playbooks(self.prefix + "*ok*.yml", False,
+                                env=_ENV_PATCH_1)

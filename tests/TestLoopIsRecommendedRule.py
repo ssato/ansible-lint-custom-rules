@@ -13,3 +13,10 @@ class TestLoopIsRecommendedRule(C.AutoTestCasesForAnsibleLintRule):
     """
     rule = TT.LoopIsRecommendedRule()
     prefix = "LoopIsRecommendedRule"
+
+
+class TestCliLoopIsRecommendedRule(C.CliTestCasesForAnsibleLintRule):
+    """CLI Test cases for the rule class, LoopIsRecommendedRule.
+    """
+    rule = TT.LoopIsRecommendedRule()
+    prefix = "LoopIsRecommendedRule"

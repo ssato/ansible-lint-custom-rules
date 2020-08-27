@@ -11,7 +11,7 @@ from rules import TasksFileHasValidNameRule as TT
 from tests import common as C
 
 
-_OS_ENVIRON_PATCH = {TT.NAME_RE_ENVVAR: "\\S+"}
+_ENV_PATCH = {TT.NAME_RE_ENVVAR: "foo.+"}
 
 
 class TestTasksFileHasValidNameRule(C.AutoTestCasesForAnsibleLintRule):
@@ -20,10 +20,22 @@ class TestTasksFileHasValidNameRule(C.AutoTestCasesForAnsibleLintRule):
     rule = TT.TasksFileHasValidNameRule()
     prefix = "TasksFileHasValidNameRule"
 
-    @mock.patch.dict(os.environ, _OS_ENVIRON_PATCH)
+    @mock.patch.dict(os.environ, _ENV_PATCH)
     def test_tasks_file_has_valid_name__ok__env(self):
         TT.name_re.cache_clear()
 
         pats = self.prefix + "_ng_1.yml"
         for res in self._lint_results_for_playbooks_itr(pats):
             self.assertEqual(0, len(res), res)
+
+
+class TestCliTasksFileHasValidNameRule(C.CliTestCasesForAnsibleLintRule):
+    """CLI Test cases for the rule class, TasksFileHasValidNameRule.
+    """
+    rule = TT.TasksFileHasValidNameRule()
+    prefix = "TasksFileHasValidNameRule"
+    clear_fn = TT.name_re.cache_clear
+
+    def test_30_ng_cases__env(self):
+        self._run_for_playbooks(self.prefix + "*ok*.yml", False,
+                                env=_ENV_PATCH)

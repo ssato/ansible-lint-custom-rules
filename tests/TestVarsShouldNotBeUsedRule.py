@@ -13,3 +13,10 @@ class TestVarsShouldNotBeUsedRule(C.AutoTestCasesForAnsibleLintRule):
     """
     rule = TT.VarsShouldNotBeUsedRule()
     prefix = "VarsShouldNotBeUsedRule"
+
+
+class TestCliVarsShouldNotBeUsedRule(C.CliTestCasesForAnsibleLintRule):
+    """CLI Test cases for the rule class, VarsShouldNotBeUsedRule.
+    """
+    rule = TT.VarsShouldNotBeUsedRule()
+    prefix = "VarsShouldNotBeUsedRule"

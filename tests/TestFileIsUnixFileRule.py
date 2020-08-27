@@ -13,3 +13,10 @@ class TestFileIsUnixFileRule(C.AutoTestCasesForAnsibleLintRule):
     """
     rule = TT.FileIsUnixFileRule()
     prefix = "FileIsUnixFileRule"
+
+
+class TestCliFileIsUnixFileRule(C.CliTestCasesForAnsibleLintRule):
+    """CLI Test cases for the rule class, FileIsUnixFileRule.
+    """
+    rule = TT.FileIsUnixFileRule()
+    prefix = "FileIsUnixFileRule"
