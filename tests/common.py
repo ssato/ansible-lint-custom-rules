@@ -89,9 +89,14 @@ def _rule_ids_from_cli_output_itr(reg=_LIST_RULE_ID_RE):
     Yield custom rule IDs extract from the output of 'ansible-lint -L'.
     """
     # Very ugly but it should work as expected.
+    #
+    # subprocess.run in py36 does not support capture_output keyword.
+    # https://docs.python.org/3.6/library/subprocess.html#subprocess.run
     res = subprocess.run(
         "ansible-lint -L -r {}".format(RULES_DIR).split(),
-        capture_output=True, check=True
+        # capture_output=True,
+        stdout=subprocess.PIPE,
+        check=True
     )
     for line in res.stdout.decode("utf-8").splitlines():
         match = reg.match(line)
@@ -124,7 +129,7 @@ class CliTestCasesForAnsibleLintRule(unittest.TestCase):
         playbooks = list_res_files(playbook_fn_patterns)
         for filepath in playbooks:
             res = subprocess.run(
-                self.cmd + [filepath], capture_output=True, check=False,
+                self.cmd + [filepath], stdout=subprocess.PIPE, check=False,
                 env=env
             )
             if res_ok:
