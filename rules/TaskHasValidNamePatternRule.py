@@ -70,6 +70,7 @@ def is_invalid_task_name(name, default=None):
     False
     >>> is_invalid_task_name('')
     True
+
     # I don't know why but it fails in tox env.
     # >>> is_invalid_task_name("a b c")
     # True
