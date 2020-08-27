@@ -6,6 +6,7 @@
 """
 import glob
 import os.path
+import os
 import re
 import subprocess
 import unittest
@@ -96,7 +97,8 @@ def _rule_ids_from_cli_output_itr(reg=_LIST_RULE_ID_RE):
         "ansible-lint -L -r {}".format(RULES_DIR).split(),
         # capture_output=True,
         stdout=subprocess.PIPE,
-        check=True
+        check=True,
+        env=os.environ
     )
     for line in res.stdout.decode("utf-8").splitlines():
         match = reg.match(line)
@@ -126,11 +128,14 @@ class CliTestCasesForAnsibleLintRule(unittest.TestCase):
         """
         :param playbook_fn_patterns: Glob filenames pattern to find playbooks
         """
+        if env:
+            os.environ.update(**env)
+
         playbooks = list_res_files(playbook_fn_patterns)
         for filepath in playbooks:
             res = subprocess.run(
                 self.cmd + [filepath], stdout=subprocess.PIPE, check=False,
-                env=env
+                env=os.environ
             )
             if res_ok:
                 self.assertEqual(res.returncode, 0, res.stdout.decode("utf-8"))
