@@ -11,6 +11,7 @@ import re
 import subprocess
 import unittest
 
+import ansiblelint.utils
 try:
     from ansiblelint.rules import RulesCollection
 except ImportError:
@@ -24,6 +25,10 @@ except ImportError:
 
 CURDIR = os.path.dirname(__file__)
 RULES_DIR = os.path.join(CURDIR, "..", "rules")
+
+DEFAULT_RULES_DIR = os.path.join(
+    os.path.dirname(ansiblelint.utils.__file__), "rules"
+)
 
 
 def list_res_files(relpath_pat):
@@ -82,28 +87,21 @@ class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
             self.assertTrue(len(res) > 0, res)  # something goes wrong
 
 
-_LIST_RULE_ID_RE = re.compile(r"^([^: ]+): .+")
+_LIST_RULE_ID_RE = re.compile(r"^(?:([^: ]+):|([A-Z0-9]\S+)) .+")
 
 
-def _rule_ids_from_cli_output_itr(reg=_LIST_RULE_ID_RE):
+def _rule_ids_itr():
     """
-    Yield custom rule IDs extract from the output of 'ansible-lint -L'.
+    Yield custom rule IDs using ansiblelint.rules.RulesCollection.
     """
-    # Very ugly but it should work as expected.
-    #
-    # subprocess.run in py36 does not support capture_output keyword.
-    # https://docs.python.org/3.6/library/subprocess.html#subprocess.run
-    res = subprocess.run(
-        "ansible-lint -L -r {}".format(RULES_DIR).split(),
-        # capture_output=True,
-        stdout=subprocess.PIPE,
-        check=True,
-        env=os.environ
-    )
-    for line in res.stdout.decode("utf-8").splitlines():
-        match = reg.match(line)
-        if match:
-            yield match.groups()[0]
+    rdirs = (DEFAULT_RULES_DIR, RULES_DIR)
+    try:
+        for rdir in rdirs:
+            for rule in RulesCollection.create_from_directory(rdir):
+                yield rule.id
+    except AttributeError:  # newer ansiblelint
+        for rule in RulesCollection(rdirs):
+            yield rule.id
 
 
 class CliTestCasesForAnsibleLintRule(unittest.TestCase):
@@ -120,7 +118,7 @@ class CliTestCasesForAnsibleLintRule(unittest.TestCase):
             self.clear_fn()
 
         excl_opt = ' '.join(("-x {!s}".format(rid)
-                             for rid in _rule_ids_from_cli_output_itr()
+                             for rid in _rule_ids_itr()
                              if rid != getattr(self.rule, "id", None)))
         self.cmd = "ansible-lint -r {} {}".format(RULES_DIR, excl_opt).split()
 
