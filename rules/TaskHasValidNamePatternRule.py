@@ -13,6 +13,7 @@ r"""Lint rule class to test if tasks have valid names.
 import functools
 import os
 import re
+import typing
 
 try:
     from ansiblelint.rules import AnsibleLintRule
@@ -22,27 +23,28 @@ except ImportError:
 import ansiblelint.utils
 
 
-_RULE_ID = "Custom_2020_1"
-_ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+_RULE_ID: str = "Custom_2020_1"
+_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
 
-TASK_NAME_RE_ENVVAR = _ENVVAR_PREFIX + "_TASK_NAME_RE"
+TASK_NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + "_TASK_NAME_RE"
 
-VERBS = """\
+VERBS: typing.List[str] = """\
 ask be become begin call can come could do feel find ensure get give go have
 hear help keep know leave let like live look make may mean might move need play
 put run say see seem should show start take talk tell think try turn use want
 will work would\
 """.split()
 
-_NAME_RE = (r"(" + '|'.join(VERBS + [verb.title() for verb in VERBS]) +
-            r")(\s+(\S+))+$")
+_NAME_RE: str = (r"(" + '|'.join(VERBS + [verb.title() for verb in VERBS]) +
+                 r")(\s+(\S+))+$")
 
-_NAMELESS_TASKS = ('meta', 'debug', 'include_role', 'import_role',
-                   'include_tasks', 'import_tasks')
+_NAMELESS_TASKS: typing.Tuple[str, ...] = ('meta', 'debug', 'include_role',
+                                           'import_role', 'include_tasks',
+                                           'import_tasks')
 
 
 @functools.lru_cache(maxsize=4)
-def task_name_re(default=None):
+def task_name_re(default: typing.Optional[str] = None) -> typing.Pattern:
     """
     :param default: default regexp object to try match with task names
     """
@@ -53,13 +55,16 @@ def task_name_re(default=None):
                       re.ASCII)
 
 
-def is_named_task(task, _nameless_tasks=_NAMELESS_TASKS):
+def is_named_task(task: typing.Mapping,
+                  nameless_tasks: typing.Tuple[str, ...] = _NAMELESS_TASKS
+                  ) -> bool:
     """Test if given task should be named?
     """
-    return task["action"]["__ansible_module__"] not in _nameless_tasks
+    return task["action"]["__ansible_module__"] not in nameless_tasks
 
 
-def is_invalid_task_name(name, default=None):
+def is_invalid_task_name(name: str, default: typing.Optional[str] = None
+                         ) -> bool:
     """
     :param name: A str
 
@@ -81,7 +86,7 @@ def is_invalid_task_name(name, default=None):
     return True
 
 
-def task_has_a_invalid_name(_self, _file, task):
+def task_has_a_invalid_name(_self, _file, task) -> typing.Union[str, bool]:
     """
     :param task: task object
     """

@@ -7,6 +7,7 @@
 import functools
 import os
 import re
+import typing
 
 try:
     from ansiblelint.rules import AnsibleLintRule
@@ -14,13 +15,13 @@ except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID = "Custom_2020_2"
-_ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
-NAME_RE_ENVVAR = _ENVVAR_PREFIX + "_TASKS_FILENAME_RE"
+_RULE_ID: str = "Custom_2020_2"
+_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + "_TASKS_FILENAME_RE"
 
 
 @functools.lru_cache(maxsize=32)
-def name_re(default=None):
+def name_re(default: typing.Optional[str] = None) -> typing.Pattern:
     """
     :return: regex object to try match with names
     """
@@ -30,7 +31,8 @@ def name_re(default=None):
     return re.compile(os.environ.get(NAME_RE_ENVVAR, default), re.ASCII)
 
 
-def is_invalid_filename(filename, reg=None):
+def is_invalid_filename(filename: str, reg: typing.Optional[str] = None
+                        ) -> bool:
     """
     :param filename: A str represents a file path
     :param reg: A str gives a regexp to try match with valid filenames
@@ -56,13 +58,13 @@ class TasksFileHasValidNameRule(AnsibleLintRule):
 
     tested = set()  # acc.
 
-    def match(self, file, _text):
+    def match(self, file_: typing.Mapping, _text) -> typing.Union[str, bool]:
         """Test tasks files.
         """
-        if file["type"] != "tasks":
+        if file_["type"] != "tasks":
             return False
 
-        filepath = file["path"]
+        filepath = file_["path"]
         filename = os.path.basename(filepath)
 
         if filepath not in self.tested:

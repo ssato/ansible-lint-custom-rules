@@ -4,18 +4,20 @@
 #
 """Lint rule class to test if vars and include_vars are used.
 """
+import typing
+
 try:
     from ansiblelint.rules import AnsibleLintRule
 except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID = "Custom_2020_6"
-_DESC = """vars and include_vars should not be used and replaced with
+_RULE_ID: str = "Custom_2020_6"
+_DESC: str = """vars and include_vars should not be used and replaced with
 variables defined in inventory and related data instead."""
 
 
-def vars_is_used(_self, _file, line):
+def vars_is_used(_self, _file, line: str) -> typing.Union[str, bool]:
     """
     .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
     """

@@ -41,6 +41,7 @@ import itertools
 import os.path
 import os
 import re
+import typing
 
 # .. note:: Maybe it depends on specific versions of ansible.
 import ansible.errors
@@ -58,19 +59,19 @@ import yaml
 import yaml.parser
 
 
-_RULE_ID = "Custom_2020_3"
-_ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+_RULE_ID: str = "Custom_2020_3"
+_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
 
-USE_ANSIBLE_ENVVAR = _ENVVAR_PREFIX + "_USE_ANSIBLE"
+USE_ANSIBLE_ENVVAR: str = _ENVVAR_PREFIX + "_USE_ANSIBLE"
 
 # Ugh! there is no constant global var define this in ansible.constants...
-INVENTORY_ENVVAR = _ENVVAR_PREFIX + "_INVENTORY"
-INVENTORY_DEFAULT = "/etc/ansible/hosts"
+INVENTORY_ENVVAR: str = _ENVVAR_PREFIX + "_INVENTORY"
+INVENTORY_DEFAULT: str = "/etc/ansible/hosts"
 
-NAME_RE_S = r"[a-zA-Z_]\w+"
-NAME_RE_ENVVAR = _ENVVAR_PREFIX + "_VAR_NAME_RE"
+NAME_RE_S: str = r"[a-zA-Z_]\w+"
+NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + "_VAR_NAME_RE"
 
-SPECIAL_VAR_NAMES = frozenset("""
+SPECIAL_VAR_NAMES: typing.FrozenSet = frozenset("""
 all
 ansible_dependent_role_names
 ansible_play_batch
@@ -97,9 +98,11 @@ username
 vars
 """.split())
 
+MaybeStr = typing.Optional[str]
+
 
 @functools.lru_cache(maxsize=32)
-def use_ansible():
+def use_ansible() -> bool:
     """
     :return: True if to use ansible internal functions to find var names
     """
@@ -107,7 +110,8 @@ def use_ansible():
 
 
 @functools.lru_cache(maxsize=32)
-def name_re(envvar=None, name_re_s=None):
+def name_re(envvar: MaybeStr = None, name_re_s: MaybeStr = None
+            ) -> typing.Pattern:
     """
     :return: compiled regex object to try match
     """
@@ -119,7 +123,9 @@ def name_re(envvar=None, name_re_s=None):
     return re.compile(os.environ.get(envvar, name_re_s), re.ASCII)
 
 
-def test_if_name_not_match(name=None, reg=None):
+def test_if_name_not_match(name: MaybeStr = None,
+                           reg: typing.Optional[typing.Pattern] = None
+                           ) -> bool:
     """Test if given name does *not* match the regex pattern.
 
     :param name: A str tries to try matching with `reg`
@@ -136,7 +142,12 @@ def test_if_name_not_match(name=None, reg=None):
     return reg.match(name) is None
 
 
-def nested_objs_items(obj):
+NestedDictType = typing.Union[typing.Mapping, typing.Iterable]
+
+
+def nested_objs_items(obj: NestedDictType
+                      ) -> typing.Generator[typing.Tuple[str, typing.Any],
+                                            NestedDictType, None]:
     """
     :param obj: A nested dict or dict-like (mapping) object or iterables
     :return: A whole list of dict key names including children's
@@ -163,7 +174,8 @@ def nested_objs_items(obj):
                     yield (ckey, cval)
 
 
-def nested_obj_keys(obj):
+def nested_obj_keys(obj: NestedDictType
+                    ) -> typing.Generator[str, NestedDictType, None]:
     """
     :param obj: A nested dict or dict-like (mapping) object or iterables
     :return: A whole list of dict key names including children's
@@ -176,21 +188,21 @@ def nested_obj_keys(obj):
         yield key
 
 
-def is_special_var_name(name):
+def is_special_var_name(name: str) -> bool:
     """
     :return: True if given `name` is a special variable name in ansible
     """
     return name in SPECIAL_VAR_NAMES or name.startswith("ansible_")
 
 
-def inventory_filepath():
+def inventory_filepath() -> str:
     """
     :return: A path to inventory file
     """
     return os.environ.get(INVENTORY_ENVVAR, INVENTORY_DEFAULT)
 
 
-def list_invalid_var_names_from_playbook(playbook):
+def list_invalid_var_names_from_playbook(playbook: str) -> typing.List[str]:
     """
     :param playbook: An abosolute path of the playbook file
     :return: A list of variable names don't match with valid regexp patterns
@@ -211,7 +223,10 @@ def list_invalid_var_names_from_playbook(playbook):
             if not is_special_var_name(v) and test_if_name_not_match(v)]
 
 
-def try_load_yaml_file(filepath):
+YamlDataType = typing.Union[typing.Mapping, typing.List]
+
+
+def try_load_yaml_file(filepath: str) -> typing.Optional[YamlDataType]:
     """
     :param filepath: YAML file path
     :return: Loaded data if it suceeded to load given YAML file or None
@@ -224,7 +239,11 @@ def try_load_yaml_file(filepath):
     return None
 
 
-def list_var_names_from_inventory_file_itr(inventory):
+VarGeneratorType = typing.Generator[str, str, None]
+
+
+def list_var_names_from_inventory_file_itr(inventory: str
+                                           ) -> VarGeneratorType:
     """
     .. note:: This function only lists var names in [*:vars] sections.
 
@@ -244,7 +263,9 @@ def list_var_names_from_inventory_file_itr(inventory):
         raise TypeError("It does not look an inventory file: " + inventory)
 
 
-def list_var_names_from_yaml_file_itr(filepath, vars_key=None):
+def list_var_names_from_yaml_file_itr(filepath: str,
+                                      vars_key: MaybeStr = None
+                                      ) -> VarGeneratorType:
     """
     :param files: A list of YAML file paths
     :param vars_key: A str to find variables like "vars"
@@ -264,7 +285,9 @@ def list_var_names_from_yaml_file_itr(filepath, vars_key=None):
                     yield ckey
 
 
-def list_var_names_from_yaml_files_itr(files, vars_key=None):
+def list_var_names_from_yaml_files_itr(files: typing.List[str],
+                                       vars_key: MaybeStr = None
+                                       ) -> VarGeneratorType:
     """
     :param files: A list of YAML file paths
     :param vars_key: A str to find variables like "vars"
@@ -277,7 +300,7 @@ def list_var_names_from_yaml_files_itr(files, vars_key=None):
             yield key
 
 
-def find_var_names_from_inventory_var_files(inventory):
+def find_var_names_from_inventory_var_files(inventory: str) -> typing.Set[str]:
     """
     .. note:: This function does not find var names in inventory file itself.
 
@@ -291,7 +314,7 @@ def find_var_names_from_inventory_var_files(inventory):
     return set(list_var_names_from_yaml_files_itr(hfs + gfs))
 
 
-def find_var_names_from_inventory():
+def find_var_names_from_inventory() -> typing.Set[str]:
     """
     .. note:: This function does not find var names in inventory file itself.
 
@@ -310,7 +333,7 @@ def find_var_names_from_inventory():
     return vnames
 
 
-def find_var_names_from_playbook_file(filepath):
+def find_var_names_from_playbook_file(filepath: str) -> typing.Set[str]:
     """
     :param filepath: A playbook file path
     :return: A set of variable names
@@ -318,7 +341,7 @@ def find_var_names_from_playbook_file(filepath):
     return set(list_var_names_from_yaml_file_itr(filepath, vars_key="vars"))
 
 
-def list_role_names_itr(playbook):
+def list_role_names_itr(playbook: str) -> VarGeneratorType:
     """
     :param playbook: An abosolute path of the playbook file
     :return: A generator yields role names
@@ -335,7 +358,9 @@ def list_role_names_itr(playbook):
                 yield role
 
 
-def find_var_names_from_role_files_itr(playbook, vars_file=None):
+def find_var_names_from_role_files_itr(playbook: str,
+                                       vars_file: MaybeStr = None
+                                       ) -> VarGeneratorType:
     """
     .. note::
        This function assume that roles' variables are only defined in
@@ -359,7 +384,8 @@ def find_var_names_from_role_files_itr(playbook, vars_file=None):
             yield vname
 
 
-def list_invalid_var_names_from_playbook_natively(playbook):
+def list_invalid_var_names_from_playbook_natively(playbook: str
+                                                  ) -> typing.List[str]:
     """
     :param playbook: An abosolute path of the playbook file
     :return: A list of variable names don't match with valid regexp patterns
@@ -372,7 +398,11 @@ def list_invalid_var_names_from_playbook_natively(playbook):
             if not is_special_var_name(v) and test_if_name_not_match(v)]
 
 
-def list_invalid_var_names_in_play(_self, file, _play):
+MatchType = typing.List[typing.Tuple[typing.Mapping, str]]
+
+
+def list_invalid_var_names_in_play(_self, file_: typing.Mapping, _play
+                                   ) -> MatchType:
     """
     .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
     """
@@ -381,8 +411,8 @@ def list_invalid_var_names_in_play(_self, file, _play):
     else:
         ffn = list_invalid_var_names_from_playbook_natively
 
-    if file["type"] == "playbook":
-        playbook = file["path"]
+    if file_["type"] == "playbook":
+        playbook = file_["path"]
 
         return [({"Playbook may have invalid var name[s]": playbook},
                  "Invalid var name: {}".format(n)) for n in ffn(playbook)]

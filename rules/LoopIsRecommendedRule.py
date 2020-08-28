@@ -4,20 +4,23 @@
 #
 """Lint rule class to test if tasks use with_* directives.
 """
+import typing
+
 try:
     from ansiblelint.rules import AnsibleLintRule
 except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID = "Custom_2020_5"
-_DESC = """loop is recommended and use of with_* may be repalced with it.
+_RULE_ID: str = "Custom_2020_5"
+_DESC: str = """loop is recommended and use of with_* may be repalced with it.
 See also:
 https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html
 """
 
 
-def with_directive_is_used(_self, _file, task):
+def is_directive_used(_self, _file: typing.Mapping, task: typing.Mapping
+                      ) -> typing.Union[str, bool]:
     """
     .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
     """
@@ -39,4 +42,4 @@ class LoopIsRecommendedRule(AnsibleLintRule):
     tags = ["readability", "formatting"]
     version_added = "4.2.99"  # dummy
 
-    matchtask = with_directive_is_used
+    matchtask = is_directive_used

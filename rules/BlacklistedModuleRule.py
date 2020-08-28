@@ -39,6 +39,7 @@ variables.
 """
 import functools
 import os
+import typing
 
 # .. note:: Maybe it depends on specific versions of ansible.
 try:
@@ -47,20 +48,21 @@ except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID = "Custom_2020_20"
-_ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+_RULE_ID: str = "Custom_2020_20"
+_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
 
-BLACKLISTED_MODULES_ENVVAR = _ENVVAR_PREFIX + "_BLACKLISTED_MODULES"
-BLACKLIST_ENVVAR = _ENVVAR_PREFIX + "_MODULES_BLACKLIST"
+BLACKLISTED_MODULES_ENVVAR: str = _ENVVAR_PREFIX + "_BLACKLISTED_MODULES"
+BLACKLIST_ENVVAR: str = _ENVVAR_PREFIX + "_MODULES_BLACKLIST"
 
-BLACKLISTED_MODULES = frozenset("""
+BLACKLISTED_MODULES: typing.Iterable = frozenset("""
 shell
 include
 """.split())
 
 
 @functools.lru_cache(maxsize=32)
-def blacklisted_modules(bmods=BLACKLISTED_MODULES):
+def blacklisted_modules(bmods: typing.Iterable = BLACKLISTED_MODULES
+                        ) -> typing.Iterable:
     """
     :return: True if to use ansible internal functions to find var names
     """
@@ -86,6 +88,7 @@ class BlacklistedModuleRule(AnsibleLintRule):
     Lint rule class to test if variables defined by users follow the namging
     conventions and guildelines.
     """
+    # id: typing.ClassVar[str] = ...
     id = _RULE_ID
     shortdesc = "Blacklisted modules"
     description = "Use of the blacklisted modules are prohivited."
@@ -93,7 +96,8 @@ class BlacklistedModuleRule(AnsibleLintRule):
     tags = ["modules"]  # temp
     version_added = "4.2.99"  # dummy
 
-    def matchtask(self, _file, task):
+    def matchtask(self, _file: typing.Mapping, task: typing.Mapping
+                  ) -> typing.Union[bool, str]:
         """Match with lines in a task definition
         """
         module = task["action"]["__ansible_module__"]

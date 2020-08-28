@@ -14,6 +14,7 @@ variable, _ANSIBLE_LINT_RULE_CUSTOM_2020_30_MAX_LINES.
 """
 import functools
 import os
+import typing
 
 try:
     from ansiblelint.rules import AnsibleLintRule
@@ -21,22 +22,22 @@ except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID = "Custom_2020_40"
-_ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+_RULE_ID: str = "Custom_2020_40"
+_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
 
-MAX_LINES_ENVVAR = _ENVVAR_PREFIX + "_MAX_LINES"
-MAX_LIENS = 500
+MAX_LINES_ENVVAR: str = _ENVVAR_PREFIX + "_MAX_LINES"
+MAX_LIENS: int = 500
 
 
 @functools.lru_cache(maxsize=32)
-def max_lines():
+def max_lines() -> int:
     """
     :return: A int denotes the max line of playbook and related files
     """
     return int(os.environ.get(MAX_LINES_ENVVAR, MAX_LIENS))
 
 
-def exceeds_max_lines(filepath, mlines=None):
+def exceeds_max_lines(filepath: str, mlines: int = 0) -> bool:
     """
     :param filepath: A str gives a file path
     :return: True if given file is not small and exceeds max lines
@@ -46,7 +47,7 @@ def exceeds_max_lines(filepath, mlines=None):
     >>> exceeds_max_lines(__file__, 10)
     True
     """
-    if not mlines:
+    if mlines <= 0:
         mlines = max_lines()
 
     with open(filepath) as fobj:
@@ -59,11 +60,12 @@ def exceeds_max_lines(filepath, mlines=None):
     return False
 
 
-def _matchplay(_self, file, _play):
+def _matchplay(_self, file_: typing.Mapping, _play: typing.Mapping
+               ) -> typing.List[typing.Tuple[typing.Mapping, str]]:
     """Test playbook files.
     """
-    if file["type"] == "playbook":
-        fpath = file["path"]
+    if file_["type"] == "playbook":
+        fpath = file_["path"]
 
         if exceeds_max_lines(fpath):
             return [({"Playbook[s] may be too large": fpath},
@@ -71,11 +73,12 @@ def _matchplay(_self, file, _play):
     return []
 
 
-def _match(_self, file, _task):
+def _match(_self, file_: typing.Mapping, _task: typing.Mapping
+           ) -> typing.Union[str, bool]:
     """Test task files.
     """
-    if file["type"] == "tasks":
-        fpath = file["path"]
+    if file_["type"] == "tasks":
+        fpath = file_["path"]
         if exceeds_max_lines(fpath):
             return "Too large: {}".format(fpath)
 

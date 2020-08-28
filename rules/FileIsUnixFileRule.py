@@ -8,6 +8,7 @@ LF, not CR+LF nor CR.
 """
 import functools
 import os.path
+import typing
 
 try:
     from ansiblelint.rules import AnsibleLintRule
@@ -15,11 +16,11 @@ except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID = "Custom_2020_70"
+_RULE_ID: str = "Custom_2020_70"
 
 
 @functools.lru_cache(maxsize=32)
-def is_not_unix_file(filepath):
+def is_not_unix_file(filepath: str) -> bool:
     """Test if given file does not end only with LF.
 
     .. seealso:: https://docs.python.org/3/library/functions.html#open
@@ -28,7 +29,8 @@ def is_not_unix_file(filepath):
                if line.endswith("\r\n") or line.endswith("\r"))
 
 
-def _matchplay(_self, file_, _play):
+def _matchplay(_self, file_: typing.Mapping, _play: typing.Mapping
+               ) -> typing.List[typing.Tuple[typing.Mapping, str]]:
     """Test playbook is Unix file.
     """
     fpath = file_["path"]
@@ -38,7 +40,8 @@ def _matchplay(_self, file_, _play):
     return []
 
 
-def _match(_self, file_, _task):
+def _match(_self, file_: typing.Mapping, _task: typing.Mapping
+           ) -> typing.Union[str, bool]:
     """Test task file is Unix file.
     """
     fpath = file_["path"]

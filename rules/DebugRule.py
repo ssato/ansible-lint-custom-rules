@@ -4,9 +4,9 @@
 #
 """Lint rule class for debug use.
 """
-import collections
 import functools
 import os
+import typing
 
 try:
     from ansiblelint.rules import AnsibleLintRule
@@ -14,21 +14,28 @@ except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID = "Custom_2020_99"
-_DESC = "Custom rule class for debug use"
+_RULE_ID: str = "Custom_2020_99"
+_DESC: str = "Custom rule class for debug use"
 
-_ENVVAR_PREFIX = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
-ENABLE_THIS_RULE_ENVVAR = _ENVVAR_PREFIX + "_DEBUG"
+_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+ENABLE_THIS_RULE_ENVVAR: str = _ENVVAR_PREFIX + "_DEBUG"
 
-MATCHED = collections.namedtuple("Matched", "lines tasks plays".split())
+Matched = typing.NamedTuple("Matched",
+                            (("lines", typing.Set[str]),
+                             ("tasks", typing.Set[str]),
+                             ("plays", typing.Set[str])))
 
 
 @functools.lru_cache(maxsize=64)
-def is_enabled(default=False):
+def is_enabled(default: bool = False) -> bool:
     """
     :param default: default regexp object to try match with task names
     """
     return bool(os.environ.get(ENABLE_THIS_RULE_ENVVAR, default))
+
+
+MResType = typing.Union[bool, str]
+MPResType = typing.Union[typing.Tuple[str, str], bool]
 
 
 class DebugRule(AnsibleLintRule):
@@ -40,9 +47,9 @@ class DebugRule(AnsibleLintRule):
     tags = ["debug"]
     version_added = "4.2.99"  # dummy
 
-    matched = MATCHED(set(), set(), set())
+    matched = Matched(set(), set(), set())
 
-    def match(self, file_, text):
+    def match(self, file_: typing.Mapping, text: str) -> MResType:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
 
@@ -59,7 +66,8 @@ class DebugRule(AnsibleLintRule):
 
         return False
 
-    def matchtask(self, file_, task):
+    def matchtask(self, file_: typing.Mapping, task: typing.Mapping
+                  ) -> MResType:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
 
@@ -76,7 +84,8 @@ class DebugRule(AnsibleLintRule):
 
         return False
 
-    def matchplay(self, file_, play):
+    def matchplay(self, file_: typing.Mapping, play: typing.Mapping
+                  ) -> MPResType:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
 
