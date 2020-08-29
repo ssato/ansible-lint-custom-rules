@@ -29,7 +29,7 @@ class TestTaskHasValidNamePattern(C.AnsibleLintRuleTestCase):
             self.assertEqual(0, len(res), res)
 
 
-class TestCliTaskHasValidNamePatternRule(C.CliTestCasesForAnsibleLintRule):
+class TestCliTaskHasValidNamePatternRule(C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, TaskHasValidNamePatternRule.
     """
     rule = TT.TaskHasValidNamePatternRule()

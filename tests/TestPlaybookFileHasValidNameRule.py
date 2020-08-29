@@ -29,7 +29,7 @@ class TestPlaybookFileHasValidNameRule(C.AnsibleLintRuleTestCase):
             self.assertTrue(len(res) > 0, res)
 
 
-class TestCliPlaybookFileHasValidNameRule(C.CliTestCasesForAnsibleLintRule):
+class TestCliPlaybookFileHasValidNameRule(C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, PlaybookFileHasValidNameRule.
     """
     rule = TT.PlaybookFileHasValidNameRule()

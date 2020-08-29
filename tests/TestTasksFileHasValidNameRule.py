@@ -29,7 +29,7 @@ class TestTasksFileHasValidNameRule(C.AnsibleLintRuleTestCase):
             self.assertEqual(0, len(res), res)
 
 
-class TestCliTasksFileHasValidNameRule(C.CliTestCasesForAnsibleLintRule):
+class TestCliTasksFileHasValidNameRule(C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, TasksFileHasValidNameRule.
     """
     rule = TT.TasksFileHasValidNameRule()

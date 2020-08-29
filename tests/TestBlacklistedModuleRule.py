@@ -55,7 +55,7 @@ class TestBlacklistedModuleRule(C.AnsibleLintRuleTestCase):
             self.assertTrue(len(res) > 0, res)
 
 
-class TestCliBlacklistedModuleRule(C.CliTestCasesForAnsibleLintRule):
+class TestCliBlacklistedModuleRule(C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, BlacklistedModuleRule.
     """
     rule = TT.BlacklistedModuleRule()

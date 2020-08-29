@@ -134,7 +134,7 @@ class TestVariablesNamingRule(C.AnsibleLintRuleTestCase):
             self.assertTrue(len(res) > 0, res)
 
 
-class TestCliVariablesNamingRule(C.CliTestCasesForAnsibleLintRule):
+class TestCliVariablesNamingRule(C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, VariablesNamingRule.
     """
     rule = TT.VariablesNamingRule()

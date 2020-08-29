@@ -94,7 +94,7 @@ def _rule_ids_itr():
             yield rule.id
 
 
-class CliTestCasesForAnsibleLintRule(unittest.TestCase):
+class AnsibleLintRuleCliTestCase(unittest.TestCase):
     """Run ok and ng CLI test cases automatically.
     """
 
@@ -103,7 +103,7 @@ class CliTestCasesForAnsibleLintRule(unittest.TestCase):
     clear_fn = False
 
     def setUp(self):
-        super(CliTestCasesForAnsibleLintRule, self).setUp()
+        super(AnsibleLintRuleCliTestCase, self).setUp()
         if getattr(self, "clear_fn", False) and callable(self.clear_fn):
             self.clear_fn()
 

@@ -31,7 +31,7 @@ class TestDebugRule(C.AnsibleLintRuleTestCase):
             self.assertTrue(len(res) > 0, res)
 
 
-class TestCliDebugRule(C.CliTestCasesForAnsibleLintRule):
+class TestCliDebugRule(C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, DebugRule.
     """
     rule = TT.DebugRule()

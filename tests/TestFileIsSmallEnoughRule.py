@@ -29,7 +29,7 @@ class TestFileIsSmallEnoughRule(C.AnsibleLintRuleTestCase):
             self.assertTrue(len(res) > 0, res)
 
 
-class TestCliFileIsSmallEnoughRule(C.CliTestCasesForAnsibleLintRule):
+class TestCliFileIsSmallEnoughRule(C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, FileIsSmallEnoughRule.
     """
     rule = TT.FileIsSmallEnoughRule()
