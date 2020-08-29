@@ -91,7 +91,7 @@ class TestFunctions(C.unittest.TestCase):
         self.assertEqual(res, ref, res)
 
 
-class TestVariablesNamingRule(C.AutoTestCasesForAnsibleLintRule):
+class TestVariablesNamingRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, VariablesNamingRule.
     """
     rule = TT.VariablesNamingRule()

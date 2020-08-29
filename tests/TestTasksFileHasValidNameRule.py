@@ -14,7 +14,7 @@ from tests import common as C
 _ENV_PATCH = {TT.NAME_RE_ENVVAR: "foo.+"}
 
 
-class TestTasksFileHasValidNameRule(C.AutoTestCasesForAnsibleLintRule):
+class TestTasksFileHasValidNameRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule, TasksFileHasValidName.
     """
     rule = TT.TasksFileHasValidNameRule()

@@ -14,7 +14,7 @@ from tests import common as C
 _ENV_PATCH = {TT.FILENAME_ENVVAR: "\\S+NEVER_MATCH"}
 
 
-class TestPlaybookFileHasValidNameRule(C.AutoTestCasesForAnsibleLintRule):
+class TestPlaybookFileHasValidNameRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, PlaybookFileHasValidNameRule.
     """
     rule = TT.PlaybookFileHasValidNameRule()

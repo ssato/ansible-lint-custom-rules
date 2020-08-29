@@ -14,7 +14,7 @@ from tests import common as C
 _ENV_PATCH = {TT.ENABLE_THIS_RULE_ENVVAR: "1"}
 
 
-class TestDebugRule(C.AutoTestCasesForAnsibleLintRule):
+class TestDebugRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, DebugRule.
     """
     rule = TT.DebugRule()

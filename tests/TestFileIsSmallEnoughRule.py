@@ -14,7 +14,7 @@ from tests import common as C
 _ENV_PATCH = {TT.MAX_LINES_ENVVAR: "3"}
 
 
-class TestFileIsSmallEnoughRule(C.AutoTestCasesForAnsibleLintRule):
+class TestFileIsSmallEnoughRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, FileIsSmallEnoughRule.
     """
     rule = TT.FileIsSmallEnoughRule()

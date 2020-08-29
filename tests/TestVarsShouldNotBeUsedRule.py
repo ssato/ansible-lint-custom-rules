@@ -8,7 +8,7 @@ from rules import VarsShouldNotBeUsedRule as TT
 from tests import common as C
 
 
-class TestVarsShouldNotBeUsedRule(C.AutoTestCasesForAnsibleLintRule):
+class TestVarsShouldNotBeUsedRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, VarsShouldNotBeUsedRule.
     """
     rule = TT.VarsShouldNotBeUsedRule()

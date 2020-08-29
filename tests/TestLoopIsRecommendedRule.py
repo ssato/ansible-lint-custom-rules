@@ -8,7 +8,7 @@ from rules import LoopIsRecommendedRule as TT
 from tests import common as C
 
 
-class TestLoopIsRecommendedRule(C.AutoTestCasesForAnsibleLintRule):
+class TestLoopIsRecommendedRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, LoopIsRecommendedRule.
     """
     rule = TT.LoopIsRecommendedRule()

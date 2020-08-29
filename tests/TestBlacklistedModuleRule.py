@@ -38,7 +38,7 @@ class Test_functions(C.unittest.TestCase):
         self.assertEqual(TT.blacklisted_modules(), ["ping"])
 
 
-class TestBlacklistedModuleRule(C.AutoTestCasesForAnsibleLintRule):
+class TestBlacklistedModuleRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, BlacklistedModuleRule.
     """
     rule = TT.BlacklistedModuleRule()

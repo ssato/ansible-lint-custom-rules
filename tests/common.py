@@ -39,18 +39,19 @@ def list_res_files(relpath_pat):
     return sorted(glob.glob(os.path.join(CURDIR, "res", relpath_pat)))
 
 
-class AnsibleLintRuleTestBase(unittest.TestCase):
-    """Base class to test lint rules.
+class AnsibleLintRuleTestCase(unittest.TestCase):
+    """Base class to test ansible-lint rules.
     """
 
     rule = None
+    prefix = None
 
     def setUp(self):
         """Initialize lint rules collection.
         """
         # Default rules only
         self.rules = RulesCollection()
-        self.rules.register(self.rule)  # Register the rule explicitly.
+        self.rules.register(self.rule)  # Register the rule to test explicitly.
 
     def _lint_results_for_playbooks_itr(self, playbook_fn_patterns):
         """
@@ -61,14 +62,6 @@ class AnsibleLintRuleTestBase(unittest.TestCase):
             with open(filepath) as fobj:
                 runner = Runner(self.rules, fobj.name, [], [], [])
                 yield runner.run()
-
-
-class AutoTestCasesForAnsibleLintRule(AnsibleLintRuleTestBase):
-    """Run ok and ng test cases automatically.
-    """
-
-    rule = None
-    prefix = None
 
     def test_10_ok_cases(self):
         if self.rule is None or self.prefix is None:

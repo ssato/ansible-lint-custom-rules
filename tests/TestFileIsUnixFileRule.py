@@ -8,7 +8,7 @@ from rules import FileIsUnixFileRule as TT
 from tests import common as C
 
 
-class TestFileIsUnixFileRule(C.AutoTestCasesForAnsibleLintRule):
+class TestFileIsUnixFileRule(C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, FileIsUnixFileRule.
     """
     rule = TT.FileIsUnixFileRule()
