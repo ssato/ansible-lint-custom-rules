@@ -80,9 +80,6 @@ class AnsibleLintRuleTestCase(unittest.TestCase):
             self.assertTrue(len(res) > 0, res)  # something goes wrong
 
 
-_LIST_RULE_ID_RE = re.compile(r"^(?:([^: ]+):|([A-Z0-9]\S+)) .+")
-
-
 def _rule_ids_itr():
     """
     Yield custom rule IDs using ansiblelint.rules.RulesCollection.
