@@ -7,7 +7,6 @@
 import glob
 import os.path
 import os
-import re
 import subprocess
 import unittest
 
