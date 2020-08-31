@@ -5,6 +5,8 @@
 """
 Lint rule class to test if files are UNIX files of which lines end only with
 LF, not CR+LF nor CR.
+
+.. seealso:: https://en.wikipedia.org/wiki/Newline
 """
 import functools
 import os.path
