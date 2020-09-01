@@ -146,11 +146,9 @@ NestedDictType = typing.Union[typing.Mapping, typing.Iterable]
 
 
 def nested_objs_items(obj: NestedDictType
-                      ) -> typing.Generator[typing.Tuple[str, typing.Any],
-                                            NestedDictType, None]:
+                      ) -> typing.Iterator[typing.Tuple[str, typing.Any]]:
     """
     :param obj: A nested dict or dict-like (mapping) object or iterables
-    :return: A whole list of dict key names including children's
 
     >>> nd0 = dict(a=1, b=dict(c=2, d=dict(e=3, f=dict(g=4))))
     >>> res = list(nested_objs_items(nd0))
@@ -174,11 +172,9 @@ def nested_objs_items(obj: NestedDictType
                     yield (ckey, cval)
 
 
-def nested_obj_keys(obj: NestedDictType
-                    ) -> typing.Generator[str, NestedDictType, None]:
+def nested_obj_keys(obj: NestedDictType) -> typing.Iterator[str]:
     """
     :param obj: A nested dict or dict-like (mapping) object or iterables
-    :return: A whole list of dict key names including children's
 
     >>> nd0 = dict(a=1, b=dict(c=2, d=dict(e=3, f=dict(g=4))))
     >>> list(nested_obj_keys(nd0))
@@ -239,16 +235,12 @@ def try_load_yaml_file(filepath: str) -> typing.Optional[YamlDataType]:
     return None
 
 
-VarGeneratorType = typing.Generator[str, str, None]
-
-
 def list_var_names_from_inventory_file_itr(inventory: str
-                                           ) -> VarGeneratorType:
+                                           ) -> typing.Iterator[str]:
     """
     .. note:: This function only lists var names in [*:vars] sections.
 
     :param inventory: A inventory file path
-    :return: A generator yields a variable names from the inventory file
     """
     psr = configparser.ConfigParser()
     psr.optionxform = str  # Preserve (upper) cases
@@ -265,12 +257,10 @@ def list_var_names_from_inventory_file_itr(inventory: str
 
 def list_var_names_from_yaml_file_itr(filepath: str,
                                       vars_key: MaybeStr = None
-                                      ) -> VarGeneratorType:
+                                      ) -> typing.Iterator[str]:
     """
     :param files: A list of YAML file paths
     :param vars_key: A str to find variables like "vars"
-
-    :return: A generator yields a variable names in the YAML files
     """
     obj = try_load_yaml_file(filepath)
     if not obj:
@@ -287,12 +277,10 @@ def list_var_names_from_yaml_file_itr(filepath: str,
 
 def list_var_names_from_yaml_files_itr(files: typing.List[str],
                                        vars_key: MaybeStr = None
-                                       ) -> VarGeneratorType:
+                                       ) -> typing.Iterator[str]:
     """
     :param files: A list of YAML file paths
     :param vars_key: A str to find variables like "vars"
-
-    :return: A generator yields a variable names in the YAML files
     """
     for filepath in files:
         for key in list_var_names_from_yaml_file_itr(filepath,
@@ -341,10 +329,9 @@ def find_var_names_from_playbook_file(filepath: str) -> typing.Set[str]:
     return set(list_var_names_from_yaml_file_itr(filepath, vars_key="vars"))
 
 
-def list_role_names_itr(playbook: str) -> VarGeneratorType:
+def list_role_names_itr(playbook: str) -> typing.Iterator[str]:
     """
     :param playbook: An abosolute path of the playbook file
-    :return: A generator yields role names
     """
     plays = try_load_yaml_file(playbook)
     if not plays:
@@ -360,7 +347,7 @@ def list_role_names_itr(playbook: str) -> VarGeneratorType:
 
 def find_var_names_from_role_files_itr(playbook: str,
                                        vars_file: MaybeStr = None
-                                       ) -> VarGeneratorType:
+                                       ) -> typing.Iterator[str]:
     """
     .. note::
        This function assume that roles' variables are only defined in
@@ -368,8 +355,6 @@ def find_var_names_from_role_files_itr(playbook: str,
 
     :param playbook: An abosolute path of the playbook file
     :param vars_file: File glob pattern or file name which define[s] vars
-
-    :return: A generator yields variable names from roles' var files
     """
     if vars_file is None:
         vars_file = "*.yml"
