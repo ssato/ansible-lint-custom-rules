@@ -7,8 +7,6 @@
 import os
 import mock
 
-import pytest
-
 from rules import NoEmptyDataFilesRule as TT
 from tests import common as C
 
