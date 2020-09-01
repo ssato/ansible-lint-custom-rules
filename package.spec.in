@@ -54,5 +54,5 @@ tox -e py$(python -c "import sys; sys.stdout.write(sys.version[:3].replace('.', 
 %{python3_sitelib}/*
 
 %changelog
-* Wed Aug 26 2020 Satoru SATOH <ssato@redhat.com> - 0.1.0-1
-- Initial packaging
+* Tue Sep  1 2020 Satoru SATOH <ssato@redhat.com> - 0.1.0-1
+- Initial release
