@@ -1,0 +1,12 @@
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Try ping
+      ping:
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - no_empty_data_files_rule_ok_1
