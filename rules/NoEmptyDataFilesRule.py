@@ -5,7 +5,7 @@
 r"""
 Lint rule class to test if there are YAML files have no data.
 
-This mplementation assumes target files are under <playbook_dir>/ with '.yml'
+This implementation assumes target files are under <playbook_dir>/ with '.yml'
 extensions by default. Users can change this with the environment variable
 _ANSIBLE_LINT_RULE_CUSTOM_2020_50_YAML_EXT, for example,
 
