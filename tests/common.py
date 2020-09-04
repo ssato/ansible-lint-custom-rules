@@ -4,9 +4,8 @@
 # pylint: disable=invalid-name,missing-function-docstring
 """Common utility test routines and classes.
 """
-import glob
-import os.path
 import os
+import pathlib
 import subprocess
 import unittest
 
@@ -22,11 +21,10 @@ except ImportError:
     from ansiblelint import Runner
 
 
-CURDIR = os.path.dirname(__file__)
-RULES_DIR = os.path.join(CURDIR, "..", "rules")
-
-DEFAULT_RULES_DIR = os.path.join(
-    os.path.dirname(ansiblelint.utils.__file__), "rules"
+CURDIR = pathlib.Path(__file__).parent
+RULES_DIR = str(CURDIR.parent / "rules")
+DEFAULT_RULES_DIR = str(
+    pathlib.Path(ansiblelint.utils.__file__).parent / "rules"
 )
 
 
@@ -35,7 +33,7 @@ def list_res_files(relpath_pat):
     :param relpath_pat: Glob pattern to list files, e.g. a_*_ok.yml
     :return: A list of absolute file paths in <curdir>/res/
     """
-    return sorted(glob.glob(os.path.join(CURDIR, "res", relpath_pat)))
+    return sorted(str(p) for p in CURDIR.glob("res/{}".format(relpath_pat)))
 
 
 class AnsibleLintRuleTestCase(unittest.TestCase):
