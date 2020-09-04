@@ -98,9 +98,6 @@ def _rule_ids_itr():
 class AnsibleLintRuleCliTestCase(AnsibleLintRuleTestCase):
     """Run ok and ng CLI test cases automatically.
     """
-
-    rule = None
-    prefix = ''
     clear_fn = None
 
     def setUp(self):
