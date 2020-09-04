@@ -40,12 +40,7 @@ class TestNoEmptyDataFilesRule(C.AnsibleLintRuleTestCase):
     @mock.patch.dict(os.environ, _ENV_PATCH)
     def test_30_ok_cases__no_data(self):
         TT.is_yml_file_has_some_data.cache_clear()
-
-        pats = self.prefix + "*ng*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            # Uncomment this to force fail and dump debug messages:
-            # self.assertTrue(not res, res)
-            self.assertEqual(len(res), 0, res)
+        self.lint(True, self.path_pattern("ng"))
 
 
 class TestCliNoEmptyDataFilesRule(C.AnsibleLintRuleCliTestCase):

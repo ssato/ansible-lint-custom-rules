@@ -21,14 +21,9 @@ class TestDebugRule(C.AnsibleLintRuleTestCase):
     prefix = "DebugRule"
 
     @mock.patch.dict(os.environ, _ENV_PATCH)
-    def test_debug__ng(self):
+    def test_30_ng_cases__env(self):
         TT.is_enabled.cache_clear()
-
-        pats = self.prefix + "*ok*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            # Uncomment this to force fail and dump debug messages:
-            # self.assertTrue(not res, res)
-            self.assertTrue(len(res) > 0, res)
+        self.lint(False, self.path_pattern())
 
 
 class TestCliDebugRule(C.AnsibleLintRuleCliTestCase):

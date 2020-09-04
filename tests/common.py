@@ -50,30 +50,35 @@ class AnsibleLintRuleTestCase(unittest.TestCase):
         self.rules = RulesCollection()
         self.rules.register(self.rule)  # Register the rule to test explicitly.
 
-    def _lint_results_for_playbooks_itr(self, playbook_fn_patterns):
+    def path_pattern(self, rtype="ok"):
+        """
+        Make up a file (glob) path pattern.
+        """
+        return "{}*{}*.yml".format(self.prefix, rtype)
+
+    def lint(self, expected_success=True, ppattern=None):
         """
         :param playbook_fn_patterns: Glob filenames pattern to find playbooks
         """
-        playbooks = list_res_files(playbook_fn_patterns)
-        for filepath in playbooks:
+        if self.rule is None or self.prefix is None:
+            return
+
+        if ppattern is None or not ppattern:
+            ppattern = self.path_pattern("ok" if expected_success else "ng")
+
+        for filepath in list_res_files(ppattern):
             runner = Runner(self.rules, filepath, [], [], [])
-            yield runner.run()
+            res = runner.run()
+            if expected_success:
+                self.assertEqual(0, len(res), res)  # No errors
+            else:
+                self.assertTrue(len(res) > 0, res)  # Something went wrong
 
     def test_10_ok_cases(self):
-        if self.rule is None or self.prefix is None:
-            return
-
-        pats = self.prefix + "*ok*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            self.assertEqual(0, len(res), res)  # No errors
+        self.lint()
 
     def test_20_ng_cases(self):
-        if self.rule is None or self.prefix is None:
-            return
-
-        pats = self.prefix + "*ng*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            self.assertTrue(len(res) > 0, res)  # something goes wrong
+        self.lint(False)
 
 
 def _rule_ids_itr():

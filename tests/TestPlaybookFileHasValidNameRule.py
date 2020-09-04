@@ -21,12 +21,9 @@ class TestPlaybookFileHasValidNameRule(C.AnsibleLintRuleTestCase):
     prefix = "PlaybookFileHasValidNameRule"
 
     @mock.patch.dict(os.environ, _ENV_PATCH)
-    def test_30_playbook_file_has_valid_name__ng_2(self):
+    def test_30_playbook_file_has_valid_name__ng(self):
         TT.filename_re.cache_clear()
-
-        pats = self.prefix + "*ok*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            self.assertTrue(len(res) > 0, res)
+        self.lint(False, self.path_pattern())
 
 
 class TestCliPlaybookFileHasValidNameRule(C.AnsibleLintRuleCliTestCase):

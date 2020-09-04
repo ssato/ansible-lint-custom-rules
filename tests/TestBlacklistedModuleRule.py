@@ -50,9 +50,7 @@ class TestBlacklistedModuleRule(C.AnsibleLintRuleTestCase):
 
     @mock.patch.dict(os.environ, _ENV_PATCH_1)
     def test_30_ng_cases__env(self):
-        pats = self.prefix + "*ok*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            self.assertTrue(len(res) > 0, res)
+        self.lint(False, self.path_pattern())
 
 
 class TestCliBlacklistedModuleRule(C.AnsibleLintRuleCliTestCase):

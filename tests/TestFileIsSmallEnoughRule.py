@@ -23,10 +23,7 @@ class TestFileIsSmallEnoughRule(C.AnsibleLintRuleTestCase):
     @mock.patch.dict(os.environ, _ENV_PATCH)
     def test_20_ng_cases(self):
         TT.max_lines.cache_clear()  # clear the memoized results.
-
-        pats = self.prefix + "*ok*.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            self.assertTrue(len(res) > 0, res)
+        self.lint(False, self.path_pattern())
 
 
 class TestCliFileIsSmallEnoughRule(C.AnsibleLintRuleCliTestCase):

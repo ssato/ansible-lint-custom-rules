@@ -23,10 +23,7 @@ class TestTasksFileHasValidNameRule(C.AnsibleLintRuleTestCase):
     @mock.patch.dict(os.environ, _ENV_PATCH)
     def test_tasks_file_has_valid_name__ok__env(self):
         TT.name_re.cache_clear()
-
-        pats = self.prefix + "_ng_1.yml"
-        for res in self._lint_results_for_playbooks_itr(pats):
-            self.assertEqual(0, len(res), res)
+        self.lint(True, self.path_pattern("ng_1"))
 
 
 class TestCliTasksFileHasValidNameRule(C.AnsibleLintRuleCliTestCase):
