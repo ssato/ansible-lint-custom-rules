@@ -4,16 +4,17 @@
 # pylint: disable=invalid-name
 """Test cases for the rule, BlacklistedModuleRule.
 """
-import mock
 import os.path
 import os
+
+import mock
 
 from rules import BlacklistedModuleRule as TT
 from tests import common as C
 
 
-_BLACKLIST_PATH = os.path.join(
-    C.CURDIR, "res", "BlacklistedModuleRule_blacklist.txt"
+_BLACKLIST_PATH = str(
+    C.CURDIR / "res" / "BlacklistedModuleRule_blacklist.txt"
 )
 _ENV_PATCH_0 = {TT.BLACKLIST_ENVVAR: _BLACKLIST_PATH}
 _ENV_PATCH_1 = {TT.BLACKLISTED_MODULES_ENVVAR: "ping"}
@@ -61,5 +62,4 @@ class TestCliBlacklistedModuleRule(C.AnsibleLintRuleCliTestCase):
     clear_fn = TT.blacklisted_modules.cache_clear
 
     def test_30_ng_cases__env(self):
-        self._run_for_playbooks(self.prefix + "*ok*.yml", False,
-                                env=_ENV_PATCH_1)
+        self.lint(False, "ok", _ENV_PATCH_1)

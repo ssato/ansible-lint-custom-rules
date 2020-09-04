@@ -34,5 +34,4 @@ class TestCliTaskHasValidNamePatternRule(C.AnsibleLintRuleCliTestCase):
     clear_fn = TT.task_name_re.cache_clear
 
     def test_30_ok_cases__env(self):
-        self._run_for_playbooks(self.prefix + "*_ng_1*.yml", True,
-                                env=_ENV_PATCH)
+        self.lint(True, "ng_1", _ENV_PATCH)

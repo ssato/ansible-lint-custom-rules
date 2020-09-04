@@ -34,5 +34,4 @@ class TestCliDebugRule(C.AnsibleLintRuleCliTestCase):
     clear_fn = TT.is_enabled.cache_clear
 
     def test_30_ng_cases__env(self):
-        self._run_for_playbooks(self.prefix + "*ok*.yml", False,
-                                env=_ENV_PATCH)
+        self.lint(False, "ok", _ENV_PATCH)

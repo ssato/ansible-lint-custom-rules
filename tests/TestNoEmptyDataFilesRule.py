@@ -48,9 +48,7 @@ class TestCliNoEmptyDataFilesRule(C.AnsibleLintRuleCliTestCase):
     """
     rule = TT.NoEmptyDataFilesRule()
     prefix = "NoEmptyDataFilesRule"
-
-    def clear_fn(self):
-        TT.is_yml_file_has_some_data.cache_clear()
+    clear_fn = TT.is_yml_file_has_some_data.cache_clear
 
     def test_30_ok_cases__env(self):
-        self._run_for_playbooks(self.prefix + "*ng*.yml", env=_ENV_PATCH)
+        self.lint(True, "ng", _ENV_PATCH)

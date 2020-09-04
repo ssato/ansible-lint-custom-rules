@@ -95,16 +95,15 @@ def _rule_ids_itr():
             yield rule.id
 
 
-class AnsibleLintRuleCliTestCase(unittest.TestCase):
+class AnsibleLintRuleCliTestCase(AnsibleLintRuleTestCase):
     """Run ok and ng CLI test cases automatically.
     """
 
     rule = None
     prefix = ''
-    clear_fn = False
+    clear_fn = None
 
     def setUp(self):
-        super(AnsibleLintRuleCliTestCase, self).setUp()
         if getattr(self, "clear_fn", False) and callable(self.clear_fn):
             self.clear_fn()
 
@@ -113,31 +112,28 @@ class AnsibleLintRuleCliTestCase(unittest.TestCase):
                              if rid != getattr(self.rule, "id", None)))
         self.cmd = "ansible-lint -r {} {}".format(RULES_DIR, excl_opt).split()
 
-    def _run_for_playbooks(self, playbook_fn_patterns, res_ok=True, env=None):
+    def lint(self, expected_success=True, ppattern=None, env=None):
         """
-        :param playbook_fn_patterns: Glob filenames pattern to find playbooks
+        Run ansible-lint with given arguments in given env.
         """
+        if self.rule is None or not self.prefix:
+            return
+
+        if ppattern is None or not ppattern:
+            ppattern = self.path_pattern("ok" if expected_success else "ng")
+
         if env:
             os.environ.update(**env)
 
-        playbooks = list_res_files(playbook_fn_patterns)
-        for filepath in playbooks:
+        for filepath in list_res_files(ppattern):
             res = subprocess.run(
                 self.cmd + [filepath], stdout=subprocess.PIPE, check=False,
                 env=os.environ
             )
-            if res_ok:
+            if expected_success:
                 self.assertEqual(res.returncode, 0, res.stdout.decode("utf-8"))
             else:
                 self.assertNotEqual(res.returncode, 0,
                                     res.stdout.decode("utf-8"))
-
-    def test_10_ok_cases(self):
-        if self.prefix:
-            self._run_for_playbooks(self.prefix + "*ok*.yml")
-
-    def test_20_ng_cases(self):
-        if self.prefix:
-            self._run_for_playbooks(self.prefix + "*ng*.yml", False)
 
 # vim:sw=4:ts=4:et:

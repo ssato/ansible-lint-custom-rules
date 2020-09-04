@@ -128,11 +128,9 @@ class TestCliVariablesNamingRule(C.AnsibleLintRuleCliTestCase):
     rule = TT.VariablesNamingRule()
     prefix = "VariablesNamingRule"
 
-    def setUp(self):
-        super(TestCliVariablesNamingRule, self).setUp()
+    def clear_fn(self):
         TT.use_ansible.cache_clear()
         TT.name_re.cache_clear()
 
     def test_30_ng_cases__env(self):
-        self._run_for_playbooks(self.prefix + "*ok*.yml", False,
-                                env=_ENV_PATCH_RE)
+        self.lint(False, "ok", _ENV_PATCH_RE)
