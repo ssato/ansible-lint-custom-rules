@@ -56,9 +56,8 @@ class AnsibleLintRuleTestCase(unittest.TestCase):
         """
         playbooks = list_res_files(playbook_fn_patterns)
         for filepath in playbooks:
-            with open(filepath) as fobj:
-                runner = Runner(self.rules, fobj.name, [], [], [])
-                yield runner.run()
+            runner = Runner(self.rules, filepath, [], [], [])
+            yield runner.run()
 
     def test_10_ok_cases(self):
         if self.rule is None or self.prefix is None:
