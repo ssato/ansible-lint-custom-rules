@@ -32,7 +32,7 @@ def vars_msg(line: str, directives=VARS_DIRECTIVES) -> str:
     return "{} are forbidden: {}".format(" and ".join(directives), line)
 
 
-def check_vars_is_used(line: str, directives=VARS_DIRECTIVES
+def check_vars_is_used(_self, _file, line: str, directives=VARS_DIRECTIVES
                        ) -> typing.Union[str, bool]:
     """
     .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
@@ -56,8 +56,4 @@ class VarsShouldNotBeUsedRule(AnsibleLintRule):
     tags = ["readability", "formatting"]
     version_added = "4.2.99"  # dummy
 
-    def match(self, _file, line: str) -> typing.Union[str, bool]:
-        """
-        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
-        """
-        return check_vars_is_used(line)
+    match = check_vars_is_used
