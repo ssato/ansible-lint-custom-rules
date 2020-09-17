@@ -8,15 +8,19 @@ from rules import VarsShouldNotBeUsedRule as TT
 from tests import common as C
 
 
-class TestVarsShouldNotBeUsedRule(C.AnsibleLintRuleTestCase):
+class Base(object):
+    """Base Mixin class."""
+    prefix = "VarsShouldNotBeUsedRule"
+    rule = getattr(TT, prefix)()
+
+
+class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, VarsShouldNotBeUsedRule.
     """
-    rule = TT.VarsShouldNotBeUsedRule()
-    prefix = "VarsShouldNotBeUsedRule"
+    pass
 
 
-class TestCliVarsShouldNotBeUsedRule(C.AnsibleLintRuleCliTestCase):
+class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, VarsShouldNotBeUsedRule.
     """
-    rule = TT.VarsShouldNotBeUsedRule()
-    prefix = "VarsShouldNotBeUsedRule"
+    pass

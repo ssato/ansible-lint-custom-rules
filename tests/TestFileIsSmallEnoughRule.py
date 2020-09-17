@@ -14,27 +14,23 @@ from tests import common as C
 _ENV_PATCH = {TT.MAX_LINES_ENVVAR: "3"}
 
 
-class TestFileIsSmallEnoughRule(C.AnsibleLintRuleTestCase):
+class Base(object):
+    """Base Mixin class."""
+    prefix = "FileIsSmallEnoughRule"
+    rule = getattr(TT, prefix)()
+    clear_fn = TT.max_lines.cache_clear
+
+
+class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, FileIsSmallEnoughRule.
     """
-    rule = TT.FileIsSmallEnoughRule()
-    prefix = "FileIsSmallEnoughRule"
-
     @mock.patch.dict(os.environ, _ENV_PATCH)
     def test_20_ng_cases(self):
-        TT.max_lines.cache_clear()  # clear the memoized results.
         self.lint(False, self.path_pattern())
 
 
-class TestCliFileIsSmallEnoughRule(C.AnsibleLintRuleCliTestCase):
+class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, FileIsSmallEnoughRule.
     """
-    rule = TT.FileIsSmallEnoughRule()
-    prefix = "FileIsSmallEnoughRule"
-    clear_fn = TT.max_lines.cache_clear
-
     def test_20_ng_cases(self):
-        self.lint(False, "ng", _ENV_PATCH)
-
-    def test_30_ng_cases__env(self):
-        self.lint(False, "ok", _ENV_PATCH)
+        self.lint(False, self.path_pattern(), _ENV_PATCH)

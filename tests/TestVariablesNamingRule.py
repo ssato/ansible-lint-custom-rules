@@ -13,8 +13,8 @@ from tests import common as C
 
 INV_1 = "inventories/VariablesNamingRule/ok/1/hosts"
 HVARS_1 = "inventories/VariablesNamingRule/ok/1/host_vars/localhost_0.yml"
-PLAY_1 = "VariablesNamingRule_ok_1.yml"
-PLAY_2 = "VariablesNamingRule_ok_2.yml"
+PLAY_1 = "VariablesNamingRule/ok_1.yml"
+PLAY_2 = "VariablesNamingRule/ok_2.yml"
 
 _ENV_PATCH_INV_1 = {"_ANSIBLE_LINT_RULE_CUSTOM_2020_3_INVENTORY":
                     C.list_res_files(INV_1)[0]}
@@ -91,46 +91,42 @@ class TestFunctions(C.unittest.TestCase):
         self.assertEqual(res, ref, res)
 
 
-class TestVariablesNamingRule(C.AnsibleLintRuleTestCase):
+def clear_function(*_args):
+    """Function to clear caches."""
+    TT.use_ansible.cache_clear()
+    TT.name_re.cache_clear()
+
+
+class Base(object):
+    """Base Mixin class."""
+    prefix = "VariablesNamingRule"
+    rule = getattr(TT, prefix)()
+    clear_fn = clear_function
+
+
+class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, VariablesNamingRule.
     """
-    rule = TT.VariablesNamingRule()
-    prefix = "VariablesNamingRule"
-
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     def test_playbook_refering_invalid_var_names__use_ansible(self):
-        TT.use_ansible.cache_clear()
-        TT.name_re.cache_clear()
         self.lint(False, self.path_pattern("ng"))
 
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     def test_playbook_refering_only_valid_var_names__use_ansible(self):
-        TT.use_ansible.cache_clear()
-        TT.name_re.cache_clear()
         self.lint(True, self.path_pattern())
 
     @mock.patch.dict(os.environ, _ENV_PATCH_RE)
     def test_playbook_refering_invalid_var_names__env(self):
-        TT.name_re.cache_clear()
         self.lint(False, self.path_pattern())
 
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     @mock.patch.dict(os.environ, _ENV_PATCH_RE)
     def test_playbook_refering_invalid_var_names__env__use_ansible(self):
-        TT.use_ansible.cache_clear()
-        TT.name_re.cache_clear()
         self.lint(False, self.path_pattern())
 
 
-class TestCliVariablesNamingRule(C.AnsibleLintRuleCliTestCase):
+class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, VariablesNamingRule.
     """
-    rule = TT.VariablesNamingRule()
-    prefix = "VariablesNamingRule"
-
-    def clear_fn(self):
-        TT.use_ansible.cache_clear()
-        TT.name_re.cache_clear()
-
     def test_30_ng_cases__env(self):
-        self.lint(False, "ok", _ENV_PATCH_RE)
+        self.lint(False, self.path_pattern("ok"), _ENV_PATCH_RE)

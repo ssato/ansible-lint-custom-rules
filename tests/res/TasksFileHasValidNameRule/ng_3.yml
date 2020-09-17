@@ -2,4 +2,4 @@
   connection: local
   gather_facts: false
   tasks:
-    - include_tasks: TasksFileHasValidNameRule/ng-1.yml
+    - include_tasks: "tasks/ng_三.yml"

@@ -1,2 +1,5 @@
-- name: Run Ping
-  ping:
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - include_tasks: tasks/ok_1.yml

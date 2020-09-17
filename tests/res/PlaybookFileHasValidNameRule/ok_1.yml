@@ -1,5 +1,7 @@
+---
 - hosts: localhost
   connection: local
   gather_facts: false
   tasks:
-    - include_tasks: "TasksFileHasValidNameRule/ng_三.yml"
+    - name: Try ping
+      ping:

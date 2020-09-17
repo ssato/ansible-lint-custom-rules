@@ -8,15 +8,19 @@ from rules import LoopIsRecommendedRule as TT
 from tests import common as C
 
 
-class TestLoopIsRecommendedRule(C.AnsibleLintRuleTestCase):
+class Base(object):
+    """Base Mixin class."""
+    prefix = "LoopIsRecommendedRule"
+    rule = getattr(TT, prefix)()
+
+
+class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, LoopIsRecommendedRule.
     """
-    rule = TT.LoopIsRecommendedRule()
-    prefix = "LoopIsRecommendedRule"
+    pass
 
 
-class TestCliLoopIsRecommendedRule(C.AnsibleLintRuleCliTestCase):
+class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, LoopIsRecommendedRule.
     """
-    rule = TT.LoopIsRecommendedRule()
-    prefix = "LoopIsRecommendedRule"
+    pass

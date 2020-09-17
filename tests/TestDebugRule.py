@@ -14,24 +14,23 @@ from tests import common as C
 _ENV_PATCH = {TT.ENABLE_THIS_RULE_ENVVAR: "1"}
 
 
-class TestDebugRule(C.AnsibleLintRuleTestCase):
+class Base(object):
+    """Base Mixin class."""
+    prefix = "DebugRule"
+    rule = getattr(TT, prefix)()
+    clear_fn = TT.is_enabled.cache_clear
+
+
+class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, DebugRule.
     """
-    rule = TT.DebugRule()
-    prefix = "DebugRule"
-
     @mock.patch.dict(os.environ, _ENV_PATCH)
-    def test_30_ng_cases__env(self):
-        TT.is_enabled.cache_clear()
+    def test_20_ng_cases(self):
         self.lint(False, self.path_pattern())
 
 
-class TestCliDebugRule(C.AnsibleLintRuleCliTestCase):
+class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, DebugRule.
     """
-    rule = TT.DebugRule()
-    prefix = "DebugRule"
-    clear_fn = TT.is_enabled.cache_clear
-
-    def test_30_ng_cases__env(self):
-        self.lint(False, "ok", _ENV_PATCH)
+    def test_20_ng_cases(self):
+        self.lint(False, self.path_pattern(), _ENV_PATCH)

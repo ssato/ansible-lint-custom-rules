@@ -21,46 +21,52 @@ except ImportError:
     from ansiblelint import Runner
 
 
-CURDIR = pathlib.Path(__file__).parent
+CURDIR = pathlib.Path(__file__).resolve().parent
 RULES_DIR = str(CURDIR.parent / "rules")
 DEFAULT_RULES_DIR = str(
     pathlib.Path(ansiblelint.utils.__file__).parent / "rules"
 )
 
 
-def list_res_files(relpath_pat):
+def list_res_files(path_pattern):
     """
-    :param relpath_pat: Glob pattern to list files, e.g. a_*_ok.yml
-    :return: A list of absolute file paths in <curdir>/res/
+    List resource data files.
     """
-    return sorted(str(p) for p in CURDIR.glob("res/{}".format(relpath_pat)))
+    files = sorted(str(p) for p in (CURDIR / "res").glob(path_pattern))
+    if not files:
+        raise RuntimeError("No data files: " + path_pattern)
+
+    return files
 
 
 class AnsibleLintRuleTestCase(unittest.TestCase):
     """Base class to test ansible-lint rules.
     """
-
     rule = None
     prefix = None
+    clear_fn = None
 
     def setUp(self):
         """Initialize lint rules collection.
         """
         # Default rules only
         self.rules = RulesCollection()
-        self.rules.register(self.rule)  # Register the rule to test explicitly.
+        self.rules.register(self.rule)  # Register the rule explicitly.
+
+        if callable(self.clear_fn):
+            self.clear_fn()
 
     def path_pattern(self, rtype="ok"):
         """
         Make up a file (glob) path pattern.
         """
-        return "{}*{}*.yml".format(self.prefix, rtype)
+        return "{}/*{}*.yml".format(self.prefix, rtype)
 
     def lint(self, expected_success=True, ppattern=None):
         """
         :param playbook_fn_patterns: Glob filenames pattern to find playbooks
         """
-        if self.rule is None or self.prefix is None:
+        if not self.prefix or not self.rule:
             return
 
         if ppattern is None or not ppattern:
@@ -98,11 +104,8 @@ def _rule_ids_itr():
 class AnsibleLintRuleCliTestCase(AnsibleLintRuleTestCase):
     """Run ok and ng CLI test cases automatically.
     """
-    clear_fn = None
-
     def setUp(self):
-        if getattr(self, "clear_fn", False) and callable(self.clear_fn):
-            self.clear_fn()
+        super(AnsibleLintRuleCliTestCase, self).setUp()
 
         excl_opt = ' '.join(("-x {!s}".format(rid)
                              for rid in _rule_ids_itr()

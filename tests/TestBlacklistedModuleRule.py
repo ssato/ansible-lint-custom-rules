@@ -4,7 +4,6 @@
 # pylint: disable=invalid-name
 """Test cases for the rule, BlacklistedModuleRule.
 """
-import os.path
 import os
 
 import mock
@@ -14,10 +13,17 @@ from tests import common as C
 
 
 _BLACKLIST_PATH = str(
-    C.CURDIR / "res" / "BlacklistedModuleRule_blacklist.txt"
+    C.CURDIR / "res" / "BlacklistedModuleRule" / "blacklist.txt"
 )
 _ENV_PATCH_0 = {TT.BLACKLIST_ENVVAR: _BLACKLIST_PATH}
 _ENV_PATCH_1 = {TT.BLACKLISTED_MODULES_ENVVAR: "ping"}
+
+
+class Base(object):
+    """Base Mixin class."""
+    prefix = "BlacklistedModuleRule"
+    rule = getattr(TT, prefix)()
+    clear_fn = TT.blacklisted_modules.cache_clear
 
 
 class Test_functions(C.unittest.TestCase):
@@ -39,27 +45,16 @@ class Test_functions(C.unittest.TestCase):
         self.assertEqual(TT.blacklisted_modules(), ["ping"])
 
 
-class TestBlacklistedModuleRule(C.AnsibleLintRuleTestCase):
+class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, BlacklistedModuleRule.
     """
-    rule = TT.BlacklistedModuleRule()
-    prefix = "BlacklistedModuleRule"
-
-    def setUp(self):
-        super(TestBlacklistedModuleRule, self).setUp()
-        TT.blacklisted_modules.cache_clear()
-
     @mock.patch.dict(os.environ, _ENV_PATCH_1)
     def test_30_ng_cases__env(self):
         self.lint(False, self.path_pattern())
 
 
-class TestCliBlacklistedModuleRule(C.AnsibleLintRuleCliTestCase):
+class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, BlacklistedModuleRule.
     """
-    rule = TT.BlacklistedModuleRule()
-    prefix = "BlacklistedModuleRule"
-    clear_fn = TT.blacklisted_modules.cache_clear
-
     def test_30_ng_cases__env(self):
-        self.lint(False, "ok", _ENV_PATCH_1)
+        self.lint(False, self.path_pattern("ok"), _ENV_PATCH_1)
