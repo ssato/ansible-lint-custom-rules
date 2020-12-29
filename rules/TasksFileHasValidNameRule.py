@@ -6,6 +6,7 @@
 """
 import functools
 import os
+import pathlib
 import re
 import typing
 
@@ -15,31 +16,44 @@ except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID: str = "Custom_2020_2"
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+RULE_ID: str = "Custom_2020_2"
+DESC: str = "Tasks files must have valid filenames."
+
+_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + RULE_ID.upper()
 NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + "_TASKS_FILENAME_RE"
 
+NAME_RE_DEFAULT: str = r"^\w+\.ya?ml$"
 
-@functools.lru_cache(maxsize=32)
-def name_re(default: typing.Optional[str] = None) -> typing.Pattern:
+
+@functools.lru_cache(maxsize=4)
+def filename_re(default: typing.Optional[str] = None) -> typing.Pattern:
     """
     :return: regex object to try match with names
     """
     if default is None:
-        default = r"^\w+\.ya?ml$"  # TBD
+        default = NAME_RE_DEFAULT
 
     return re.compile(os.environ.get(NAME_RE_ENVVAR, default), re.ASCII)
 
 
-def is_invalid_filename(filename: str, reg: typing.Optional[str] = None
+@functools.lru_cache(maxsize=32)
+def is_invalid_filename(filepath: str, name_re: typing.Optional[str] = None
                         ) -> bool:
     """
-    :param filename: A str represents a file path
-    :param reg: A str gives a regexp to try match with valid filenames
-
-    :return: True if given `filename` is invalid and does not satisfy the rule
+    Test if given file has valid filename.
     """
-    return name_re(reg).match(filename) is None
+    fname = pathlib.Path(filepath).name
+    return filename_re(name_re).match(fname) is None
+
+
+def check_filename(filepath: str) -> typing.Union[str, bool]:
+    """
+    Check filename.
+    """
+    if is_invalid_filename(filepath):
+        return "Invalid filename: " + filepath
+
+    return False
 
 
 class TasksFileHasValidNameRule(AnsibleLintRule):
@@ -47,29 +61,18 @@ class TasksFileHasValidNameRule(AnsibleLintRule):
     Rule class to test if tasks file has a valid filename satisfies the file
     naming rules in the organization.
     """
-    id = _RULE_ID
-    shortdesc = "Tasks files should have valid filenames"
+    id = RULE_ID
+    shortdesc = DESC
     description = (
         "Tasks files (roles/tasks/*.yml) should have valid filenames."
     )
-    severity = "MEDIUM"
-    tags = ["task", "readability", "formatting"]
-    version_added = "4.2.99"  # dummy
+    severity = "HIGH"
+    tags = ["task"]
 
-    tested = set()  # acc.
-
-    def match(self, file_: typing.Mapping, _text) -> typing.Union[str, bool]:
+    def match(_self, file_: typing.Mapping, _text) -> typing.Union[str, bool]:
         """Test tasks files.
         """
         if file_["type"] != "tasks":
             return False
 
-        filepath = file_["path"]
-        filename = os.path.basename(filepath)
-
-        if filepath not in self.tested:
-            self.tested.add(filepath)
-            if is_invalid_filename(filename):
-                return "Invalid filename: " + filename
-
-        return False
+        return check_filename(file_["path"])
