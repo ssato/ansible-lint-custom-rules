@@ -210,10 +210,10 @@ def list_invalid_var_names_from_playbook(playbook: str) -> typing.List[str]:
     vmgr = ansible.vars.manager.VariableManager(loader, inventory)
 
     # :raises: ansible.errors.AnsibleParserError("Invalid variable name...")
-    playbook = ansible.playbook.Playbook.load(playbook, vmgr, loader)
+    pbook = ansible.playbook.Playbook.load(playbook, vmgr, loader)
 
     vss = (nested_obj_keys(vs) for vs
-           in (vmgr.get_vars(play) for play in playbook.get_plays()))
+           in (vmgr.get_vars(play) for play in pbook.get_plays()))
 
     return [v for v in set(itertools.chain.from_iterable(vss))
             if not is_special_var_name(v) and test_if_name_not_match(v)]
@@ -243,7 +243,8 @@ def list_var_names_from_inventory_file_itr(inventory: str
     :param inventory: A inventory file path
     """
     psr = configparser.ConfigParser()
-    psr.optionxform = str  # Preserve (upper) cases
+    # Needed to Preserve (upper) cases.
+    psr.optionxform = str  # type: ignore
     try:
         psr.read(inventory)
         for sect in psr:
