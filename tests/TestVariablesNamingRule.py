@@ -107,10 +107,14 @@ class Base(object):
 class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
     """Test cases for the rule class, VariablesNamingRule.
     """
+    @C.unittest.skipUnless(bool(os.environ.get("TEST_WITH_OLDER_ANSIBLE")),
+                           "Test with older ansible")
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     def test_playbook_refering_invalid_var_names__use_ansible(self):
         self.lint(False, self.path_pattern("ng"))
 
+    @C.unittest.skipUnless(bool(os.environ.get("TEST_WITH_OLDER_ANSIBLE")),
+                           "Test with older ansible")
     @mock.patch.dict(os.environ, _ENV_PATCH_UA)
     def test_playbook_refering_only_valid_var_names__use_ansible(self):
         self.lint(True, self.path_pattern())
