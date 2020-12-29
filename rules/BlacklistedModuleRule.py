@@ -61,7 +61,7 @@ include
 
 
 @functools.lru_cache(maxsize=32)
-def blacklisted_modules(bmods: typing.Iterable = BLACKLISTED_MODULES
+def blacklisted_modules(bmods: typing.Iterable[str] = BLACKLISTED_MODULES
                         ) -> typing.Iterable:
     """
     :return: True if to use ansible internal functions to find var names
@@ -76,7 +76,7 @@ def blacklisted_modules(bmods: typing.Iterable = BLACKLISTED_MODULES
             pass
 
     # Next, try to load them from the env. var.
-    bmods_s = os.environ.get(BLACKLISTED_MODULES_ENVVAR, False)
+    bmods_s: str = os.environ.get(BLACKLISTED_MODULES_ENVVAR, "")
     if bmods_s:
         return bmods_s.split()  # e.g. "shell raw ..." -> ["shell", "raw"]
 
