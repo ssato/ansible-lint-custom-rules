@@ -27,8 +27,10 @@ except ImportError:
     from ansiblelint import AnsibleLintRule
 
 
-_RULE_ID: str = "Custom_2020_50"
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+RULE_ID: str = "Custom_2020_50"
+DESC = "All YAML files should have some data"
+
+_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + RULE_ID.upper()
 YML_EXT_ENVVAR: str = _ENVVAR_PREFIX + "_YML_EXT"
 
 
@@ -82,7 +84,7 @@ def no_data_yml_files_itr(playbook: str) -> typing.Iterator[MatchT]:
 
         for fpath in pathlib.Path(playbook).parent.glob(pattern):
             if not is_yml_file_has_some_data(fpath):
-                yield (fpath,
+                yield ({"No data in YAML file: ": fpath},
                        "YAML file looks having no data: {}".format(fpath))
 
 
@@ -90,14 +92,14 @@ class NoEmptyDataFilesRule(AnsibleLintRule):
     """
     Lint rule class to test if roles' YAML files have some data.
     """
-    id = _RULE_ID
-    shortdesc = description = "All YAML files should have some data"
+    id = RULE_ID
+    shortdesc = description = DESC
     severity = "MEDIUM"
     tags = ["format", "yaml"]  # temp
     version_added = "4.2.99"  # dummy
 
     def matchplay(self, file_: typing.Mapping, _play: typing.Mapping
-                  ) -> MatchT:
+                  ) -> typing.Union[typing.List[MatchT], bool]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
         """
