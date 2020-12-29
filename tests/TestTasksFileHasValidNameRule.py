@@ -11,14 +11,20 @@ from rules import TasksFileHasValidNameRule as TT
 from tests import common as C
 
 
-_ENV_PATCH = {TT.NAME_RE_ENVVAR: "foo.+"}
+_ENV_PATCH = {TT.NAME_RE_ENVVAR: r"\S+"}  # e.g. ng-1.yml
+
+
+def clear_function(*_args):
+    """Function to clear caches."""
+    TT.filename_re.cache_clear()
+    TT.is_invalid_filename.cache_clear()
 
 
 class Base(object):
     """Base Mixin class."""
     prefix = "TasksFileHasValidNameRule"
     rule = getattr(TT, prefix)()
-    clear_fn = TT.name_re.cache_clear
+    clear_fn = clear_function
 
 
 class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
@@ -32,5 +38,5 @@ class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
 class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
     """CLI Test cases for the rule class, TasksFileHasValidNameRule.
     """
-    def test_30_ng_cases__env(self):
-        self.lint(False, self.path_pattern(), _ENV_PATCH)
+    def test_30_tasks_file_has_valid_name__ok__env(self):
+        self.lint(True, self.path_pattern("ng_1"), _ENV_PATCH)
