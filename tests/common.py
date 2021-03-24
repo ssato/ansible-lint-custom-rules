@@ -10,15 +10,9 @@ import subprocess
 import unittest
 
 import ansiblelint.utils
-try:
-    from ansiblelint.rules import RulesCollection
-except ImportError:
-    from ansiblelint import RulesCollection
 
-try:
-    from ansiblelint.runner import Runner
-except ImportError:
-    from ansiblelint import Runner
+from ansiblelint.rules import RulesCollection
+from ansiblelint.runner import Runner
 
 
 CURDIR: pathlib.Path = pathlib.Path(__file__).resolve().parent
