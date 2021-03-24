@@ -1,2 +1,2 @@
 ansible
-ansible-lint
+ansible-lint < 5.0.0
