@@ -31,7 +31,6 @@ DEFAULT_RULES_DIR: str = str(
 )
 
 
-
 def list_res_files(path_pattern):
     """
     List resource data files.
