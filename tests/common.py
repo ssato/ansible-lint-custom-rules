@@ -21,11 +21,15 @@ except ImportError:
     from ansiblelint import Runner
 
 
-CURDIR = pathlib.Path(__file__).resolve().parent
-RULES_DIR = str(CURDIR.parent / "rules")
-DEFAULT_RULES_DIR = str(
-    pathlib.Path(ansiblelint.utils.__file__).parent / "rules"
+CURDIR: pathlib.Path = pathlib.Path(__file__).resolve().parent
+
+RULES_SUBDIR = 'rules'
+
+RULES_DIR: str = str(CURDIR.parent / RULES_SUBDIR)
+DEFAULT_RULES_DIR: str = str(
+    pathlib.Path(ansiblelint.utils.__file__).parent / RULES_SUBDIR
 )
+
 
 
 def list_res_files(path_pattern):
