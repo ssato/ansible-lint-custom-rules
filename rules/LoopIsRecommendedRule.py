@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Red Hat, Inc.
+# Copyright (C) 2020,2021 Red Hat, Inc.
 #
 # SPDX-License-Identifier: MIT
 #
@@ -6,10 +6,7 @@
 """
 import typing
 
-try:
-    from ansiblelint.rules import AnsibleLintRule
-except ImportError:
-    from ansiblelint import AnsibleLintRule
+from ansiblelint.rules import AnsibleLintRule
 
 
 _RULE_ID: str = "Custom_2020_5"

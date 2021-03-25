@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Red Hat, Inc.
+# Copyright (C) 2020,2021 Red Hat, Inc.
 #
 # SPDX-License-Identifier: MIT
 #
@@ -21,10 +21,7 @@ import typing
 import yaml
 import yaml.parser
 
-try:
-    from ansiblelint.rules import AnsibleLintRule
-except ImportError:
-    from ansiblelint import AnsibleLintRule
+from ansiblelint.rules import AnsibleLintRule
 
 
 RULE_ID: str = "Custom_2020_50"
