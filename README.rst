@@ -5,6 +5,10 @@ About
    :target: https://github.com/ssato/ansible-lint-custom-rules/actions?query=workflow%3ATests
    :alt: [GHA Tests]
 
+.. image:: https://dev.azure.com/satorusatoh0471/ansible-lint-custom-rules/_apis/build/status/ssato.ansible-lint-custom-rules?branchName=main
+   :target: https://dev.azure.com/satorusatoh0471/ansible-lint-custom-rules/_build/latest?definitionId=1
+   :alt: [Azure Pipelines Status]
+
 .. .. image:: https://img.shields.io/coveralls/ssato/ansible-lint-custom-rules.svg
    :target: https://coveralls.io/r/ssato/ansible-lint-custom-rules
    :alt: [Coverage Status]
