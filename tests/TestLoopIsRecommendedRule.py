@@ -1,26 +1,21 @@
-# Copyright (C) 2020 Red Hat, Inc.
+# Copyright (C) 2020,2021 Red Hat, Inc.
 # SPDX-License-Identifier: MIT
 #
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,missing-class-docstring
 """Test cases for the rule, LoopIsRecommendedRule.
 """
 from rules import LoopIsRecommendedRule as TT
 from tests import common as C
 
 
-class Base(object):
-    """Base Mixin class."""
-    prefix = "LoopIsRecommendedRule"
-    rule = getattr(TT, prefix)()
+class Base:
+    name = C.get_rule_name(__file__)
+    rule = C.get_rule_instance_by_name(TT, name)
 
 
-class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
-    """Test cases for the rule class, LoopIsRecommendedRule.
-    """
+class RuleTestCase(Base, C.RuleTestCase):
     pass
 
 
-class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
-    """CLI Test cases for the rule class, LoopIsRecommendedRule.
-    """
+class CliTestCase(Base, C.CliTestCase):
     pass
