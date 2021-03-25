@@ -8,10 +8,7 @@ import functools
 import os
 import typing
 
-try:
-    from ansiblelint.rules import AnsibleLintRule
-except ImportError:
-    from ansiblelint import AnsibleLintRule
+from ansiblelint.rules import AnsibleLintRule
 
 
 _RULE_ID: str = "Custom_2020_99"

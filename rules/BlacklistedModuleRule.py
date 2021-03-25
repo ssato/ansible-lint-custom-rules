@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Satoru SATOH <satoru.satoh@gmail.com>
+# Copyright (C) 2020,2021 Satoru SATOH <satoru.satoh@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 #
@@ -41,11 +41,7 @@ import functools
 import os
 import typing
 
-# .. note:: Maybe it depends on specific versions of ansible.
-try:
-    from ansiblelint.rules import AnsibleLintRule
-except ImportError:
-    from ansiblelint import AnsibleLintRule
+from ansiblelint.rules import AnsibleLintRule
 
 
 _RULE_ID: str = "Custom_2020_20"

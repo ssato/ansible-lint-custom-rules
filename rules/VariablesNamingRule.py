@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Red Hat, Inc.
+# Copyright (C) 2020,2021 Red Hat, Inc.
 #
 # SPDX-License-Identifier: MIT
 #
@@ -50,13 +50,10 @@ import ansible.parsing.dataloader
 import ansible.playbook
 import ansible.vars.manager
 
-try:
-    from ansiblelint.rules import AnsibleLintRule
-except ImportError:
-    from ansiblelint import AnsibleLintRule
-
 import yaml
 import yaml.parser
+
+from ansiblelint.rules import AnsibleLintRule
 
 
 _RULE_ID: str = "Custom_2020_3"

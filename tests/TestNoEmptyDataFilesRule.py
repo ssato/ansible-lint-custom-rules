@@ -1,11 +1,12 @@
-# Copyright (C) 2020 Red Hat, Inc.
+# Copyright (C) 2020,2021 Red Hat, Inc.
 # SPDX-License-Identifier: MIT
 #
-# pylint: disable=invalid-name,missing-function-docstring
+# pylint: disable=invalid-name,too-few-public-methods
+# pylint: disable=missing-function-docstring,missing-class-docstring
 """Test cases for the rule, DebugRule.
 """
 import os
-import mock
+import unittest.mock
 
 from rules import NoEmptyDataFilesRule as TT
 from tests import common as C
@@ -35,23 +36,18 @@ def test_is_yml_file_has_some_data(tmp_path):
     TT.is_yml_file_has_some_data.cache_clear()
 
 
-class Base(object):
-    """Base Mixin class."""
-    prefix = "NoEmptyDataFilesRule"
-    rule = getattr(TT, prefix)()
+class Base:
+    name = C.get_rule_name(__file__)
+    rule = C.get_rule_instance_by_name(TT, name)
     clear_fn = TT.is_yml_file_has_some_data.cache_clear
 
 
-class RuleTestCase(Base, C.AnsibleLintRuleTestCase):
-    """Test cases for the rule class, DebugRule.
-    """
-    @mock.patch.dict(os.environ, _ENV_PATCH)
+class RuleTestCase(Base, C.RuleTestCase):
+    @unittest.mock.patch.dict(os.environ, _ENV_PATCH)
     def test_30_ok_cases__no_data(self):
-        self.lint(True, self.path_pattern("ng"))
+        self.lint(True, 'ng')
 
 
-class CliTestCase(Base, C.AnsibleLintRuleCliTestCase):
-    """CLI Test cases for the rule class, DebugRule.
-    """
+class CliTestCase(Base, C.CliTestCase):
     def test_30_ok_cases__env(self):
-        self.lint(True, self.path_pattern("ng"), _ENV_PATCH)
+        self.lint(True, 'ng', _ENV_PATCH)
