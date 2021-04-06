@@ -6,10 +6,13 @@
 """
 import typing
 
+if typing.TYPE_CHECKING:
+    from ansiblelint.errors import MatchError
+
 from ansiblelint.rules import AnsibleLintRule
 
 
-_RULE_ID: str = "Custom_2020_6"
+ID: str = "vars-is-in-use"
 _DESC: str = """vars and include_vars should not be used and replaced with
 variables defined in inventory and related data instead."""
 
@@ -22,35 +25,27 @@ vars_files
 """.split())
 
 
-def vars_msg(line: str, directives=VARS_DIRECTIVES) -> str:
-    """
-    Make up the warning message.
-    """
-    return "{} are forbidden: {}".format(" and ".join(directives), line)
-
-
-def check_vars_is_used(_self, _file, line: str, directives=VARS_DIRECTIVES
-                       ) -> typing.Union[str, bool]:
-    """
-    .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
-    """
-    line = line.strip()
-
-    if line and any(vdir in line for vdir in directives):
-        return vars_msg(line, directives)
-
-    return False
-
-
 class VarsShouldNotBeUsedRule(AnsibleLintRule):
     """
     Rule class to test if vars directives are used.
     """
-    id = _RULE_ID
-    shortdesc = "vars and include_vars should not be used"
+    id = ID
+    shortdesc = 'vars and include_vars should not be used'
     description = _DESC
-    severity = "LOW"
-    tags = ["readability", "formatting"]
-    version_added = "4.2.99"  # dummy
+    severity = 'LOW'
+    tags = ['readability', 'formatting']
 
-    match = check_vars_is_used
+    def match(self, line: str) -> typing.List['MatchError']:
+        """
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
+        """
+        directives = VARS_DIRECTIVES
+        line = line.strip()
+
+        if line and any(vdir in line for vdir in directives):
+            return [self.create_matcherror(
+                message='{} are forbidden: {}'.format(' and '.join(directives),
+                                                      line)
+            )]
+
+        return []

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Red Hat, Inc.
+# Copyright (C) 2020,2021 Red Hat, Inc.
 #
 # SPDX-License-Identifier: MIT
 #
@@ -8,94 +8,93 @@ import functools
 import os
 import typing
 
+# https://www.python.org/dev/peps/pep-0484/#runtime-or-type-checking
+if typing.TYPE_CHECKING:
+    from ansiblelint.constants import odict
+    from ansiblelint.errors import MatchError
+    from ansiblelint.file_utils import Lintable
+
 from ansiblelint.rules import AnsibleLintRule
 
 
-_RULE_ID: str = "Custom_2020_99"
-_DESC: str = "Custom rule class for debug use"
+_RULE_ID: str = 'debug-rule'
+_DESC: str = 'Custom rule class for debug use'
 
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
-ENABLE_THIS_RULE_ENVVAR: str = _ENVVAR_PREFIX + "_DEBUG"
+_EVAR_PREFIX: str = '_ANSIBLE_LINT_RULE_' + _RULE_ID.upper().replace('-', '_')
+ENABLE_THIS_RULE_ENVVAR: str = _EVAR_PREFIX + '_DEBUG'
 
-Matched = typing.NamedTuple("Matched",
-                            (("lines", typing.Set[str]),
-                             ("tasks", typing.Set[str]),
-                             ("plays", typing.Set[str])))
+Matched = typing.NamedTuple('Matched',
+                            (('lines', typing.Set[str]),
+                             ('tasks', typing.Set[str]),
+                             ('plays', typing.Set[str])))
 
 
 @functools.lru_cache(maxsize=64)
 def is_enabled(default: bool = False) -> bool:
     """
-    :param default: default regexp object to try match with task names
+    Is this rule enabled with the environment variable?
     """
     return bool(os.environ.get(ENABLE_THIS_RULE_ENVVAR, default))
 
 
-MResType = typing.Union[bool, str]
-MPResType = typing.Union[typing.Tuple[str, str], bool]
+class Cache(typing.NamedTuple):
+    """Class that tracks cachees of tasks, plays and so on."""
+    tasks: typing.Set[str]
+    plays: typing.Set[str]
+    yamls: typing.Set[str]
 
 
 class DebugRule(AnsibleLintRule):
     """Rule class for debug use.
     """
-    id = _RULE_ID
+    id: str = _RULE_ID
+    tags: typing.List[str] = ['debug']
     shortdesc = description = _DESC
-    severity = "LOW"
-    tags = ["debug"]
-    version_added = "4.2.99"  # dummy
+    severity: str = 'LOW'
 
-    matched = Matched(set(), set(), set())
+    cache = Cache(tasks=set(), plays=set(), yamls=set())
 
-    def match(self, file_: typing.Mapping, text: str) -> MResType:
+    def matchtask(self, task: typing.Dict[str, typing.Any]
+                  ) -> typing.Union[bool, str]:
         """
-        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
-
-        :param file_: A mapping object holding target file info
-        :param text: The line to apply the rule and check
-
-        :return: A str gives error info or False
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtask
         """
         if is_enabled():
-            # Limit to return debug messages per file.
-            if "path" in file_ and file_["path"] not in self.matched.lines:
-                self.matched.lines.add(file_["path"])
-                return "file: {!r}, text: {!r}".format(file_, text)
+            name = task.get('name', str(task))
+            if name not in self.cache.tasks:
+                self.cache.tasks.add(name)
+                return f'task: {task!r}'
 
         return False
 
-    def matchtask(self, file_: typing.Mapping, task: typing.Mapping
-                  ) -> MResType:
+    def matchplay(self, file: 'Lintable', data: 'odict[str, typing.Any]'
+                  ) -> typing.List['MatchError']:
         """
-        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
-
-        :param file_: A mapping object holding target file info
-        :param task: A mapping object holding target task info
-
-        :return: A str gives error info or False
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchplay
         """
-        if is_enabled():
-            # Limit to return debug messages per task.
-            if "name" in task and task["name"] not in self.matched.tasks:
-                self.matched.tasks.add(task["name"])
-                return "file: {!r}, task: {!r}".format(file_, task)
+        if is_enabled() and file.kind == 'playbook':
+            name = data.get('name', str(data))
+            if name in self.cache.plays:
+                return []
 
-        return False
+            self.cache.plays.add(name)
+            res = [self.create_matcherror(message=f'play #{i + 1}',
+                                          filename=str(file.path))
+                   for i, play in data.get('block', [data])]
+            return res
 
-    def matchplay(self, file_: typing.Mapping, play: typing.Mapping
-                  ) -> MPResType:
+        return []
+
+    def matchyaml(self, file: 'Lintable') -> typing.List['MatchError']:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
-
-        :param file_: A mapping object holding target file info
-        :param play: A mapping object holding target play info
-
-        :return: A str gives error info or False
         """
         if is_enabled():
-            # Limit to return debug messages per play.
-            if "name" in play and play["name"] not in self.matched.plays:
-                self.matched.plays.add(play["name"])
-                return (os.path.basename(file_["path"]),
-                        "file: {!r}, play: {!r}".format(file_, play))
+            path = str(file.path)
+            if path in self.cache.yamls:
+                return []
 
-        return False
+            return [self.create_matcherror(message=f'yaml: {path}',
+                                           filename=path)]
+
+        return []

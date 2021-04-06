@@ -1,6 +1,6 @@
+---
 - hosts: localhost
   connection: local
-  gather_facts: false
   tasks:
     - name: Try ping
-      ping:
+      ansible.builtin.ping:

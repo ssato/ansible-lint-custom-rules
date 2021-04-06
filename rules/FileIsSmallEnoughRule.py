@@ -16,22 +16,27 @@ import functools
 import os
 import typing
 
-from ansiblelint.rules import AnsibleLintRule
+import ansiblelint.constants
+import ansiblelint.rules
+
+if typing.TYPE_CHECKING:
+    from ansiblelint.errors import MatchError
+    from ansiblelint.file_utils import Lintable
 
 
-_RULE_ID: str = "Custom_2020_40"
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+ID: str = 'file-is-small-enough'
+_ENVVAR_PREFIX = '_ANSIBLE_LINT_RULE_' + ID.upper().replace('-', '_')
 
-MAX_LINES_ENVVAR: str = _ENVVAR_PREFIX + "_MAX_LINES"
+MAX_LINES_ENVVAR: str = _ENVVAR_PREFIX + '_MAX_LINES'
 MAX_LIENS: int = 500
 
 
 @functools.lru_cache(maxsize=32)
-def max_lines() -> int:
+def max_lines(default: int = MAX_LIENS) -> int:
     """
     :return: A int denotes the max line of playbook and related files
     """
-    return int(os.environ.get(MAX_LINES_ENVVAR, MAX_LIENS))
+    return int(os.environ.get(MAX_LINES_ENVVAR, default))
 
 
 def exceeds_max_lines(filepath: str, mlines: int = 0) -> bool:
@@ -57,43 +62,38 @@ def exceeds_max_lines(filepath: str, mlines: int = 0) -> bool:
     return False
 
 
-def _matchplay(_self, file_: typing.Mapping, _play: typing.Mapping
-               ) -> typing.List[typing.Tuple[typing.Mapping, str]]:
-    """Test playbook files.
-    """
-    if file_["type"] == "playbook":
-        fpath = file_["path"]
-
-        if exceeds_max_lines(fpath):
-            return [({"Playbook[s] may be too large": fpath},
-                     "Too large: {}".format(fpath))]
-    return []
-
-
-def _match(_self, file_: typing.Mapping, _task: typing.Mapping
-           ) -> typing.Union[str, bool]:
-    """Test task files.
-    """
-    if file_["type"] == "tasks":
-        fpath = file_["path"]
-        if exceeds_max_lines(fpath):
-            return "Too large: {}".format(fpath)
-
-    return False
-
-
-class FileIsSmallEnoughRule(AnsibleLintRule):
+class FileIsSmallEnoughRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if playbook and tasks files are small enough.
     """
-    id = _RULE_ID
-    shortdesc = "Playbook and tasks files should be small enough"
+    id = ID
+    shortdesc = 'Playbook and tasks files should be small enough'
     description = shortdesc
-    severity = "MEDIUM"
-    tags = ["playbook", "tasks", "readability"]
-    version_added = "4.2.99"  # dummy
+    severity = 'MEDIUM'
+    tags = ['playbook', 'tasks', 'readability']
 
-    matchplay = _matchplay
-    match = _match
+    cache: typing.Set = set()
+
+    def matchyaml(self, file: 'Lintable') -> typing.List['MatchError']:
+        """Test playbook files.
+        """
+        # .. seealso:: ansiblelint.constants.FileType:
+        ftypes = 'playbook meta tasks handlers role yaml'.split()
+        if file.kind in ftypes:
+            path = str(file.path)
+            if path in self.cache:
+                return []
+
+            self.cache.add(path)
+
+            if exceeds_max_lines(path):
+                return [
+                    self.create_matcherror(
+                        message='File {path} may be too large',
+                        filename=path
+                    )
+                ]
+
+        return []
 
 # vim:sw=4:ts=4:et:

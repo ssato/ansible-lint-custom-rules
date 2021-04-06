@@ -13,7 +13,6 @@ _ANSIBLE_LINT_RULE_CUSTOM_2020_50_YAML_EXT, for example,
 
     _ANSIBLE_LINT_RULE_CUSTOM_2020_50_YML_EXT=yaml
 """
-import collections
 import functools
 import os
 import pathlib
@@ -24,11 +23,11 @@ import yaml.parser
 from ansiblelint.rules import AnsibleLintRule
 
 
-RULE_ID: str = "Custom_2020_50"
-DESC = "All YAML files should have some data"
+RULE_ID: str = 'no-empty-data-files'
+DESC = 'All YAML files should have some data'
 
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + RULE_ID.upper()
-YML_EXT_ENVVAR: str = _ENVVAR_PREFIX + "_YML_EXT"
+_ENVVAR_PREFIX = '_ANSIBLE_LINT_RULE_' + RULE_ID.upper().replace('-', '_')
+YML_EXT_ENVVAR = _ENVVAR_PREFIX + '_YML_EXT'
 
 
 def yml_extension() -> str:
@@ -60,7 +59,7 @@ def role_names_itr(playbook: str) -> typing.Iterator[str]:
 
         for play in plays:
             for role in play.get("roles", []):
-                if isinstance(role, collections.abc.Mapping):
+                if isinstance(role, dict):
                     yield role["role"]  # It should have this.
                 else:
                     yield role

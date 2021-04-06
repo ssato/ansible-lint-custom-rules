@@ -10,16 +10,21 @@ import pathlib
 import re
 import typing
 
+if typing.TYPE_CHECKING:
+    from ansiblelint.constants import odict
+    from ansiblelint.errors import MatchError
+    from ansiblelint.file_utils import Lintable
+
 from ansiblelint.rules import AnsibleLintRule
 
 
-RULE_ID: str = "Custom_2020_2"
-DESC: str = "Tasks files must have valid filenames."
+ID: str = 'tasks-file-has-valid-names'
+DESC: str = 'Tasks files must have valid filenames.'
 
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + RULE_ID.upper()
-NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + "_TASKS_FILENAME_RE"
+_ENVVAR_PREFIX: str = '_ANSIBLE_LINT_RULE_' + ID.upper().replace('-', '_')
+NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + '_TASKS_FILENAME_RE'
 
-NAME_RE_DEFAULT: str = r"^\w+\.ya?ml$"
+NAME_RE_DEFAULT: str = r'^\w+\.ya?ml$'
 
 
 @functools.lru_cache(maxsize=4)
@@ -48,7 +53,7 @@ def check_filename(filepath: str) -> typing.Union[str, bool]:
     Check filename.
     """
     if is_invalid_filename(filepath):
-        return "Invalid filename: " + filepath
+        return f'Invalid filename: {filepath}'
 
     return False
 
@@ -58,18 +63,23 @@ class TasksFileHasValidNameRule(AnsibleLintRule):
     Rule class to test if tasks file has a valid filename satisfies the file
     naming rules in the organization.
     """
-    id = RULE_ID
+    id = ID
     shortdesc = DESC
     description = (
-        "Tasks files (roles/tasks/*.yml) should have valid filenames."
+        'Tasks files (roles/tasks/*.yml) should have valid filenames.'
     )
-    severity = "HIGH"
-    tags = ["task"]
+    severity = 'HIGH'
+    tags = ['task']
 
-    def match(_self, file_: typing.Mapping, _text) -> typing.Union[str, bool]:
-        """Test tasks files.
+    def matchplay(self, file: 'Lintable', _data: 'odict[str, typing.Any]'
+                  ) -> typing.List['MatchError']:
         """
-        if file_["type"] != "tasks":
-            return False
+        .. seealso:; ansiblelint.rules.AnsibleLintRule.matchplay
+        """
+        if file.kind == 'tasks' and check_filename(file.name):
+            msg = f'Invalid tasks files: {file.name!s}'
+            return [
+                self.create_matcherror(message=msg, filename=file.name)
+            ]
 
-        return check_filename(file_["path"])
+        return []

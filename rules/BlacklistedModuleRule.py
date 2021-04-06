@@ -44,13 +44,13 @@ import typing
 from ansiblelint.rules import AnsibleLintRule
 
 
-_RULE_ID: str = "Custom_2020_20"
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+_RULE_ID: str = 'use-of-blacklisted-modules'
+_ENVVAR_PREFIX: str = '_ANSIBLE_LINT_RULE_' + _RULE_ID.upper()
 
-BLACKLISTED_MODULES_ENVVAR: str = _ENVVAR_PREFIX + "_BLACKLISTED_MODULES"
-BLACKLIST_ENVVAR: str = _ENVVAR_PREFIX + "_MODULES_BLACKLIST"
+BLACKLISTED_MODULES_ENVVAR: str = _ENVVAR_PREFIX + '_BLACKLISTED_MODULES'
+BLACKLIST_ENVVAR: str = _ENVVAR_PREFIX + '_MODULES_BLACKLIST'
 
-BLACKLISTED_MODULES: typing.Iterable = frozenset("""
+BLACKLISTED_MODULES: typing.FrozenSet[str] = frozenset("""
 shell
 include
 """.split())
@@ -58,7 +58,7 @@ include
 
 @functools.lru_cache(maxsize=32)
 def blacklisted_modules(bmods: typing.Iterable[str] = BLACKLISTED_MODULES
-                        ) -> typing.Iterable:
+                        ) -> typing.Iterable[str]:
     """
     :return: True if to use ansible internal functions to find var names
     """
@@ -67,12 +67,12 @@ def blacklisted_modules(bmods: typing.Iterable[str] = BLACKLISTED_MODULES
     if blacklist:
         try:
             return [line.strip() for line in open(blacklist)
-                    if not line.startswith("#")]
+                    if not line.startswith('#')]
         except (IOError, OSError):
             pass
 
     # Next, try to load them from the env. var.
-    bmods_s: str = os.environ.get(BLACKLISTED_MODULES_ENVVAR, "")
+    bmods_s: str = os.environ.get(BLACKLISTED_MODULES_ENVVAR, '')
     if bmods_s:
         return bmods_s.split()  # e.g. "shell raw ..." -> ["shell", "raw"]
 
@@ -84,23 +84,21 @@ class BlacklistedModuleRule(AnsibleLintRule):
     Lint rule class to test if variables defined by users follow the namging
     conventions and guildelines.
     """
-    # id: typing.ClassVar[str] = ...
-    id = _RULE_ID
-    shortdesc = "Blacklisted modules"
-    description = "Use of the blacklisted modules are prohivited."
-    severity = "HIGH"
-    tags = ["modules"]  # temp
-    version_added = "4.2.99"  # dummy
+    id: str = _RULE_ID
+    shortdesc: str = 'Blacklisted modules'
+    description: str = 'Use of the blacklisted modules are prohivited.'
+    severity: str = 'HIGH'
+    tags: typing.List[str] = ['module']
 
-    def matchtask(self, _file: typing.Mapping, task: typing.Mapping
+    def matchtask(self, task: typing.Dict[str, typing.Any]
                   ) -> typing.Union[bool, str]:
-        """Match with lines in a task definition
         """
-        module = task["action"]["__ansible_module__"]
-
+        Match with lines in a task definition
+        """
+        module = task['action']['__ansible_module__']
         if module in blacklisted_modules():
-            return "{0}: use of {1} is prohivited.".format(self.shortdesc,
-                                                           module)
+            return f'{self.shortdesc}: use of {module} is prohivited.'
+
         return False
 
 # vim:sw=4:ts=4:et:

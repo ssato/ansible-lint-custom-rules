@@ -16,14 +16,13 @@ import re
 import typing
 
 import ansiblelint.utils
+import ansiblelint.rules
 
-from ansiblelint.rules import AnsibleLintRule
 
+ID: str = 'task-has-valid-name'
+_ENVVAR_PREFIX: str = '_ANSIBLE_LINT_RULE_' + ID.upper().replace('-', '_')
 
-_RULE_ID: str = "Custom_2020_1"
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
-
-TASK_NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + "_TASK_NAME_RE"
+TASK_NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + '_TASK_NAME_RE'
 
 VERBS: typing.List[str] = """\
 ask be become begin call can come could do feel find ensure get give go have
@@ -32,12 +31,14 @@ put run say see seem should show start take talk tell think try turn use want
 will work would\
 """.split()
 
-_NAME_RE: str = (r"(" + '|'.join(VERBS + [verb.title() for verb in VERBS]) +
-                 r")(\s+(\S+))+$")
+_NAME_RE: str = (r'(' + '|'.join(VERBS + [verb.title() for verb in VERBS]) +
+                 r')(\s+(\S+))+$')
 
-_NAMELESS_TASKS: typing.Tuple[str, ...] = ('meta', 'debug', 'include_role',
-                                           'import_role', 'include_tasks',
-                                           'import_tasks')
+_NAMELESS_TASKS: typing.FrozenSet[str] = frozenset("""
+meta
+debug
+include_role import_role include_tasks import_tasks
+""".split())
 
 
 @functools.lru_cache(maxsize=4)
@@ -52,12 +53,12 @@ def task_name_re(default: typing.Optional[str] = None) -> typing.Pattern:
                       re.ASCII)
 
 
-def is_named_task(task: typing.Mapping,
-                  nameless_tasks: typing.Tuple[str, ...] = _NAMELESS_TASKS
+def is_named_task(task: typing.Dict[str, typing.Any],
+                  nameless_tasks: typing.FrozenSet[str] = _NAMELESS_TASKS
                   ) -> bool:
     """Test if given task should be named?
     """
-    return task["action"]["__ansible_module__"] not in nameless_tasks
+    return task['action']['__ansible_module__'] not in nameless_tasks
 
 
 def is_invalid_task_name(name: str, default: typing.Optional[str] = None
@@ -83,37 +84,34 @@ def is_invalid_task_name(name: str, default: typing.Optional[str] = None
     return True
 
 
-def task_has_a_invalid_name(_self, _file, task) -> typing.Union[str, bool]:
-    """
-    :param task: task object
-    """
-    if is_named_task(task):
-        name = task.get("name", False)
-        if not name:
-            return "Task has no name: {}".format(
-                ansiblelint.utils.task_to_str(task)
-            )
-        if is_invalid_task_name(name):
-            return "Task name was: '{name}'".format(**task)
-
-    return False
-
-
 # pylint: disable=too-few-public-methods
-class TaskHasValidNamePatternRule(AnsibleLintRule):
+class TaskHasValidNamePatternRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if given task has a valid name satisfies the naming rule
     in the organization.
     """
-    id = _RULE_ID
-    shortdesc = "All tasks should be named correctly"
+    id = ID
+    shortdesc = 'All tasks should be named correctly'
     description = (
-        "All tasks should have a valid name satisfies the naming rule"
+        'All tasks should have a valid name satisfies the naming rule'
     )
-    severity = "MEDIUM"
-    tags = ["task", "readability", "formatting"]
-    version_added = "4.1.99"  # dummy
+    severity = 'MEDIUM'
+    tags = ['task', 'readability', 'formatting']
 
-    matchtask = task_has_a_invalid_name
+    def matchtask(self, task: typing.Dict[str, typing.Any]
+                  ) -> typing.Union[bool, str]:
+        """
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtask
+        """
+        if is_named_task(task):
+            name = task.get('name', False)
+            if not name:
+                return 'Task has no name: {}'.format(
+                    ansiblelint.utils.task_to_str(task)
+                )
+            if is_invalid_task_name(name):
+                return f'Task name was: "{name}"'
+
+        return False
 
 # vim:sw=4:ts=4:et:

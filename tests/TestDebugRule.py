@@ -2,31 +2,28 @@
 # SPDX-License-Identifier: MIT
 #
 # pylint: disable=invalid-name
-# pylint: disable=missing-function-docstring,missing-class-docstring
+# pylint: disable=too-few-public-methods,missing-class-docstring
+# pylint: disable=missing-function-docstring
 """Test cases for the rule, DebugRule.
 """
-import os
-import unittest.mock
-
 from rules import DebugRule as TT
-from tests import common as C
+from tests import common
 
 
-_ENV_PATCH = {TT.ENABLE_THIS_RULE_ENVVAR: "1"}
+_ENV_PATCH = {TT.ENABLE_THIS_RULE_ENVVAR: '1'}
 
 
 class Base:
-    name = C.get_rule_name(__file__)
-    rule = C.get_rule_instance_by_name(TT, name)
+    this_py = __file__
+    this_mod = TT
     clear_fn = TT.is_enabled.cache_clear
 
 
-class RuleTestCase(Base, C.RuleTestCase):
-    @unittest.mock.patch.dict(os.environ, _ENV_PATCH)
+class RuleTestCase(Base, common.RuleTestCase):
     def test_20_ng_cases(self):
-        self.lint(False, search='ok')
+        self.lint(False, search='ok', env=_ENV_PATCH)
 
 
-class CliTestCase(Base, C.CliTestCase):
+class CliTestCase(Base, common.CliTestCase):
     def test_20_ng_cases(self):
         self.lint(False, search='ok', env=_ENV_PATCH)

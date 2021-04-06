@@ -9,14 +9,19 @@ import os
 import re
 import typing
 
+if typing.TYPE_CHECKING:
+    from ansiblelint.constants import odict
+    from ansiblelint.errors import MatchError
+    from ansiblelint.file_utils import Lintable
+
 from ansiblelint.rules import AnsibleLintRule
 
 
-_RULE_ID: str = "Custom_2020_4"
-_ENVVAR_PREFIX: str = "_ANSIBLE_LINT_RULE_" + _RULE_ID.upper()
+ID: str = 'playbook-has-valid-name'
+_ENVVAR_PREFIX: str = '_ANSIBLE_LINT_RULE_' + ID.upper().replace('-', '_')
 
-FILENAME_ENVVAR: str = _ENVVAR_PREFIX + "_PLAYBOOK_FILENAME_RE"
-DEFAULT_FILENAME_RE: str = r"^\w+\.ya?ml$"
+FILENAME_ENVVAR: str = _ENVVAR_PREFIX + '_PLAYBOOK_FILENAME_RE'
+DEFAULT_FILENAME_RE: str = r'^\w+\.ya?ml$'
 
 
 @functools.lru_cache(maxsize=32)
@@ -31,7 +36,6 @@ def filename_re() -> typing.Pattern:
 def is_invalid_filename(filepath: str,
                         regex: typing.Optional[typing.Pattern] = None) -> bool:
     """
-    :param filepath: A str represents a file path
     :return: True if given `filename` is invalid and does not satisfy the rule
     """
     if regex is None:
@@ -40,33 +44,29 @@ def is_invalid_filename(filepath: str,
     return regex.match(os.path.basename(filepath)) is None
 
 
-MatchType = typing.List[typing.Tuple[typing.Mapping, str]]
-
-
-def check_playbook_filename(_self, file_: typing.Mapping, _play) -> MatchType:
-    """
-    .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
-    """
-    if file_["type"] == "playbook":
-        playbook = file_["path"]
-
-        if is_invalid_filename(playbook):
-            return [({"Playbook[s] may have invalid filename[s]": playbook},
-                     "Invalid filename: {}".format(playbook))]
-
-    return []
-
-
 class PlaybookFileHasValidNameRule(AnsibleLintRule):
     """
     Rule class to test if playbook file has a valid filename satisfies the file
     naming rules in the organization.
     """
-    id = _RULE_ID
-    shortdesc = "Playbook files should have valid filenames"
+    id = ID
+    shortdesc = 'Playbook files should have valid filenames'
     description = shortdesc
-    severity = "MEDIUM"
-    tags = ["playbook", "readability", "formatting"]
-    version_added = "4.2.99"  # dummy
+    severity = 'MEDIUM'
+    tags = ['playbook', 'readability', 'formatting']
 
-    matchplay = check_playbook_filename
+    def matchplay(self, file: 'Lintable', data: 'odict[str, typing.Any]'
+                  ) -> typing.List['MatchError']:
+        """
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchplay
+        """
+        if file.kind == 'playbook':
+            playbook = file.path
+
+            if is_invalid_filename(playbook):
+                return [self.create_matcherror(
+                            message=f'{playbook!s} may have invalid filename',
+                            filename=file.filename
+                        )]
+
+        return []
