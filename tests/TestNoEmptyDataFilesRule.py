@@ -12,7 +12,6 @@ from rules import NoEmptyDataFilesRule as TT
 from tests import common
 
 
-_ENV_PATCH = {TT.YML_EXT_ENVVAR: 'yaml'}
 _CLEAR_FUN = TT.is_yml_file_has_some_data.cache_clear
 
 
@@ -45,16 +44,12 @@ class Base:
 
 class RuleTestCase(Base, common.RuleTestCase):
     @pytest.mark.skip(
-            reason=('Until a solution to set os.enviorn during call'
-                    'runner.run_playboo().')
+        reason=('Until a solution to set os.enviorn during call'
+                'runner.run_playboo().')
     )
     def test_20_ng_cases(self):
         super().test_20_ng_cases()
 
-    def test_30_ok_cases__no_data(self):
-        self.lint(True, 'ng', env=_ENV_PATCH)
-
 
 class CliTestCase(Base, common.CliTestCase):
-    def test_30_ok_cases__env(self):
-        self.lint(True, 'ng', env=_ENV_PATCH)
+    pass

@@ -4,23 +4,19 @@
 #
 r"""
 Lint rule class to test if there are YAML files have no data.
-
-This implementation assumes target files are under <playbook_dir>/ with '.yml'
-extensions by default. Users can change this with the environment variable
-_ANSIBLE_LINT_RULE_CUSTOM_2020_50_YAML_EXT, for example,
-
-::
-
-    _ANSIBLE_LINT_RULE_CUSTOM_2020_50_YML_EXT=yaml
 """
 import functools
-import os
+import itertools
 import pathlib
 import typing
 import yaml
 import yaml.parser
 
-from ansiblelint.rules import AnsibleLintRule
+import ansiblelint.constants
+import ansiblelint.rules
+import ansiblelint.errors
+
+from ansiblelint.file_utils import Lintable
 
 
 RULE_ID: str = 'no-empty-data-files'
@@ -28,13 +24,6 @@ DESC = 'All YAML files should have some data'
 
 _ENVVAR_PREFIX = '_ANSIBLE_LINT_RULE_' + RULE_ID.upper().replace('-', '_')
 YML_EXT_ENVVAR = _ENVVAR_PREFIX + '_YML_EXT'
-
-
-def yml_extension() -> str:
-    """
-    Get YAML file extension maybe from the environment variable
-    """
-    return os.environ.get(YML_EXT_ENVVAR, "yml")
 
 
 @functools.lru_cache(maxsize=32)
@@ -50,58 +39,73 @@ def is_yml_file_has_some_data(filepath: pathlib.Path) -> bool:
     return True  # Innocent until proven guilty.
 
 
-def role_names_itr(playbook: str) -> typing.Iterator[str]:
+def list_role_files_itr(play: ansiblelint.constants.odict[str, typing.Any]
+                        ) -> typing.Iterator[pathlib.Path]:
     """
-    List role names from playbook.
+    List role files for given `play`.
     """
-    try:
-        plays = yaml.safe_load(open(playbook))
+    for role in play.get('roles', []):
+        roledir = role.get('name', None)
+        if not roledir:
+            continue
 
-        for play in plays:
-            for role in play.get("roles", []):
-                if isinstance(role, dict):
-                    yield role["role"]  # It should have this.
-                else:
-                    yield role
-
-    except yaml.parser.ParserError:
-        return
-
-
-MatchT = typing.Tuple[typing.Union[typing.Mapping, str], str]
+        roledir = pathlib.Path(play.path) / roledir
+        if roledir.exists() and roledir.is_dir():
+            for path in itertools.chain(roledir.glob('**/*.yml'),
+                                        roledir.glob('**/*.yaml')):
+                if path.is_file():
+                    yield path
 
 
-def no_data_yml_files_itr(playbook: str) -> typing.Iterator[MatchT]:
-    """
-    .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
-    """
-    for role in role_names_itr(playbook):
-        pattern = "roles/{}/**/*.{}".format(role, yml_extension())
-
-        for fpath in pathlib.Path(playbook).parent.glob(pattern):
-            if not is_yml_file_has_some_data(fpath):
-                yield ({"No data in YAML file: ": fpath},
-                       "YAML file looks having no data: {}".format(fpath))
-
-
-class NoEmptyDataFilesRule(AnsibleLintRule):
+class NoEmptyDataFilesRule(ansiblelint.rules.AnsibleLintRule):
     """
     Lint rule class to test if roles' YAML files have some data.
     """
     id = RULE_ID
     shortdesc = description = DESC
-    severity = "MEDIUM"
-    tags = ["format", "yaml"]  # temp
-    version_added = "4.2.99"  # dummy
+    severity = 'MEDIUM'
+    tags = ['format', 'yaml']  # temp
 
-    def matchplay(self, file_: typing.Mapping, _play: typing.Mapping
-                  ) -> typing.Union[typing.List[MatchT], bool]:
+    def err(self, path: pathlib.Path
+            ) -> typing.List[ansiblelint.errors.MatchError]:
+        """
+        an wrapper method for self.create_matcherror.
+        """
+        return self.create_matcherror(message=f'Empty data file: {path!s}',
+                                      filename=path.name)
+
+    def matchyaml_itr(self, file: Lintable
+                      ) -> typing.Iterator[ansiblelint.errors.MatchError]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
         """
-        if file_["type"] == "playbook":
-            return list(no_data_yml_files_itr(file_["path"]))
+        if file.base_kind != 'text/yaml':
+            return
 
-        return False
+        for match in super().matchyaml(file):
+            yield match
+
+        maybe_playbook = pathlib.Path(file.path)
+        if not is_yml_file_has_some_data(maybe_playbook):
+            yield self.err(maybe_playbook)
+
+    def matchyaml(self, file: Lintable
+                  ) -> typing.List[ansiblelint.errors.MatchError]:
+        """
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
+        """
+        return list(self.matchyaml_itr(file))
+
+    def matchplay(self, file: Lintable,
+                  data: ansiblelint.constants.odict[str, typing.Any]
+                  ) -> typing.List[ansiblelint.errors.MatchError]:
+        """
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
+        """
+        raise ValueError(f'{data!r}')
+        return [
+            self.err(path) for path in list_role_files_itr(data)
+            if not is_yml_file_has_some_data(path)
+        ]
 
 # vim:sw=4:ts=4:et:
