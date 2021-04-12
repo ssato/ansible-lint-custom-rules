@@ -1,0 +1,3 @@
+---
+- include_tasks: "assertions.yml"
+- include_tasks: "do_ping.yml"
