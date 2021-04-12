@@ -6,10 +6,17 @@
 """
 import os
 import subprocess
+import types
 import typing
 import unittest
+import unittest.mock
 
 from . import constants, runner, utils
+
+
+MaybeModNameT = typing.Optional[str]
+MaybeModT = typing.Optional[types.ModuleType]
+MaybeCallableT = typing.Optional[typing.Callable]
 
 
 class BaseTestCase(unittest.TestCase):
@@ -18,12 +25,12 @@ class BaseTestCase(unittest.TestCase):
     # .. todo::
     #    I don't know how to compute and set them in test case classes in
     #    modules import this module.
-    this_py = None
-    this_mod = None
+    this_py: MaybeModNameT = None
+    this_mod: MaybeModT = None
 
-    clear_fn: typing.Optional[typing.Callable] = None
+    clear_fn: MaybeCallableT = None
 
-    initialized = False
+    initialized: bool = False
 
     def init(self):
         """Initialize.
@@ -68,8 +75,9 @@ class RuleTestCase(BaseTestCase):
         List test resource data (may match given search patterns).
         """
         files = utils.list_resources(self.name, success=success, search=search)
-        self.assertTrue(files, 'Failed to load test resource data!')
-
+        self.assertTrue(files,
+                        'Failed to find test resource data! '
+                        f'success={success}, search={search}')
         return files
 
     def lint(self, success: bool = True,
@@ -112,7 +120,8 @@ class CliTestCase(RuleTestCase):
 
         excl_opt = utils.concat(('-x', rid) for rid in runner.list_rule_ids()
                                 if rid != self.rule.id)
-        self.cmd = f'ansible-lint -r {constants.RULES_DIR}'.split() + excl_opt
+        self.cmd = (f'ansible-lint -r {constants.RULES_DIR!s}'.split()
+                    + excl_opt)
 
     def lint(self, success: bool = True,
              search: typing.Optional[str] = None,

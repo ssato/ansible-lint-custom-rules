@@ -3,9 +3,16 @@
 #
 """Entry point of tests.common.*.
 """
-from .constants import (  # flake8: noqa
-    TESTS_DIR, RULES_DIR, DEFAULT_RULES_DIR
+from .constants import (
+    TESTS_DIR, TESTS_RES_DIR, RULES_DIR, DEFAULT_RULES_DIR
 )
-from .testcases import (  # flake8: noqa
+from .testcases import (
+    MaybeModNameT, MaybeModT, MaybeCallableT,
     RuleTestCase, CliTestCase
 )
+
+__all__ = [
+    'TESTS_DIR', 'TESTS_RES_DIR', 'RULES_DIR', 'DEFAULT_RULES_DIR',
+    'MaybeModNameT', 'MaybeModT', 'MaybeCallableT',
+    'RuleTestCase', 'CliTestCase'
+]

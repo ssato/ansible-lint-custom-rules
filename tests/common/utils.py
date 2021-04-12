@@ -26,7 +26,8 @@ def strip_words(astr: str, *words: str) -> str:
 
 
 def list_resources(name: str, success: bool = True,
-                   search: typing.Optional[str] = None
+                   search: typing.Optional[str] = None,
+                   pattern: typing.Optional[str] = None
                    ) -> typing.List[str]:
     """
     List resource data files for OK or NG test cases.
@@ -34,14 +35,11 @@ def list_resources(name: str, success: bool = True,
     if search is None or not search:
         search = 'ok' if success else 'ng'
 
-    pattern = f'*{search}*.*'
-    files = sorted(str(p) for p
-                   in (constants.TESTS_DIR / 'res' / name).glob(pattern)
-                   if p.is_file())
-    if not files:
-        raise RuntimeError(f"No resource data files: { pattern }")
+    if not pattern:
+        pattern = '*.*'
 
-    return files
+    root = constants.TESTS_DIR / 'res' / name / search
+    return sorted(str(p) for p in root.glob(pattern) if p.is_file())
 
 
 def get_rule_name(test_py: str = __file__) -> str:

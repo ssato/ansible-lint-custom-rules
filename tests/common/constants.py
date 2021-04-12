@@ -9,9 +9,10 @@ import ansiblelint.utils
 
 
 TESTS_DIR: pathlib.Path = pathlib.Path(__file__).parent.parent.resolve()
+TESTS_RES_DIR = TESTS_DIR / 'res'
 
 RULES_SUBDIR: str = 'rules'
-RULES_DIR: str = str(TESTS_DIR.parent / RULES_SUBDIR)
+RULES_DIR = TESTS_DIR.parent / RULES_SUBDIR
 
 DEFAULT_RULES_DIR: str = str(
     pathlib.Path(ansiblelint.utils.__file__).parent / RULES_SUBDIR

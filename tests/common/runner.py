@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Red Hat, Inc.
+# Copyright (C) 2020, 2021 Satoru SATOH <satoru.satoh@gmail.com>
 # SPDX-License-Identifier: MIT
 #
 # pylint: disable=too-few-public-methods
@@ -7,54 +7,48 @@
 import pathlib
 import typing
 
+import ansiblelint.config
 import ansiblelint.constants
 import ansiblelint.errors
-import ansiblelint.rules
 import ansiblelint.runner
 
-try:
-    import ansiblelint.config as AC
-except ImportError:
-    AC = False
+from ansiblelint.rules import AnsibleLintRule, RulesCollection
 
 from . import constants
-
-
-FilepathT = typing.Union[str, pathlib.Path]
-MatchResultT = typing.List[ansiblelint.errors.MatchError]
 
 
 def list_rule_ids(*rdirs: str) -> typing.Iterator[str]:
     """List the IDs of rules in given dirs.
     """
     if not rdirs:
-        rdirs = [constants.RULES_DIR]
+        rdirs = [str(constants.RULES_DIR)]
 
-    return [r.id for r in ansiblelint.rules.RulesCollection(rdirs)]
+    for rule in ansiblelint.rules.RulesCollection(rdirs):
+        yield rule.id
 
 
-def get_collection(rule_instance: ansiblelint.rules.AnsibleLintRule = None,
-                   ) -> ansiblelint.rules.RulesCollection:
+def get_collection(rule: typing.Optional[AnsibleLintRule] = None
+                   ) -> RulesCollection:
     """
-    Get RulesCollection instance.
+    Get RulesCollection instance with given rule registered.
     """
-    if rule_instance is None:
+    if rule is None:
         # .. seealso:: ansiblelint.testing.fixture.default_rules_collection
         assert pathlib.Path(ansiblelint.constants.DEFAULT_RULESDIR).is_dir()
 
-        if AC:
-            AC.options.enable_list = ['no-same-owner']
-            return ansiblelint.rules.RulesCollection(
+        try:
+            ansiblelint.config.options.enable_list = ['no-same-owner']
+            return RulesCollection(
                 rulesdirs=[ansiblelint.constants.DEFAULT_RULESDIR],
                 options=ansiblelint.config.options
             )
+        except TypeError:
+            return RulesCollection(
+                rulesdirs=[ansiblelint.constants.DEFAULT_RULESDIR]
+            )
 
-        return ansiblelint.rules.RulesCollection(
-            rulesdirs=[ansiblelint.constants.DEFAULT_RULESDIR]
-        )
-
-    collection = ansiblelint.rules.RulesCollection()
-    collection.register(rule_instance)
+    collection = RulesCollection()
+    collection.register(rule)
     return collection
 
 
@@ -63,12 +57,13 @@ class RunFromFile:
 
     .. seealso:: ansiblelint.testing.RunFromText
     """
-    def __init__(self, collection: ansiblelint.rules.RulesCollection):
+    def __init__(self, collection: RulesCollection):
         """Initialize an instance with given rules collection.
         """
         self._collection = collection
 
-    def run_playbook(self, path: FilepathT) -> MatchResultT:
+    def run_playbook(self, path: typing.Union[str, pathlib.Path]
+                     ) -> typing.List[ansiblelint.errors.MatchError]:
         """Lints received playbook file.
         """
         return ansiblelint.runner.Runner(path, rules=self._collection).run()

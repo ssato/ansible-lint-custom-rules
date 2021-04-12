@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 #
 # pylint: disable=missing-function-docstring
-"""Test cases of tests.common.
+"""Test cases of tests.common.runner.
 """
 import ansiblelint.rules
 import pytest
@@ -14,23 +14,23 @@ from tests.common import runner as TT
 @pytest.mark.parametrize(
     'rdirs',
     [[],
-     [TT.constants.RULES_DIR],
+     [str(TT.constants.RULES_DIR)],
      ]
 )
 def test_list_rule_ids(rdirs):
-    res = TT.list_rule_ids(*rdirs)
+    res = list(TT.list_rule_ids(*rdirs))
     assert res, res
-    assert 'debug-rule' in res, f'{res!r}'
+    assert 'debug' in res, f'{res!r}'
 
 
 @pytest.mark.parametrize(
-    'rule_instance',
+    'rule',
     [DebugRule(),
      None
      ]
 )
-def test_get_collection(rule_instance):
-    assert isinstance(TT.get_collection(rule_instance),
+def test_get_collection(rule):
+    assert isinstance(TT.get_collection(rule),
                       ansiblelint.rules.RulesCollection)
 
 # vim:sw=4:ts=4:et:

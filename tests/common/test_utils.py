@@ -5,6 +5,9 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring
 """Test cases of tests.common.
 """
+import pathlib
+import typing
+
 import pytest
 
 from tests.common import utils as TT, constants as C
@@ -37,35 +40,30 @@ def test_strips(astr, words, expected):
     assert TT.strip_words(astr, *words) == expected
 
 
-@pytest.mark.parametrize(
-    'success,search',
-    [(True, None),  # Default
-     (False, 'ok')  # Override the filename glob pattern.
-     ]
+_NAME = 'DebugRule'
+_OK_FILES: typing.List[str] = sorted(
+    str(f) for f
+    in pathlib.Path(C.TESTS_RES_DIR / _NAME / 'ok').glob('*.*')
+    if f.is_file()
 )
-def test_list_resoruces_for_ok_cases(success, search):
-    name = 'DebugRule'
-    rss = TT.list_resources(name, success=success, search=search)
-    assert rss
-    assert TT.pathlib.Path(rss[0]).name == 'ok_1.yml'
 
 
 @pytest.mark.parametrize(
-    'success,search',
-    [(False, None),
-     (True, 'ng')
+    'success,search,expected',
+    [(True, None, _OK_FILES),   # Default
+     (False, 'ok', _OK_FILES),  # Override the dir to search.
+     (False, None, []),
+     (True, 'ng', [])
      ]
 )
-def test_list_resoruces_for_ng_cases(success, search):
-    name = 'DebugRule'
-    with pytest.raises(RuntimeError, match=r'No resource data files:.*'):
-        TT.list_resources(name, success=success, search=search)
+def test_list_resoruces_for_ok_cases(success, search, expected):
+    assert TT.list_resources(_NAME, success=success, search=search) == expected
 
 
 @pytest.mark.parametrize(
     'filepath,expected',
     [(__file__, 'utils'),
-     (str(C.TESTS_DIR.parent / 'rules' / 'DebugRule.py'), 'DebugRule')
+     (str(C.RULES_DIR / f'{_NAME}.py'), _NAME)
      ]
 )
 def test_get_rule_name(filepath, expected):
