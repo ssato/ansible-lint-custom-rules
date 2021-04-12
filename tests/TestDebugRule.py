@@ -14,9 +14,9 @@ _ENV_PATCH = {TT.ENABLE_THIS_RULE_ENVVAR: '1'}
 
 
 class Base:
-    this_py = __file__
-    this_mod = TT
-    clear_fn = TT.is_enabled.cache_clear
+    this_py: common.MaybeModNameT = __file__
+    this_mod: common.MaybeModT = TT
+    clear_fn: common.MaybeCallableT = TT.is_enabled.cache_clear
 
 
 class RuleTestCase(Base, common.RuleTestCase):
