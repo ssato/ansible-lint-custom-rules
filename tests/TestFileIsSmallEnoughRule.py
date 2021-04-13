@@ -23,6 +23,7 @@ _ENV_PATCH = {TT.MAX_LINES_ENVVAR: '1'}
 )
 def test_exceeds_max_lines(mlines, expected):
     assert TT.exceeds_max_lines(__file__, mlines=mlines) == expected
+    TT.max_lines.cache_clear()
 
 
 def test_exceeds_max_lines_with_env(monkeypatch):
@@ -33,9 +34,9 @@ def test_exceeds_max_lines_with_env(monkeypatch):
 
 
 class Base:
-    this_py = __file__
-    this_mod = TT
-    clear_fn = TT.max_lines.cache_clear
+    this_py: common.MaybeModNameT = __file__
+    this_mod: common.MaybeModT = TT
+    clear_fn: common.MaybeCallableT = TT.max_lines.cache_clear
 
 
 class RuleTestCase(Base, common.RuleTestCase):
