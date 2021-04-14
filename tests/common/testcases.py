@@ -32,9 +32,19 @@ class BaseTestCase(unittest.TestCase):
 
     initialized: bool = False
 
+    @classmethod
+    def clear(cls):
+        """Call clear function if it's callable.
+        """
+        if cls.clear_fn and callable(cls.clear_fn):
+            cls.clear_fn()  # pylint: disable=not-callable
+
     def init(self):
         """Initialize.
         """
+        if not self.this_py or not self.this_mod:
+            return
+
         self.name = utils.get_rule_name(self.this_py)
         self.rule = utils.get_rule_instance_by_name(self.this_mod, self.name)
 
@@ -42,18 +52,17 @@ class BaseTestCase(unittest.TestCase):
         collection = runner.get_collection(self.rule)
         self.runner = runner.RunFromFile(collection)
 
-        if self.clear_fn and callable(self.clear_fn):
-            self.clear_fn()  # pylint: disable=not-callable
-
         self.initialized = True
 
     def setUp(self):
-        """Reset when each test case runs.
+        """Setup
         """
-        if not self.this_py or not self.this_mod:
-            return
-
         self.init()
+
+    def tearDown(self):
+        """De-initialize.
+        """
+        self.clear()
 
 
 class RuleTestCase(BaseTestCase):
@@ -64,24 +73,34 @@ class RuleTestCase(BaseTestCase):
         """Run playbook.
         """
         if env:
-            with unittest.mock.patch.dict(os.environ, env):
+            # .. todo:: It does not look working in pytest env.
+            # with unittest.mock.patch.dict(os.environ, env):
+            saved = os.environ.copy()
+            try:
+                os.environ.update(**env)
                 return self.runner.run_playbook(filepath)
+            finally:
+                os.environ = saved
 
         return self.runner.run_playbook(filepath)
 
     def list_resources(self, success: bool = True,
-                       search: typing.Optional[str] = None):
+                       search: typing.Optional[str] = None,
+                       pattern: typing.Optional[str] = None):
         """
         List test resource data (may match given search patterns).
         """
-        files = utils.list_resources(self.name, success=success, search=search)
+        files = utils.list_resources(self.name, success=success,
+                                     search=search, pattern=pattern)
         self.assertTrue(files,
-                        'Failed to find test resource data! '
-                        f'success={success}, search={search}')
+                        'Failed to find test resource data: '
+                        f'success={success}, search={search}'
+                        f'pattern={pattern}')
         return files
 
     def lint(self, success: bool = True,
              search: typing.Optional[str] = None,
+             pattern: typing.Optional[str] = None,
              env: typing.Optional[typing.Dict] = None):
         """
         Run the lint rule's check to given resource data files.
@@ -89,7 +108,8 @@ class RuleTestCase(BaseTestCase):
         if not self.initialized:
             return
 
-        files = self.list_resources(success=success, search=search)
+        files = self.list_resources(success=success, search=search,
+                                    pattern=pattern)
         for filepath in files:
             res = self.run_playbook(filepath, env=env)
             msg = f'{filepath}, {res!r}, {env!r}'
@@ -125,6 +145,7 @@ class CliTestCase(RuleTestCase):
 
     def lint(self, success: bool = True,
              search: typing.Optional[str] = None,
+             pattern: typing.Optional[str] = None,
              env: typing.Optional[typing.Dict] = None):
         """
         Run ansible-lint with given arguments in given env.
@@ -136,7 +157,8 @@ class CliTestCase(RuleTestCase):
         if env:
             oenv.update(**env)
 
-        files = self.list_resources(success=success, search=search)
+        files = self.list_resources(success=success, search=search,
+                                    pattern=pattern)
         for filepath in files:
             res = subprocess.run(
                 self.cmd + [filepath], stdout=subprocess.PIPE, check=False,
