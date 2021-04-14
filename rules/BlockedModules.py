@@ -51,7 +51,7 @@ include
 MODULES_RE = re.compile(r'^(\w+(?:\s+\w+)*)$', re.ASCII)
 
 
-@functools.lru_cache(maxsize=32)
+@functools.lru_cache()
 def blocked_modules(default: typing.FrozenSet[str] = BLOCKED_MODULES
                     ) -> typing.FrozenSet[str]:
     """

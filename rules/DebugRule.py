@@ -22,7 +22,7 @@ ID: str = 'debug'
 ENABLE_THIS_RULE_ENVVAR = f'_ANSIBLE_LINT_RULE_{ID.upper()}'
 
 
-@functools.lru_cache(maxsize=64)
+@functools.lru_cache()
 def is_enabled(default: bool = False) -> bool:
     """
     Is this rule enabled with the environment variable?
