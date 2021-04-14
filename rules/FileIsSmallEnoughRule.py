@@ -14,6 +14,7 @@ variable, _ANSIBLE_LINT_RULE_CUSTOM_2020_30_MAX_LINES.
 """
 import functools
 import os
+import re
 import typing
 
 import ansiblelint.constants
@@ -25,18 +26,23 @@ if typing.TYPE_CHECKING:
 
 
 ID: str = 'file-is-small-enough'
-_ENVVAR_PREFIX = '_ANSIBLE_LINT_RULE_' + ID.upper().replace('-', '_')
+ENV_VAR: str = (f"_ANSIBLE_LINT_RULE_{ID.upper().replace('-', '_')}"
+                '_MAX_LINES')
 
-MAX_LINES_ENVVAR: str = _ENVVAR_PREFIX + '_MAX_LINES'
-MAX_LIENS: int = 500
+MAX_LINES: int = 500
+MAX_LINES_RE: typing.Pattern = re.compile(r'^[1-9]\d*$', re.ASCII)
 
 
-@functools.lru_cache(maxsize=32)
-def max_lines(default: int = MAX_LIENS) -> int:
+@functools.lru_cache()
+def max_lines(default: int = MAX_LINES) -> int:
     """
-    :return: A int denotes the max line of playbook and related files
+    :return: An int denotes the max line of playbook and related files
     """
-    return int(os.environ.get(MAX_LINES_ENVVAR, default))
+    mlines: str = os.environ.get(ENV_VAR, '').strip()
+    if mlines and MAX_LINES_RE.match(mlines):
+        return int(mlines)
+
+    return default
 
 
 def exceeds_max_lines(filepath: str, mlines: int = 0) -> bool:
@@ -49,7 +55,7 @@ def exceeds_max_lines(filepath: str, mlines: int = 0) -> bool:
     >>> exceeds_max_lines(__file__, 10)
     True
     """
-    if mlines <= 0:
+    if mlines < 1:
         mlines = max_lines()
 
     with open(filepath) as fobj:
@@ -62,6 +68,12 @@ def exceeds_max_lines(filepath: str, mlines: int = 0) -> bool:
     return False
 
 
+# .. seealso:: ansiblelint.constants.FileType
+FTYPES: typing.FrozenSet = frozenset(
+    'playbook meta tasks handlers role yaml'.split()
+)
+
+
 class FileIsSmallEnoughRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if playbook and tasks files are small enough.
@@ -70,16 +82,18 @@ class FileIsSmallEnoughRule(ansiblelint.rules.AnsibleLintRule):
     shortdesc = 'Playbook and tasks files should be small enough'
     description = shortdesc
     severity = 'MEDIUM'
-    tags = ['playbook', 'tasks', 'readability']
+    tags = [ID, 'playbook', 'tasks', 'readability']
 
-    cache: typing.Set = set()
+    def __init__(self):
+        """Initialize this.
+        """
+        super().__init__()
+        self.cache: typing.Set = set()
 
     def matchyaml(self, file: 'Lintable') -> typing.List['MatchError']:
         """Test playbook files.
         """
-        # .. seealso:: ansiblelint.constants.FileType:
-        ftypes = 'playbook meta tasks handlers role yaml'.split()
-        if file.kind in ftypes:
+        if file.kind in FTYPES:
             path = str(file.path)
             if path in self.cache:
                 return []

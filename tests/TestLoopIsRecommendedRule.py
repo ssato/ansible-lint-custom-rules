@@ -6,22 +6,16 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule, LoopIsRecommendedRule.
 """
-import pytest
-
 from rules import LoopIsRecommendedRule as TT
 from tests import common
 
 
 class Base:
-    this_py = __file__
-    this_mod = TT
+    this_py: common.MaybeModNameT = __file__
+    this_mod: common.MaybeModT = TT
 
 
 class RuleTestCase(Base, common.RuleTestCase):
-    @pytest.mark.skip(
-        reason=('Until a solution to set os.enviorn during call'
-                'runner.run_playboo().')
-    )
     def test_20_ng_cases(self):
         self.lint(success=False)
 

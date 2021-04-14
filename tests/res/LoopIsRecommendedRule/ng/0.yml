@@ -1,8 +1,10 @@
+---
 - hosts: localhost
   connection: local
   gather_facts: false
+  vars:
   tasks:
     - name: Try ping
       ping:
-      loop:
+      with_items:
         - pong

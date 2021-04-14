@@ -1,7 +1,7 @@
 # Copyright (C) 2020,2021 Red Hat, Inc.
-#
 # SPDX-License-Identifier: MIT
 #
+# pylint: disable=invalid-name
 """Lint rule class to test if tasks files have valid filenames.
 """
 import functools
@@ -10,24 +10,32 @@ import pathlib
 import re
 import typing
 
-if typing.TYPE_CHECKING:
-    from ansiblelint.constants import odict
-    from ansiblelint.errors import MatchError
-    from ansiblelint.file_utils import Lintable
-
-from ansiblelint.rules import AnsibleLintRule
+import ansiblelint.constants
+import ansiblelint.errors
+import ansiblelint.file_utils
+import ansiblelint.rules
 
 
 ID: str = 'tasks-file-has-valid-names'
-DESC: str = 'Tasks files must have valid filenames.'
+ENV_VAR = f"_ANSIBLE_LINT_RULE_{ID.upper().replace('-', '_')}_NAME_RE"
 
-_ENVVAR_PREFIX: str = '_ANSIBLE_LINT_RULE_' + ID.upper().replace('-', '_')
-NAME_RE_ENVVAR: str = _ENVVAR_PREFIX + '_TASKS_FILENAME_RE'
-
+VALID_NAME_RE: typing.Pattern = re.compile(r'^\S+$', re.ASCII)
 NAME_RE_DEFAULT: str = r'^\w+\.ya?ml$'
 
 
-@functools.lru_cache(maxsize=4)
+def name_re(default: str, env_var: str = ENV_VAR,
+            valid_name_re: typing.Pattern = VALID_NAME_RE) -> str:
+    """
+    Get a pattern to match with names as a string.
+    """
+    pattern_s = os.environ.get(env_var, False)
+    if pattern_s and valid_name_re.match(pattern_s):
+        return pattern_s
+
+    return default
+
+
+@functools.lru_cache()
 def filename_re(default: typing.Optional[str] = None) -> typing.Pattern:
     """
     :return: regex object to try match with names
@@ -35,51 +43,42 @@ def filename_re(default: typing.Optional[str] = None) -> typing.Pattern:
     if default is None:
         default = NAME_RE_DEFAULT
 
-    return re.compile(os.environ.get(NAME_RE_ENVVAR, default), re.ASCII)
+    return re.compile(name_re(default), re.ASCII)
 
 
-@functools.lru_cache(maxsize=32)
-def is_invalid_filename(filepath: str, name_re: typing.Optional[str] = None
-                        ) -> bool:
+def is_invalid_filename(filepath: str) -> bool:
     """
     Test if given file has valid filename.
     """
     fname = pathlib.Path(filepath).name
-    return filename_re(name_re).match(fname) is None
+    return filename_re().match(fname) is None
 
 
-def check_filename(filepath: str) -> typing.Union[str, bool]:
-    """
-    Check filename.
-    """
-    if is_invalid_filename(filepath):
-        return f'Invalid filename: {filepath}'
-
-    return False
-
-
-class TasksFileHasValidNameRule(AnsibleLintRule):
+class TasksFileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if tasks file has a valid filename satisfies the file
     naming rules in the organization.
     """
     id = ID
-    shortdesc = DESC
+    shortdesc: str = 'Tasks file must have valid filename'
     description = (
-        'Tasks files (roles/tasks/*.yml) should have valid filenames.'
+        'Tasks files (roles/tasks/*.yml) must have valid filenames.'
     )
     severity = 'HIGH'
-    tags = ['task']
+    tags = [ID, 'task']
 
-    def matchplay(self, file: 'Lintable', _data: 'odict[str, typing.Any]'
-                  ) -> typing.List['MatchError']:
+    def matchplay(self, file: ansiblelint.file_utils.Lintable,
+                  _data: ansiblelint.constants.odict[str, typing.Any]
+                  ) -> typing.List[ansiblelint.errors.MatchError]:
         """
         .. seealso:; ansiblelint.rules.AnsibleLintRule.matchplay
         """
-        if file.kind == 'tasks' and check_filename(file.name):
-            msg = f'Invalid tasks files: {file.name!s}'
-            return [
-                self.create_matcherror(message=msg, filename=file.name)
-            ]
+        if file.kind == 'tasks':
+            path = str(file.path)
+            if is_invalid_filename(path):
+                return [
+                    self.create_matcherror(message=f'{self.shortdesc}: {path}',
+                                           filename=file.name)
+                ]
 
         return []

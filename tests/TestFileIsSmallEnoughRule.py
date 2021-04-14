@@ -6,31 +6,46 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule.
 """
+import ansiblelint.file_utils
 import pytest
 
 from rules import FileIsSmallEnoughRule as TT
 from tests import common
 
 
-_ENV_PATCH = {TT.MAX_LINES_ENVVAR: '1'}
+@pytest.fixture(autouse=True)
+def cache_clear():
+    yield
+    TT.max_lines.cache_clear()
+
+
+@pytest.mark.parametrize(
+    'evalue,expected',
+    [('', TT.MAX_LINES),
+     ('aaa', TT.MAX_LINES),
+     ('0', TT.MAX_LINES),
+     ('1', 1),
+     ]
+)
+def test_max_lines(evalue, expected, monkeypatch):
+    monkeypatch.setenv(TT.ENV_VAR, evalue)
+    assert TT.max_lines() == expected
 
 
 @pytest.mark.parametrize(
     'mlines,expected',
     [(100000, False),
-     (1, True)
+     (1, True),
+     (0, False),  # default
      ]
 )
 def test_exceeds_max_lines(mlines, expected):
     assert TT.exceeds_max_lines(__file__, mlines=mlines) == expected
-    TT.max_lines.cache_clear()
 
 
 def test_exceeds_max_lines_with_env(monkeypatch):
-    TT.max_lines.cache_clear()
-    monkeypatch.setenv(TT.MAX_LINES_ENVVAR, '1')
+    monkeypatch.setenv(TT.ENV_VAR, '1')
     assert TT.exceeds_max_lines(__file__)
-    TT.max_lines.cache_clear()
 
 
 class Base:
@@ -39,11 +54,10 @@ class Base:
     clear_fn: common.MaybeCallableT = TT.max_lines.cache_clear
 
 
+_ENV_PATCH = {TT.ENV_VAR: '1'}
+
+
 class RuleTestCase(Base, common.RuleTestCase):
-    @pytest.mark.skip(
-        reason=('Until a solution to set os.enviorn during call'
-                'runner.run_playboo().')
-    )
     def test_20_ng_cases(self):
         self.lint(False, 'ok', env=_ENV_PATCH)
 

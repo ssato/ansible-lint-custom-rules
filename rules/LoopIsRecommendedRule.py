@@ -1,41 +1,38 @@
 # Copyright (C) 2020,2021 Red Hat, Inc.
-#
 # SPDX-License-Identifier: MIT
 #
+# pylint: disable=invalid-name
 """Lint rule class to test if tasks use with_* directives.
 """
 import typing
 
-from ansiblelint.rules import AnsibleLintRule
+import ansiblelint.rules
 
 
-_RULE_ID: str = 'loop-is-recommended'
-_DESC: str = """loop is recommended and use of with_* may be repalced with it.
+ID: str = 'loop-is-recommended'
+DESC: str = """loop is recommended and use of with_* may be repalced with it.
 See also:
 https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html
 """
 
 
-def is_directive_used(_self, task: typing.Dict[str, typing.Any],
-                      ) -> typing.Union[bool, str]:
-    """
-    .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
-    """
-    with_st = [key for key in task if key.startswith('with_')]
-    if with_st:
-        return f'Use of with_* was found: { ", ".join(with_st) }'
-
-    return False
-
-
-class LoopIsRecommendedRule(AnsibleLintRule):
+class LoopIsRecommendedRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if any tasks use with_* loop directive.
     """
-    id: str = _RULE_ID
+    id: str = ID
     shortdesc: str = 'loop is recommended and with_* may be repalced with it'
-    description: str = _DESC
+    description: str = DESC
     severity: str = 'LOW'
-    tags: typing.List[str] = ['readability', 'formatting']
+    tags: typing.List[str] = [ID, 'readability', 'formatting']
 
-    matchtask = is_directive_used
+    def matchtask(self, task: typing.Dict[str, typing.Any],
+                  ) -> typing.Union[bool, str]:
+        """
+        .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
+        """
+        with_st = [key for key in task if key.startswith('with_')]
+        if with_st:
+            return f'Use of with_* was found: { ", ".join(with_st) }'
+
+        return False
