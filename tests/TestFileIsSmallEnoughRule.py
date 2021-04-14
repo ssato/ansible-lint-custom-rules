@@ -6,7 +6,6 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule.
 """
-import ansiblelint.file_utils
 import pytest
 
 from rules import FileIsSmallEnoughRule as TT
