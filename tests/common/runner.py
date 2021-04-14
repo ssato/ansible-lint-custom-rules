@@ -10,6 +10,7 @@ import typing
 import ansiblelint.config
 import ansiblelint.constants
 import ansiblelint.errors
+import ansiblelint.file_utils
 import ansiblelint.runner
 
 from ansiblelint.rules import AnsibleLintRule, RulesCollection
@@ -66,6 +67,9 @@ class RunFromFile:
                      ) -> typing.List[ansiblelint.errors.MatchError]:
         """Lints received playbook file.
         """
-        return ansiblelint.runner.Runner(path, rules=self._collection).run()
+        return ansiblelint.runner.Runner(
+            ansiblelint.file_utils.Lintable(path, kind='playbook'),
+            rules=self._collection
+        ).run()
 
 # vim:sw=4:ts=4:et:
