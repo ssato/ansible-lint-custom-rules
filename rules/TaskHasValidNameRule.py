@@ -77,17 +77,7 @@ def is_named_task(task: typing.Dict[str, typing.Any],
 def is_invalid_task_name(name: str, default: typing.Optional[str] = None
                          ) -> bool:
     """
-    >>> task_name_re.cache_clear()
-    >>> is_invalid_task_name("Run something")
-    False
-    >>> is_invalid_task_name("ask something")
-    False
-    >>> is_invalid_task_name('')
-    True
-
-    # I don't know why but it fails in tox env.
-    # >>> is_invalid_task_name("a b c")
-    # True
+    Test if given task's name is invalid.
     """
     if name:
         return task_name_pattern(default).match(name) is None
