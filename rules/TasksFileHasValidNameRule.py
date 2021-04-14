@@ -28,7 +28,7 @@ def name_re(default: str, env_var: str = ENV_VAR,
     """
     Get a pattern to match with names as a string.
     """
-    pattern_s = os.environ.get(env_var, False)
+    pattern_s = os.environ.get(env_var, '')
     if pattern_s and valid_name_re.match(pattern_s):
         return pattern_s
 

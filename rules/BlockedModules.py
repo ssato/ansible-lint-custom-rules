@@ -57,7 +57,7 @@ def blocked_modules(default: typing.FrozenSet[str] = BLOCKED_MODULES
     """
     Get and return the blocked modules from the env. var, file or default.
     """
-    blocked = os.environ.get(ENV_VAR, False)
+    blocked = os.environ.get(ENV_VAR, '')
     if blocked:
         if blocked.startswith('@'):  # It's a file path.
             path = blocked[1:]
