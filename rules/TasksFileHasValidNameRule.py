@@ -10,10 +10,12 @@ import pathlib
 import re
 import typing
 
-import ansiblelint.constants
 import ansiblelint.errors
 import ansiblelint.file_utils
 import ansiblelint.rules
+
+if typing.TYPE_CHECKING:
+    from ansiblelint.constants import odict
 
 
 ID: str = 'tasks-file-has-valid-names'
@@ -68,7 +70,7 @@ class TasksFileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     tags = [ID, 'task']
 
     def matchplay(self, file: ansiblelint.file_utils.Lintable,
-                  _data: ansiblelint.constants.odict[str, typing.Any]
+                  _data: 'odict[str, typing.Any]'
                   ) -> typing.List[ansiblelint.errors.MatchError]:
         """
         .. seealso:; ansiblelint.rules.AnsibleLintRule.matchplay
