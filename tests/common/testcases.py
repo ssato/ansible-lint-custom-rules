@@ -158,10 +158,10 @@ class CliTestCase(RuleTestCase):
                 self.cmd + [filepath], stdout=subprocess.PIPE, check=False,
                 env=oenv
             )
+            args = (res.returncode, 0, res.stdout.decode('utf-8'))
             if success:
-                self.assertEqual(res.returncode, 0, res.stdout.decode('utf-8'))
+                self.assertEqual(*args)
             else:
-                self.assertNotEqual(res.returncode, 0,
-                                    res.stdout.decode('utf-8'))
+                self.assertNotEqual(*args)
 
 # vim:sw=4:ts=4:et:
