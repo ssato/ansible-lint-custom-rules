@@ -26,9 +26,9 @@ class Base:
 
 class RuleTestCase(Base, common.RuleTestCase):
     def test_30_tasks_file_has_valid_name__ok__env(self):
-        self.lint(True, search='ng', pattern='0.yml', env=_ENV_PATCH)
+        self.lint(True, subdir='ng', pattern='0.yml', env=_ENV_PATCH)
 
 
 class CliTestCase(Base, common.CliTestCase):
     def test_30_tasks_file_has_valid_name__ok__env(self):
-        self.lint(True, search='ng', pattern='0.yml', env=_ENV_PATCH)
+        self.lint(True, subdir='ng', pattern='0.yml', env=_ENV_PATCH)

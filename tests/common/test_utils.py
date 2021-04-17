@@ -49,15 +49,15 @@ _OK_FILES: typing.List[str] = sorted(
 
 
 @pytest.mark.parametrize(
-    'success,search,expected',
+    'success,subdir,expected',
     [(True, None, _OK_FILES),   # Default
-     (False, 'ok', _OK_FILES),  # Override the dir to search.
+     (False, 'ok', _OK_FILES),  # Override subdir
      (False, None, []),
      (True, 'ng', [])
      ]
 )
-def test_list_resoruces_for_ok_cases(success, search, expected):
-    assert TT.list_resources(_NAME, success=success, search=search) == expected
+def test_list_resoruces_for_ok_cases(success, subdir, expected):
+    assert TT.list_resources(_NAME, success=success, subdir=subdir) == expected
 
 
 @pytest.mark.parametrize(

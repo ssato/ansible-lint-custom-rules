@@ -39,9 +39,9 @@ def test_task_name_re(evalue, expected, monkeypatch):
 
 class RoleTestCase(Base, common.RuleTestCase):
     def test_30_task_has_invalid_name_pattern__ok__setenv(self):
-        self.lint(True, search='ng', pattern='0.yml', env=_ENV_PATCH)
+        self.lint(True, subdir='ng', pattern='0.yml', env=_ENV_PATCH)
 
 
 class CliTestCase(Base, common.CliTestCase):
     def test_30_ok_cases__env(self):
-        self.lint(True, search='ng', pattern='0.yml', env=_ENV_PATCH)
+        self.lint(True, subdir='ng', pattern='0.yml', env=_ENV_PATCH)

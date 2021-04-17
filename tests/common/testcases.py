@@ -79,21 +79,21 @@ class RuleTestCase(BaseTestCase):
         return self.runner.run_playbook(filepath)
 
     def list_resources(self, success: bool = True,
-                       search: typing.Optional[str] = None,
+                       subdir: typing.Optional[str] = None,
                        pattern: typing.Optional[str] = None):
         """
-        List test resource data (may match given search patterns).
+        List test resource data matches given subdir and patterns.
         """
         files = utils.list_resources(self.name, success=success,
-                                     search=search, pattern=pattern)
+                                     subdir=subdir, pattern=pattern)
         self.assertTrue(files,
                         'Failed to find test resource data: '
-                        f'success={success}, search={search}'
+                        f'success={success}, subdir={subdir}'
                         f'pattern={pattern}')
         return files
 
     def lint(self, success: bool = True,
-             search: typing.Optional[str] = None,
+             subdir: typing.Optional[str] = None,
              pattern: typing.Optional[str] = None,
              env: typing.Optional[typing.Dict] = None):
         """
@@ -102,7 +102,7 @@ class RuleTestCase(BaseTestCase):
         if not self.initialized:
             return
 
-        files = self.list_resources(success=success, search=search,
+        files = self.list_resources(success=success, subdir=subdir,
                                     pattern=pattern)
         for filepath in files:
             res = self.run_playbook(filepath, env=env)
@@ -138,7 +138,7 @@ class CliTestCase(RuleTestCase):
                     + excl_opt)
 
     def lint(self, success: bool = True,
-             search: typing.Optional[str] = None,
+             subdir: typing.Optional[str] = None,
              pattern: typing.Optional[str] = None,
              env: typing.Optional[typing.Dict] = None):
         """
@@ -151,7 +151,7 @@ class CliTestCase(RuleTestCase):
         if env:
             oenv.update(**env)
 
-        files = self.list_resources(success=success, search=search,
+        files = self.list_resources(success=success, subdir=subdir,
                                     pattern=pattern)
         for filepath in files:
             res = subprocess.run(

@@ -21,9 +21,9 @@ class Base:
 
 class RuleTestCase(Base, common.RuleTestCase):
     def test_20_ng_cases(self):
-        self.lint(False, search='ok', env=_ENV_PATCH)
+        self.lint(False, subdir='ok', env=_ENV_PATCH)
 
 
 class CliTestCase(Base, common.CliTestCase):
     def test_20_ng_cases(self):
-        self.lint(False, search='ok', env=_ENV_PATCH)
+        self.lint(False, subdir='ok', env=_ENV_PATCH)
