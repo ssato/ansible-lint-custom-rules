@@ -24,19 +24,26 @@ def test_list_rule_ids(rdirs):
 
 
 @pytest.mark.parametrize(
-    'rule',
-    [DebugRule(),
-     None,
+    'rule,options',
+    [(DebugRule(), None),
+     (DebugRule(), dict(enabled=True)),
+     (None, None),
      ]
 )
-def test_get_collection(rule):
-    collection = TT.get_collection(rule)
+def test_get_collection(rule, options):
+    collection = TT.get_collection(rule, rule_options=options)
     assert isinstance(collection, ansiblelint.rules.RulesCollection)
 
     rules = list(collection)
     assert len(rules) > 0  # It has default rules even if `rule` is None.
 
     if rule:
-        assert any(r for r in collection if r.id == rule.id)
+        rules = [r for r in collection if r.id == rule.id]
+        assert len(rules) == 1
+
+        if options:
+            # pylint: disable=no-member
+            grops = TT.ansiblelint.config.options.rules[rule.id]
+            assert sorted(grops.items()) == sorted(options.items())
 
 # vim:sw=4:ts=4:et:
