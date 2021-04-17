@@ -20,17 +20,23 @@ from tests.common import runner as TT
 def test_list_rule_ids(rdirs):
     res = list(TT.list_rule_ids(*rdirs))
     assert res, res
-    assert 'debug' in res, f'{res!r}'
+    assert DebugRule.id in res, f'{res!r}'
 
 
 @pytest.mark.parametrize(
     'rule',
     [DebugRule(),
-     None
+     None,
      ]
 )
 def test_get_collection(rule):
-    assert isinstance(TT.get_collection(rule),
-                      ansiblelint.rules.RulesCollection)
+    collection = TT.get_collection(rule)
+    assert isinstance(collection, ansiblelint.rules.RulesCollection)
+
+    rules = list(collection)
+    assert len(rules) > 0  # It has default rules even if `rule` is None.
+
+    if rule:
+        assert any(r for r in collection if r.id == rule.id)
 
 # vim:sw=4:ts=4:et:

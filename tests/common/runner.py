@@ -33,23 +33,19 @@ def get_collection(rule: typing.Optional[AnsibleLintRule] = None
     """
     Get RulesCollection instance with given rule registered.
     """
-    if rule is None:
-        # .. seealso:: ansiblelint.testing.fixture.default_rules_collection
-        assert pathlib.Path(ansiblelint.constants.DEFAULT_RULESDIR).is_dir()
+    rulesdirs = [ansiblelint.constants.DEFAULT_RULESDIR]
 
-        try:
-            ansiblelint.config.options.enable_list = ['no-same-owner']
-            return RulesCollection(
-                rulesdirs=[ansiblelint.constants.DEFAULT_RULESDIR],
-                options=ansiblelint.config.options
-            )
-        except TypeError:
-            return RulesCollection(
-                rulesdirs=[ansiblelint.constants.DEFAULT_RULESDIR]
-            )
+    options = ansiblelint.config.options
+    options.enable_list = ['no-same-owner']
 
-    collection = RulesCollection()
-    collection.register(rule)
+    try:
+        collection = RulesCollection(rulesdirs=rulesdirs, options=options)
+    except TypeError:
+        collection = RulesCollection(rulesdirs=rulesdirs)
+
+    if rule:
+        collection.register(rule)
+
     return collection
 
 
