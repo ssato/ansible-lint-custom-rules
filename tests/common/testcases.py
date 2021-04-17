@@ -73,14 +73,8 @@ class RuleTestCase(BaseTestCase):
         """Run playbook.
         """
         if env:
-            # .. todo:: It does not look working in pytest env.
-            # with unittest.mock.patch.dict(os.environ, env):
-            saved = os.environ.copy()
-            try:
-                os.environ.update(**env)
+            with unittest.mock.patch.dict(os.environ, env):
                 return self.runner.run_playbook(filepath)
-            finally:
-                os.environ = saved
 
         return self.runner.run_playbook(filepath)
 
