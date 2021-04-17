@@ -8,8 +8,11 @@ import os
 import subprocess
 import types
 import typing
+import tempfile
 import unittest
 import unittest.mock
+
+import yaml
 
 from . import constants, runner, utils
 
@@ -48,11 +51,16 @@ class BaseTestCase(unittest.TestCase):
         self.name = utils.get_rule_name(self.this_py)
         self.rule = utils.get_rule_instance_by_name(self.this_mod, self.name)
 
-        # Collect the default rules and add the rule to test.
-        collection = runner.get_collection(self.rule)
-        self.runner = runner.RunFromFile(collection)
-
         self.initialized = True
+
+    def get_runner(self, config: runner.RuleOptionsT = None
+                   ) -> runner.RunFromFile:
+        """
+        Make ansiblelint.RulesCollection instance registered the rule with
+        given config and get runner.RunFromFile instance from it.
+        """
+        collection = runner.get_collection(self.rule, rule_options=config)
+        return runner.RunFromFile(collection)
 
     def setUp(self):
         """Setup
@@ -69,14 +77,16 @@ class RuleTestCase(BaseTestCase):
     """Base class to test rules.
     """
     def run_playbook(self, filepath: str,
-                     env: typing.Optional[typing.Dict] = None):
+                     env: typing.Optional[typing.Dict] = None,
+                     config: runner.RuleOptionsT = None):
         """Run playbook.
         """
+        rnr = self.get_runner(config)
         if env:
             with unittest.mock.patch.dict(os.environ, env):
-                return self.runner.run_playbook(filepath)
+                return rnr.run_playbook(filepath)
 
-        return self.runner.run_playbook(filepath)
+        return rnr.run_playbook(filepath)
 
     def list_resources(self, success: bool = True,
                        subdir: typing.Optional[str] = None,
@@ -95,7 +105,8 @@ class RuleTestCase(BaseTestCase):
     def lint(self, success: bool = True,
              subdir: typing.Optional[str] = None,
              pattern: typing.Optional[str] = None,
-             env: typing.Optional[typing.Dict] = None):
+             env: typing.Optional[typing.Dict] = None,
+             config: runner.RuleOptionsT = None):
         """
         Run the lint rule's check to given resource data files.
         """
@@ -105,8 +116,8 @@ class RuleTestCase(BaseTestCase):
         files = self.list_resources(success=success, subdir=subdir,
                                     pattern=pattern)
         for filepath in files:
-            res = self.run_playbook(filepath, env=env)
-            msg = f'{filepath}, {res!r}, {env!r}'
+            res = self.run_playbook(filepath, env=env, config=config)
+            msg = f'{filepath}, {res!r}, {env!r}, {config!r}'
             if success:
                 self.assertEqual(0, len(res), msg)  # No errors.
             else:
@@ -132,15 +143,22 @@ class CliTestCase(RuleTestCase):
 
         self.init()
 
-        excl_opt = utils.concat(('-x', rid) for rid in runner.list_rule_ids()
-                                if rid != self.rule.id)
-        self.cmd = (f'ansible-lint -r {constants.RULES_DIR!s}'.split()
-                    + excl_opt)
+        skip_list = [rid for rid in runner.list_rule_ids()
+                     if rid != self.rule.id]
+        self.config = dict(skip_list=skip_list)
+        self.cmd = f'ansible-lint -r {constants.RULES_DIR!s}'.split()
+
+    def dump_config(self, stream: typing.IO):
+        """
+        Generate .ansible-lint configurations as a string.
+        """
+        yaml.safe_dump(self.config, stream)
 
     def lint(self, success: bool = True,
              subdir: typing.Optional[str] = None,
              pattern: typing.Optional[str] = None,
-             env: typing.Optional[typing.Dict] = None):
+             env: typing.Optional[typing.Dict] = None,
+             config: runner.RuleOptionsT = None):
         """
         Run ansible-lint with given arguments in given env.
         """
@@ -151,17 +169,24 @@ class CliTestCase(RuleTestCase):
         if env:
             oenv.update(**env)
 
+        if config:
+            self.config['rules'] = {self.rule.id: config}
+
         files = self.list_resources(success=success, subdir=subdir,
                                     pattern=pattern)
-        for filepath in files:
-            res = subprocess.run(
-                self.cmd + [filepath], stdout=subprocess.PIPE, check=False,
-                env=oenv
-            )
-            args = (res.returncode, 0, res.stdout.decode('utf-8'))
-            if success:
-                self.assertEqual(*args)
-            else:
-                self.assertNotEqual(*args)
+
+        with tempfile.NamedTemporaryFile(mode='w') as cio:
+            self.dump_config(cio)
+
+            for filepath in files:
+                res = subprocess.run(
+                    self.cmd + ['-c', cio.name, filepath],
+                    stdout=subprocess.PIPE, check=False, env=oenv
+                )
+                args = (res.returncode, 0, res.stdout.decode('utf-8'))
+                if success:
+                    self.assertEqual(*args)
+                else:
+                    self.assertNotEqual(*args)
 
 # vim:sw=4:ts=4:et:
