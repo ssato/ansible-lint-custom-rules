@@ -1,4 +1,4 @@
-# Copyright (C) 2020, 2021 Red Hat, Inc.
+# Copyright (C) 2020, 2021 Satoru SATOH <satoru.satoh@gmail.com>
 # SPDX-License-Identifier: MIT
 #
 """Common utility test routines and classes - utilities.

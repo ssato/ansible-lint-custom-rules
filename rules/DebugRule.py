@@ -1,5 +1,4 @@
-# Copyright (C) 2021 Red Hat K.K.
-#
+# Copyright (C) 2021 Satoru SATOH <satoru.satoh@gmail.com>
 # SPDX-License-Identifier: MIT
 #
 # pylint: disable=invalid-name

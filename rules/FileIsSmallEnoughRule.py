@@ -1,5 +1,4 @@
-# Copyright (C) 2020,2021 Red Hat, Inc.
-#
+# Copyright (C) 2020,2021 Satoru SATOH <satoru.satoh@gmail.com>
 # SPDX-License-Identifier: MIT
 #
 """Lint rule class to test if playbook files are small enough.
