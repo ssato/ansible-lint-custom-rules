@@ -4,7 +4,7 @@
 """Entry point of tests.common.*.
 """
 from .constants import (
-    TESTS_DIR, TESTS_RES_DIR, RULES_DIR, DEFAULT_RULES_DIR
+    TESTS_DIR, TESTS_RES_DIR, RULES_DIR,
 )
 from .testcases import (
     MaybeModNameT, MaybeModT, MaybeCallableT,

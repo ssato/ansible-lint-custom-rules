@@ -38,7 +38,7 @@ def list_resources(name: str, success: bool = True,
     if not pattern:
         pattern = '*.*'
 
-    root = constants.TESTS_DIR / 'res' / name / search
+    root = constants.TESTS_RES_DIR / name / search
     return sorted(str(p) for p in root.glob(pattern) if p.is_file())
 
 
