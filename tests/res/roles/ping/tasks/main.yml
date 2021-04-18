@@ -1,3 +1,5 @@
 ---
-- include_tasks: "assertions.yml"
-- include_tasks: "do_ping.yml"
+- name: include task 1
+  include_tasks: "assertions.yml"
+- name: include task 2
+  include_tasks: "do_ping.yml"

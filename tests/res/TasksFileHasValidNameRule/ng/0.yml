@@ -2,4 +2,5 @@
   connection: local
   gather_facts: false
   tasks:
-    - include_tasks: tasks/ng-1.yml
+    - name: include task
+      include_tasks: tasks/ng-1.yml

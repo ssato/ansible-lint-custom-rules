@@ -2,7 +2,8 @@
   connection: local
   gather_facts: false
   tasks:
-    - include_vars:
+    - name: include vars
+      include_vars:
         file: vars/VarsShouldNotBeUsedRule_1.yml
     - name: Try ping
       ping:

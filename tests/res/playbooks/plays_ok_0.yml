@@ -6,5 +6,6 @@
     - name: Try ping
       ping:
 
-    - debug:
+    - name: debug
+      debug:
         var: "{{ ansible_hostname }}"
