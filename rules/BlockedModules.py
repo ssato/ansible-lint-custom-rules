@@ -31,50 +31,38 @@ variable, _ANSIBLE_LINT_RULE_BLOCKED_MODULES.
 
 .. seealso:: :class:`~ansiblielint.rules.DeprecatedModuleRule`
 """
-import functools
-import os
-import re
 import typing
 import warnings
 
 import ansiblelint.rules
 
+from ansiblelint.config import options as OPTIONS
 
-ID: str = 'blocked-modules'
-ENV_VAR = '_ANSIBLE_LINT_RULE_' + ID.upper().replace('-', '_')
 
-BLOCKED_MODULES: typing.FrozenSet[str] = frozenset("""
+ID: str = 'blocked_modules'
+C_BLOCKED_MODULES: str = 'blocked'
+
+DESC: str = """Rule to test if some blocked modules were used in tasks.
+
+- Options
+
+  - ``blocked`` lists the modules blocked to use
+
+- Configuration
+
+  .. code-block:: yaml
+
+  rules:
+    blocked_modules:
+      blocked:
+        - shell
+        - include
+"""
+
+BLOCKED_MODULES: typing.List[str] = """
 shell
 include
-""".split())
-
-MODULES_RE = re.compile(r'^(\w+(?:\s+\w+)*)$', re.ASCII)
-
-
-@functools.lru_cache()
-def blocked_modules(default: typing.FrozenSet[str] = BLOCKED_MODULES
-                    ) -> typing.FrozenSet[str]:
-    """
-    Get and return the blocked modules from the env. var, file or default.
-    """
-    blocked = os.environ.get(ENV_VAR, '')
-    if blocked:
-        if blocked.startswith('@'):  # It's a file path.
-            path = blocked[1:]
-            try:
-                res = frozenset(line.strip() for line in open(path)
-                                if line.strip() and not line.startswith('#'))
-                if res:
-                    return res
-            except (IOError, OSError) as exc:
-                warnings.warn('Failed to load blocked modules from '
-                              f'{path}, exc={exc!s}')
-        else:
-            match = MODULES_RE.match(blocked)
-            if match:
-                return frozenset(match.groups()[0].split())
-
-    return default
+""".split()
 
 
 class BlockedModules(ansiblelint.rules.AnsibleLintRule):
@@ -88,6 +76,27 @@ class BlockedModules(ansiblelint.rules.AnsibleLintRule):
     severity: str = 'HIGH'
     tags: typing.List[str] = [ID, 'module']
 
+    initialized: bool = False
+    _blocked: typing.FrozenSet[str] = frozenset(BLOCKED_MODULES)
+
+    def blocked_modules(self):
+        """
+        .. seealso:: rules.DebugRule.DebugRule.enabled
+        """
+        if self.initialized:
+            return self._blocked
+
+        config = getattr(OPTIONS, 'rules', {}).get(self.id, {})
+        try:
+            _blocked = config.get(C_BLOCKED_MODULES, BLOCKED_MODULES)
+            self._blocked = _blocked
+        except (TypeError, ValueError):
+            warnings.warn(f'Invalid value for frozenset: {_blocked!r}')
+
+        self.initialized = True
+
+        return self._blocked
+
     def matchtask(self, task: typing.Dict[str, typing.Any]
                   ) -> typing.Union[bool, str]:
         """
@@ -95,7 +104,7 @@ class BlockedModules(ansiblelint.rules.AnsibleLintRule):
         """
         try:
             mod = task['action']['__ansible_module__']
-            if mod in blocked_modules():
+            if mod in self.blocked_modules():
                 return f'{self.shortdesc}: {mod}'
         except KeyError:
             pass
