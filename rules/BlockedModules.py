@@ -2,34 +2,9 @@
 #
 # SPDX-License-Identifier: MIT
 #
+# pylint: disable=invalid-name
 r"""
 Lint rule class to test if some blocked modules were used.
-
-Users can change the behavior of this rule by specifying a environment
-variable, _ANSIBLE_LINT_RULE_BLOCKED_MODULES.
-
-- An example to list blocked modules with the env. variable.
-
-  ::
-
-      _ANSIBLE_LINT_RULE_BLOCKED_MODULES="shell raw"
-
-- An example to list blocked modules with the file given in the env. variable.
-
-  ::
-
-      _ANSIBLE_LINT_RULE_BLOCKED_MODULES="@/tmp/mb.list"
-
-  The file must contain module names to be blocked line by line, and comments
-  in the file starts with '#' are ignored like this:
-
-  ::
-
-     # this is a comment line.
-     shell
-     include
-
-.. seealso:: :class:`~ansiblielint.rules.DeprecatedModuleRule`
 """
 import typing
 import warnings
@@ -57,6 +32,8 @@ DESC: str = """Rule to test if some blocked modules were used in tasks.
       blocked:
         - shell
         - include
+
+.. seealso:: :class:`~ansiblielint.rules.DeprecatedModuleRule`
 """
 
 BLOCKED_MODULES: typing.List[str] = """
@@ -72,7 +49,7 @@ class BlockedModules(ansiblelint.rules.AnsibleLintRule):
     """
     id: str = ID
     shortdesc: str = 'Blocked modules'
-    description: str = 'Use of the blocked modules are prohivited.'
+    description: str = DESC
     severity: str = 'HIGH'
     tags: typing.List[str] = [ID, 'module']
 
