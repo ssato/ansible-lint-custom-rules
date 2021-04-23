@@ -20,7 +20,7 @@ variable, _ANSIBLE_LINT_RULE_BLOCKED_MODULES.
 
       _ANSIBLE_LINT_RULE_BLOCKED_MODULES="@/tmp/mb.list"
 
-  The file must contain module names to be blockeded line by line, and comments
+  The file must contain module names to be blocked line by line, and comments
   in the file starts with '#' are ignored like this:
 
   ::
@@ -40,7 +40,7 @@ import warnings
 import ansiblelint.rules
 
 
-ID: str = 'blockeded-modules'
+ID: str = 'blocked-modules'
 ENV_VAR = '_ANSIBLE_LINT_RULE_' + ID.upper().replace('-', '_')
 
 BLOCKED_MODULES: typing.FrozenSet[str] = frozenset("""
@@ -84,7 +84,7 @@ class BlockedModules(ansiblelint.rules.AnsibleLintRule):
     """
     id: str = ID
     shortdesc: str = 'Blocked modules'
-    description: str = 'Use of the blockeded modules are prohivited.'
+    description: str = 'Use of the blocked modules are prohivited.'
     severity: str = 'HIGH'
     tags: typing.List[str] = [ID, 'module']
 

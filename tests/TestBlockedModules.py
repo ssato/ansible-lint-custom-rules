@@ -26,7 +26,7 @@ class Base:
      ('@/dev/null', TT.BLOCKED_MODULES),
      ]
 )
-def test_blockeded_modules(evalue, expected, monkeypatch):
+def test_blocked_modules(evalue, expected, monkeypatch):
     monkeypatch.setenv(TT.ENV_VAR, evalue)
     assert TT.blocked_modules() == expected
     Base.clear_fn()
@@ -39,7 +39,7 @@ def test_blockeded_modules(evalue, expected, monkeypatch):
      ('#\nping\nscript\n', frozenset(('ping', 'script'))),
      ]
 )
-def test_blockeded_modules_from_file(content, expected, tmp_path, monkeypatch):
+def test_blocked_modules_from_file(content, expected, tmp_path, monkeypatch):
     path = tmp_path / 'blocked_modules.list'
     path.write_text(content)
 
