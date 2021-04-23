@@ -19,19 +19,19 @@ if typing.TYPE_CHECKING:
 ID: str = 'debug'
 C_ENABLED: str = 'enabled'
 
-DESC: str = f"""Rule to debug and monitor ansible-lint behavior.
+DESC: str = """Rule to debug and monitor ansible-lint behavior.
 
 - Options
 
-  - ``{C_ENABLED}`` enables this rule disabled by default.
+  - ``enabled`` enables this rule disabled by default.
 
 - Configuration
 
   .. code-block:: yaml
 
   rules:
-    {ID}:
-      {C_ENABLED}: true
+    debug:
+      enabled: true
 """
 
 
