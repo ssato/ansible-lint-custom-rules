@@ -35,12 +35,15 @@ class BaseTestCase(unittest.TestCase):
 
     initialized: bool = False
 
-    @classmethod
-    def clear(cls):
+    def clear(self):
         """Call clear function if it's callable.
         """
-        if cls.clear_fn and callable(cls.clear_fn):
-            cls.clear_fn()  # pylint: disable=not-callable
+        if not self.initialized:
+            return
+
+        self.rule.get_config.cache_clear()
+        if self.clear_fn and callable(self.clear_fn):
+            self.clear_fn()  # pylint: disable=not-callable
 
     def init(self):
         """Initialize.
