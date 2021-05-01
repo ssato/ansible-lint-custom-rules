@@ -8,8 +8,12 @@ import typing
 
 import ansiblelint.rules
 
+if typing.TYPE_CHECKING:
+    from typing import Optional
+    from ansiblelint.file_utils import Lintable
 
-ID: str = 'loop-is-recommended'
+
+ID: str = 'loop_is_recommended'
 DESC: str = """loop is recommended and use of with_* may be repalced with it.
 See also:
 https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html
@@ -27,6 +31,7 @@ class LoopIsRecommendedRule(ansiblelint.rules.AnsibleLintRule):
     tags: typing.List[str] = [ID, 'readability', 'formatting']
 
     def matchtask(self, task: typing.Dict[str, typing.Any],
+                  file: 'Optional[Lintable]' = None
                   ) -> typing.Union[bool, str]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks

@@ -6,18 +6,20 @@
 r"""
 Lint rule class to test if some blocked modules were used.
 """
+import functools
 import typing
-import warnings
 
 import ansiblelint.rules
 
-from ansiblelint.config import options as OPTIONS
+if typing.TYPE_CHECKING:
+    from typing import Optional
+    from ansiblelint.file_utils import Lintable
 
 
 ID: str = 'blocked_modules'
 C_BLOCKED_MODULES: str = 'blocked'
 
-DESC: str = """Rule to test if some blocked modules were used in tasks.
+DESC: str = """Rule to check if some blocked modules were used in tasks.
 
 - Options
 
@@ -36,10 +38,10 @@ DESC: str = """Rule to test if some blocked modules were used in tasks.
 .. seealso:: :class:`~ansiblielint.rules.DeprecatedModuleRule`
 """
 
-BLOCKED_MODULES: typing.List[str] = """
+BLOCKED_MODULES: typing.FrozenSet[str] = frozenset("""
 shell
 include
-""".split()
+""".split())
 
 
 class BlockedModules(ansiblelint.rules.AnsibleLintRule):
@@ -53,28 +55,19 @@ class BlockedModules(ansiblelint.rules.AnsibleLintRule):
     severity: str = 'HIGH'
     tags: typing.List[str] = [ID, 'module']
 
-    initialized: bool = False
-    _blocked: typing.FrozenSet[str] = frozenset(BLOCKED_MODULES)
-
+    @functools.lru_cache()
     def blocked_modules(self):
         """
         .. seealso:: rules.DebugRule.DebugRule.enabled
         """
-        if self.initialized:
-            return self._blocked
+        blocked = self.get_config(C_BLOCKED_MODULES)
+        if blocked:
+            return frozenset(blocked)
 
-        config = getattr(OPTIONS, 'rules', {}).get(self.id, {})
-        try:
-            _blocked = config.get(C_BLOCKED_MODULES, BLOCKED_MODULES)
-            self._blocked = _blocked
-        except (TypeError, ValueError):
-            warnings.warn(f'Invalid value for frozenset: {_blocked!r}')
+        return BLOCKED_MODULES
 
-        self.initialized = True
-
-        return self._blocked
-
-    def matchtask(self, task: typing.Dict[str, typing.Any]
+    def matchtask(self, task: typing.Dict[str, typing.Any],
+                  file: 'Optional[Lintable]' = None
                   ) -> typing.Union[bool, str]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks

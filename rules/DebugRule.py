@@ -10,10 +10,10 @@ import ansiblelint.errors
 import ansiblelint.file_utils
 import ansiblelint.rules
 
-from ansiblelint.config import options as OPTIONS
-
 if typing.TYPE_CHECKING:
+    from typing import Optional
     from ansiblelint.constants import odict
+    from ansiblelint.file_utils import Lintable
 
 
 ID: str = 'debug'
@@ -45,35 +45,27 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
     severity = 'LOW'
     tags = ['debug']
 
-    initialized = False
-    _enabled = False
-
+    @property
     def enabled(self):
         """
         .. seealso:: ansiblelint.config.options
         .. seealso:: ansiblelint.cli.load_config
         """
-        if self.initialized:
-            return self._enabled
-
-        config = getattr(OPTIONS, 'rules', {}).get(self.id, {})
-        self._enabled = config.get(C_ENABLED, False)
-        self.initialized = True
-
-        return self._enabled
+        return self.get_config(C_ENABLED)
 
     def match(self, line: str) -> typing.Union[bool, str]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
         """
-        return f'match() at: {line}' if self.enabled() else False
+        return f'match() at: {line}' if self.enabled else False
 
-    def matchtask(self, task: typing.Dict[str, typing.Any]
+    def matchtask(self, task: typing.Dict[str, typing.Any],
+                  file: 'Optional[Lintable]' = None
                   ) -> typing.Union[bool, str]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
         """
-        return f'matchtask(): {task!r}' if self.enabled() else False
+        return f'matchtask(): {task!r}, {file!r}' if self.enabled else False
 
     def matchplay(self, file: ansiblelint.file_utils.Lintable,
                   data: 'odict[str, typing.Any]'
@@ -81,7 +73,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
         """
-        if self.enabled():
+        if self.enabled:
             msg = f'matchplay(): {file!r}, {data!r}'
             return [self.create_matcherror(message=msg, filename=file.name)]
 

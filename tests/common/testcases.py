@@ -22,6 +22,17 @@ MaybeModT = typing.Optional[types.ModuleType]
 MaybeCallableT = typing.Optional[typing.Callable]
 
 
+def cache_clear_itr(maybe_memoized_fns: typing.Iterable[typing.Any]
+                    ) -> typing.Callable[..., None]:
+    """Yield callable object from ``maybe_memoized_fns``.
+    """
+    for candidate in maybe_memoized_fns:
+        if candidate and callable(candidate):
+            clear_fn = getattr(candidate, 'cache_clear', False)
+            if clear_fn and callable(clear_fn):
+                yield clear_fn
+
+
 class BaseTestCase(unittest.TestCase):
     """Base class for test cases.
     """
@@ -32,6 +43,7 @@ class BaseTestCase(unittest.TestCase):
     this_mod: MaybeModT = None
 
     clear_fn: MaybeCallableT = None
+    rule_memoized: typing.List[str] = []
 
     initialized: bool = False
 
@@ -41,9 +53,9 @@ class BaseTestCase(unittest.TestCase):
         if not self.initialized:
             return
 
-        self.rule.get_config.cache_clear()
-        if self.clear_fn and callable(self.clear_fn):
-            self.clear_fn()  # pylint: disable=not-callable
+        for clear_fn in self.clear_fns:
+            if clear_fn and callable(clear_fn):
+                clear_fn()  # pylint: disable=not-callable
 
     def init(self):
         """Initialize.
@@ -54,6 +66,13 @@ class BaseTestCase(unittest.TestCase):
         self.name = utils.get_rule_name(self.this_py)
         self.rule = utils.get_rule_instance_by_name(self.this_mod, self.name)
 
+        self.clear_fns = [
+            self.clear_fn, self.rule.get_config.cache_clear
+        ] + list(
+            cache_clear_itr(
+                getattr(self.rule, n, False) for n in self.rule_memoized
+            )
+        )
         self.initialized = True
 
     def get_runner(self, config: runner.RuleOptionsT = None
