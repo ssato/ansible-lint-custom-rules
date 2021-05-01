@@ -59,4 +59,12 @@ def get_rule_instance_by_name(rule_module, rule_name):
                          f'in {rule_module!r}.')
     return rule_cls()
 
+
+def get_rule_instance_by_module(test_py: str, rule_module):
+    """
+    Get the rule instance by rule module's filename and module object.
+    """
+    rule_name = get_rule_name(test_py)
+    return get_rule_instance_by_name(rule_module, rule_name)
+
 # vim:sw=4:ts=4:et:
