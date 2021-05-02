@@ -1,7 +1,7 @@
 # Copyright (C) 2020, 2021 Satoru SATOH <satoru.satoh@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# pylint: disable=too-few-public-methods
+# pylint: disable=invalid-name,too-few-public-methods
 """Common utility test routines and classes.
 """
 import pathlib
@@ -28,7 +28,11 @@ def list_rule_ids(*rdirs: str) -> typing.Iterator[str]:
         yield rule.id
 
 
-def get_collection(rule: typing.Optional[AnsibleLintRule] = None
+RuleOptionsT = typing.Optional[typing.Dict[str, typing.Any]]
+
+
+def get_collection(rule: typing.Optional[AnsibleLintRule] = None,
+                   rule_options: RuleOptionsT = None
                    ) -> RulesCollection:
     """
     Get RulesCollection instance with given rule registered.
@@ -44,6 +48,12 @@ def get_collection(rule: typing.Optional[AnsibleLintRule] = None
         collection = RulesCollection(rulesdirs=rulesdirs)
 
     if rule:
+        # Hack to force setting options.
+        if rule_options:
+            setattr(
+                ansiblelint.config.options, 'rules', {rule.id: rule_options}
+            )
+
         collection.register(rule)
 
     return collection

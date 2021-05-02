@@ -12,55 +12,30 @@ from rules import FileIsSmallEnoughRule as TT
 from tests import common
 
 
-@pytest.fixture(autouse=True)
-def cache_clear():
-    yield
-    TT.max_lines.cache_clear()
-
-
 @pytest.mark.parametrize(
-    'evalue,expected',
-    [('', TT.MAX_LINES),
-     ('aaa', TT.MAX_LINES),
-     ('0', TT.MAX_LINES),
-     ('1', 1),
-     ]
-)
-def test_max_lines(evalue, expected, monkeypatch):
-    monkeypatch.setenv(TT.ENV_VAR, evalue)
-    assert TT.max_lines() == expected
-
-
-@pytest.mark.parametrize(
-    'mlines,expected',
+    'max_lines,expected',
     [(100000, False),
      (1, True),
-     (0, False),  # default
      ]
 )
-def test_exceeds_max_lines(mlines, expected):
-    assert TT.exceeds_max_lines(__file__, mlines=mlines) == expected
-
-
-def test_exceeds_max_lines_with_env(monkeypatch):
-    monkeypatch.setenv(TT.ENV_VAR, '1')
-    assert TT.exceeds_max_lines(__file__)
+def test_exceeds_max_lines(max_lines, expected):
+    assert TT.exceeds_max_lines(__file__, max_lines) == expected
 
 
 class Base:
     this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
-    clear_fn: common.MaybeCallableT = TT.max_lines.cache_clear
+    rule_memoized = ['max_lines', 'exceeds_max_lines']
 
 
-_ENV_PATCH = {TT.ENV_VAR: '1'}
+CNF = dict(max_lines=1)
 
 
 class RuleTestCase(Base, common.RuleTestCase):
     def test_20_ng_cases(self):
-        self.lint(False, 'ok', env=_ENV_PATCH)
+        self.lint(False, 'ok', config=CNF)
 
 
 class CliTestCase(Base, common.CliTestCase):
     def test_20_ng_cases(self):
-        self.lint(False, 'ok', env=_ENV_PATCH)
+        self.lint(False, 'ok', config=CNF)

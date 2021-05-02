@@ -5,45 +5,38 @@
 """Lint rule class to test if playbook files have valid filenames.
 """
 import functools
-import os
 import pathlib
 import re
 import typing
+import warnings
 
 import ansiblelint.errors
 import ansiblelint.file_utils
 import ansiblelint.rules
 
 
-ID: str = 'file-has-valid-name'
-ENV_VAR = f"_ANSIBLE_LINT_RULE_{ID.upper().replace('-', '_')}_NAME_RE"
+ID: str = 'file_has_valid_name'
+DESC = r"""Rule to check if file has a valid name.
 
-VALID_EVALUE: typing.Pattern = re.compile(r'^\S+$', re.ASCII)
-DEFAULT_NAME_RE: str = r'^\w+\.ya?ml$'
+- Options
 
+  - ``name`` lists the modules blocked to use
+  - ``unicode`` allows unicode characters are used in filenames
 
-@functools.lru_cache()
-def filename_re() -> typing.Pattern:
-    """
-    Filename Regex.
-    """
-    pattern = os.environ.get(ENV_VAR, False)
-    if pattern and VALID_EVALUE.match(pattern):
-        return re.compile(pattern, re.ASCII)
+- Configuration
 
-    return re.compile(DEFAULT_NAME_RE, re.ASCII)
+  .. code-block:: yaml
 
+  rules:
+    file_has_valid_name:
+        name: ^\w+\.ya?ml$
+        unicode: false
+"""
 
-def is_valid_filename(path: str,
-                      pattern: typing.Optional[typing.Pattern] = None) -> bool:
-    """
-    :return: True if given `filename` is invalid and does not satisfy the rule
-    """
-    if pattern is None or not pattern:
-        pattern = filename_re()
+C_NAME_RE: str = 'name'
+C_UNICODE: str = 'unicode'
 
-    return pattern.match(pathlib.Path(path).name) is not None
-
+DEFAULT_NAME_RE: typing.Pattern = re.compile(r'^\w+\.ya?ml$', re.ASCII)
 
 FILE_KINDS: typing.FrozenSet[str] = frozenset(
     'playbook meta tasks handlers role yaml'.split()
@@ -57,14 +50,32 @@ class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     """
     id = ID
     shortdesc = 'Playbook and related files should have valid filenames'
-    description = shortdesc
+    description = DESC
     severity = 'MEDIUM'
     tags = [ID, 'playbook', 'readability', 'formatting']
 
-    def __init__(self):
-        """initialize this.
+    @functools.lru_cache()
+    def valid_name_re(self) -> typing.Pattern:
+        """A valid file name regex pattern.
         """
-        self.done: typing.Set[str] = set()
+        pattern_s = self.get_config(C_NAME_RE)
+        if pattern_s:
+            try:
+                if self.get_config(C_UNICODE):
+                    return re.compile(pattern_s)
+                else:
+                    return re.compile(pattern_s, re.ASCII)
+            except BaseException:  # pylint: disable=broad-except
+                warnings.warn(f'Invalid pattern? "{pattern_s}"')
+
+        return DEFAULT_NAME_RE
+
+    @functools.lru_cache()
+    def is_valid_filename(self, path: str) -> bool:
+        """
+        Test if given `filename` is valid and satisfies the rule.
+        """
+        return self.valid_name_re().match(pathlib.Path(path).name) is not None
 
     def matchyaml(self, file: ansiblelint.file_utils.Lintable
                   ) -> typing.List[ansiblelint.errors.MatchError]:
@@ -73,11 +84,7 @@ class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
         """
         if file.kind in FILE_KINDS:
             path = str(file.path)
-            if path in self.done:
-                return []
-
-            self.done.add(path)
-            if not is_valid_filename(path):
+            if not self.is_valid_filename(path):
                 return [
                     self.create_matcherror(message=f'{self.shortdesc}: {path}',
                                            filename=file.filename)

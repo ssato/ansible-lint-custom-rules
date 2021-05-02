@@ -4,8 +4,6 @@
 # pylint: disable=invalid-name
 """ Lint rule class to Debug
 """
-import functools
-import os
 import typing
 
 import ansiblelint.errors
@@ -13,20 +11,28 @@ import ansiblelint.file_utils
 import ansiblelint.rules
 
 if typing.TYPE_CHECKING:
+    from typing import Optional
     from ansiblelint.constants import odict
+    from ansiblelint.file_utils import Lintable
 
 
 ID: str = 'debug'
+C_ENABLED: str = 'enabled'
 
-ENABLE_THIS_RULE_ENVVAR = f'_ANSIBLE_LINT_RULE_{ID.upper()}'
+DESC: str = """Rule to debug and monitor ansible-lint behavior.
 
+- Options
 
-@functools.lru_cache()
-def is_enabled(default: bool = False) -> bool:
-    """
-    Is this rule enabled with the environment variable?
-    """
-    return bool(os.environ.get(ENABLE_THIS_RULE_ENVVAR, default))
+  - ``enabled`` enables this rule disabled by default.
+
+- Configuration
+
+  .. code-block:: yaml
+
+  rules:
+    debug:
+      enabled: true
+"""
 
 
 class DebugRule(ansiblelint.rules.AnsibleLintRule):
@@ -34,22 +40,32 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
     Lint rule class for debug.
     """
     id = ID
-    shortdesc = description = 'Debug ansible-lint objects'
+    shortdesc = 'Debug ansible-lint'
+    description = DESC
     severity = 'LOW'
     tags = ['debug']
+
+    @property
+    def enabled(self):
+        """
+        .. seealso:: ansiblelint.config.options
+        .. seealso:: ansiblelint.cli.load_config
+        """
+        return self.get_config(C_ENABLED)
 
     def match(self, line: str) -> typing.Union[bool, str]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
         """
-        return f'match() at: {line}' if is_enabled() else False
+        return f'match() at: {line}' if self.enabled else False
 
-    def matchtask(self, task: typing.Dict[str, typing.Any]
+    def matchtask(self, task: typing.Dict[str, typing.Any],
+                  file: 'Optional[Lintable]' = None
                   ) -> typing.Union[bool, str]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
         """
-        return f'matchtask(): {task!r}' if is_enabled() else False
+        return f'matchtask(): {task!r}, {file!r}' if self.enabled else False
 
     def matchplay(self, file: ansiblelint.file_utils.Lintable,
                   data: 'odict[str, typing.Any]'
@@ -57,7 +73,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
         """
-        if is_enabled():
+        if self.enabled:
             msg = f'matchplay(): {file!r}, {data!r}'
             return [self.create_matcherror(message=msg, filename=file.name)]
 
