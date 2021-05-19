@@ -1,10 +1,6 @@
 ansible
 # .. note::
-#    pr#1534 was merged into master but it takes some time that newer
-#    ansible-lint of which .rules.AnsibleLintRule has a method named get_config.
-#    So we need the git HEAD version instead of released ones.
+#    pr#1534 was merged into master so that the above is not needed right now.
+#-e git+https://github.com/ansible-community/ansible-lint@master#egg=ansible-lint
 #
-# .. seealso:: https://github.com/ansible-community/ansible-lint/pull/1534
-#
-# ansible-lint
--e git+https://github.com/ansible-community/ansible-lint@master#egg=ansible-lint
+ansible-lint
