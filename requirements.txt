@@ -1,6 +1,2 @@
 ansible
-# .. note::
-#    pr#1534 was merged into master so that the above is not needed right now.
-#-e git+https://github.com/ansible-community/ansible-lint@master#egg=ansible-lint
-#
 ansible-lint
