@@ -1,0 +1,4 @@
+---
+rules:
+  file_is_small_enough:
+    max_lines: 1

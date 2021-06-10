@@ -1,0 +1,4 @@
+rules:
+  file_has_valid_name:
+    name: ^.+.ya?ml$
+    unicode: true

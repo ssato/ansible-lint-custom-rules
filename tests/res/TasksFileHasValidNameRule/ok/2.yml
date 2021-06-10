@@ -2,5 +2,5 @@
   connection: local
   gather_facts: false
   tasks:
-    - name: ZZZZZ
-      ping:
+    - name: include task
+      include_tasks: tasks/ng-1.yml

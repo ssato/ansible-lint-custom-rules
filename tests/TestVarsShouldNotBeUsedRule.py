@@ -17,6 +17,8 @@ class Base:
     this_mod: common.MaybeModT = TT
     clear_fn: common.MaybeCallableT = TT.contains_vars_directive.cache_clear
 
+    use_lint_v2 = True
+
 
 @pytest.mark.parametrize(
     'path,expected',

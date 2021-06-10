@@ -14,10 +14,11 @@ class Base:
     this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
 
+    use_lint_v2 = True
+
 
 class RuleTestCase(Base, common.RuleTestCase):
-    def test_20_ng_cases(self):
-        self.lint(success=False)
+    pass
 
 
 class CliTestCase(Base, common.CliTestCase):

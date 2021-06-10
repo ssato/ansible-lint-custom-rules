@@ -98,6 +98,8 @@ class BaseTestCase(unittest.TestCase):
 class RuleTestCase(BaseTestCase):
     """Base class to test rules.
     """
+    use_lint_v2: bool = False
+
     def run_playbook(self, filepath: str,
                      env: typing.Optional[typing.Dict] = None,
                      config: runner.RuleOptionsT = None):
@@ -145,13 +147,42 @@ class RuleTestCase(BaseTestCase):
             else:
                 self.assertTrue(len(res) > 0, msg)  # It should fail.
 
+    def load_datasets(self, success: bool = True):
+        """Load datasets.
+        """
+        datasets = sorted(
+            utils.each_test_data_for_rule(self.name, success=success)
+        )
+        if not datasets:
+            raise OSError(f'{self.name}: No test data found [{success}]')
+
+        return datasets
+
+    def lint_v2(self, success: bool = True) -> None:
+        """
+        Run the lint rule's check to given resource data files.
+        """
+        if not self.initialized:
+            return
+
+        for data in self.load_datasets(success=success):
+            conf = data.conf.get('rules', {}).get(self.rule.id, {})
+            res = self.run_playbook(data.inpath, config=conf)
+            msg = f'{data!r}, {conf!r}, {res!r}'
+            if success:
+                self.assertEqual(0, len(res), msg)  # No errors.
+            else:
+                self.assertTrue(len(res) > 0, msg)  # It should fail.
+
+            self.clear()
+
     def test_10_ok_cases(self):
         """10 - OK test cases"""
-        self.lint()
+        (self.lint_v2 if self.use_lint_v2 else self.lint)()
 
     def test_20_ng_cases(self):
         """20 - NG test cases"""
-        self.lint(success=False)
+        (self.lint_v2 if self.use_lint_v2 else self.lint)(success=False)
 
 
 class CliTestCase(RuleTestCase):
@@ -170,11 +201,14 @@ class CliTestCase(RuleTestCase):
         self.config = dict(skip_list=skip_list)
         self.cmd = f'ansible-lint -r {constants.RULES_DIR!s}'.split()
 
-    def dump_config(self, stream: typing.IO):
+    def dump_config(self, stream: typing.IO,
+                    conf: typing.Optional[
+                        typing.Dict[str, typing.Any]
+                    ] = None) -> None:
         """
         Generate .ansible-lint configurations as a string.
         """
-        yaml.safe_dump(self.config, stream)
+        yaml.safe_dump(conf if conf else self.config, stream)
 
     def lint(self, success: bool = True,
              subdir: typing.Optional[str] = None,
@@ -204,6 +238,31 @@ class CliTestCase(RuleTestCase):
                 res = subprocess.run(
                     self.cmd + ['-c', cio.name, filepath],
                     stdout=subprocess.PIPE, check=False, env=oenv
+                )
+                args = (res.returncode, 0, res.stdout.decode('utf-8'))
+                if success:
+                    self.assertEqual(*args)
+                else:
+                    self.assertNotEqual(*args)
+
+    def lint_v2(self, success: bool = True):
+        """
+        Run ansible-lint with given arguments in given env.
+        """
+        if not self.initialized:
+            return
+
+        for data in self.load_datasets(success=success):
+            with tempfile.NamedTemporaryFile(mode='w') as cio:
+                conf = self.config.copy()
+                if data.conf:
+                    conf.update(data.conf)
+
+                self.dump_config(cio, conf)
+
+                res = subprocess.run(
+                    self.cmd + ['-c', cio.name, str(data.inpath)],
+                    stdout=subprocess.PIPE, check=False
                 )
                 args = (res.returncode, 0, res.stdout.decode('utf-8'))
                 if success:

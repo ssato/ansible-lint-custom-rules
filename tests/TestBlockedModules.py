@@ -15,12 +15,12 @@ class Base:
     this_mod: common.MaybeModT = TT
     rule_memoized = ['blocked_modules']
 
+    use_lint_v2 = True
+
 
 class RuleTestCase(Base, common.RuleTestCase):
-    def test_20_ng_cases(self):
-        self.lint(False, 'ok', config=dict(blocked=['ping']))
+    pass
 
 
 class CliTestCase(Base, common.CliTestCase):
-    def test_20_ng_cases__env(self):
-        self.lint(False, 'ok', config=dict(blocked=['ping']))
+    pass

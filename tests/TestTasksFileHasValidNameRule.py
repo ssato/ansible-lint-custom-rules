@@ -18,6 +18,8 @@ class Base:
     this_mod: common.MaybeModT = TT
     rule_memoized = ['valid_name_re', 'is_invalid_filename']
 
+    use_lint_v2 = True
+
 
 @pytest.mark.parametrize(
     'path,name,unicode,expected',
@@ -45,10 +47,8 @@ CNF_0 = dict(name=r'.+', unicode=False)
 
 
 class RuleTestCase(Base, common.RuleTestCase):
-    def test_30_ng_cases_by_config(self):
-        self.lint(True, subdir='ng', pattern='0.yml', config=CNF_0)
+    pass
 
 
 class CliTestCase(Base, common.CliTestCase):
-    def test_30_ng_cases_by_config(self):
-        self.lint(True, subdir='ng', pattern='0.yml', config=CNF_0)
+    pass

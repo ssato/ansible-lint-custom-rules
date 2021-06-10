@@ -36,6 +36,8 @@ class Base:
     this_mod: common.MaybeModT = TT
     clear_fn: common.MaybeCallableT = _CLEAR_FUN
 
+    use_lint_v2 = True
+
 
 class RuleTestCase(Base, common.RuleTestCase):
     pass
