@@ -4,7 +4,6 @@
 """Common utility test routines and classes - utilities.
 """
 import functools
-import itertools
 import pathlib
 import typing
 
@@ -12,13 +11,6 @@ import yaml
 
 from .datatypes import DataT, TData
 from . import constants
-
-
-def concat(xss):
-    """
-    Concatenates a list of lists.
-    """
-    return list(itertools.chain.from_iterable(xs for xs in xss))
 
 
 def strip_words(astr: str, *words: str) -> str:

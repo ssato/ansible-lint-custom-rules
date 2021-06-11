@@ -11,20 +11,6 @@ from tests.common import utils as TT, constants as C
 
 
 @pytest.mark.parametrize(
-    "xss,expected",
-    [([[]], []),
-     (((), ), []),
-     ([[1, 2, 3], [4, 5]], [1, 2, 3, 4, 5]),
-     ([[1, 2, 3], [4, 5, [6, 7]]], [1, 2, 3, 4, 5, [6, 7]]),
-     (((1, 2, 3), (4, 5, [6, 7])), [1, 2, 3, 4, 5, [6, 7]]),
-     (((i, i*2) for i in range(3)), [0, 0, 1, 2, 2, 4])
-     ]
-)
-def test_concat(xss, expected):
-    assert TT.concat(xss) == expected
-
-
-@pytest.mark.parametrize(
     'astr,words,expected',
     [('', [''], ''),
      ('', ['abc'], ''),
