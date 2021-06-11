@@ -28,23 +28,6 @@ def strip_words(astr: str, *words: str) -> str:
                             words, astr)
 
 
-def list_resources(name: str, success: bool = True,
-                   subdir: typing.Optional[str] = None,
-                   pattern: typing.Optional[str] = None
-                   ) -> typing.List[str]:
-    """
-    List resource data files for OK or NG test cases.
-    """
-    if subdir is None or not subdir:
-        subdir = 'ok' if success else 'ng'
-
-    if not pattern:
-        pattern = '*.*'
-
-    root = constants.TESTS_RES_DIR / name / subdir
-    return sorted(str(p) for p in root.glob(pattern) if p.is_file())
-
-
 def each_test_data_for_rule(rule: str, success: bool = True,
                             root: str = constants.TESTS_RES_DIR
                             ) -> typing.Iterator[DataT]:

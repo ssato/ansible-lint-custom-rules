@@ -61,8 +61,8 @@ class TasksFileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
             try:
                 if self.get_config(C_UNICODE):
                     return re.compile(pattern_s)
-                else:
-                    return re.compile(pattern_s, re.ASCII)
+
+                return re.compile(pattern_s, re.ASCII)
             except BaseException:  # pylint: disable=broad-except
                 warnings.warn(f'Invalid pattern "{pattern_s}"')
 

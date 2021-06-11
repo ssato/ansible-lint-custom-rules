@@ -14,8 +14,6 @@ class Base:
     this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
 
-    use_lint_v2 = True
-
 
 class RuleTestCase(Base, common.RuleTestCase):
     pass

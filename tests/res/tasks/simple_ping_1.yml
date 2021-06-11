@@ -4,3 +4,7 @@
   tasks:
     - name: Try ping
       ansible.builtin.ping:
+
+    - name: Debug var
+      debug:
+        var: inventory_hostname
