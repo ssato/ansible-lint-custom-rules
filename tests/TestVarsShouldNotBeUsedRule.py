@@ -37,6 +37,4 @@ class RuleTestCase(Base, common.RuleTestCase):
 
 
 class CliTestCase(Base, common.CliTestCase):
-    @pytest.mark.skip(reason="until resolving unknown 'parser-error'")
-    def test_10_ok_cases(self):
-        pass
+    pass
