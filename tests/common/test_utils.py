@@ -5,9 +5,6 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring
 """Test cases of tests.common.
 """
-import pathlib
-import typing
-
 import pytest
 
 from tests.common import utils as TT, constants as C
@@ -41,29 +38,6 @@ def test_strips(astr, words, expected):
 
 
 _NAME = 'DebugRule'
-_OK_FILES: typing.List[str] = sorted(
-    str(f) for f
-    in pathlib.Path(C.TESTS_RES_DIR / _NAME / 'ok').glob('*.*')
-    if f.is_file()
-)
-
-_NG_FILES: typing.List[str] = sorted(
-    str(f) for f
-    in pathlib.Path(C.TESTS_RES_DIR / _NAME / 'ng').glob('*.*')
-    if f.is_file()
-)
-
-
-@pytest.mark.parametrize(
-    'success,subdir,expected',
-    [(True, None, _OK_FILES),   # Default
-     (False, 'ok', _OK_FILES),  # Override subdir
-     (False, None, _NG_FILES),
-     (True, 'ng', _NG_FILES)
-     ]
-)
-def test_list_resoruces_for_ok_cases(success, subdir, expected):
-    assert TT.list_resources(_NAME, success=success, subdir=subdir) == expected
 
 
 @pytest.mark.parametrize(
