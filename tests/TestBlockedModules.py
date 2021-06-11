@@ -15,8 +15,6 @@ class Base:
     this_mod: common.MaybeModT = TT
     rule_memoized = ['blocked_modules']
 
-    use_lint_v2 = True
-
 
 class RuleTestCase(Base, common.RuleTestCase):
     pass

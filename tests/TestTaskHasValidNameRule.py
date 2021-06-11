@@ -25,8 +25,6 @@ class Base:
     this_mod: common.MaybeModT = TT
     rule_memoized = ['valid_name_re', 'is_invalid_task_name']
 
-    use_lint_v2 = True
-
 
 @pytest.mark.parametrize(
     'name,evalue,expected',

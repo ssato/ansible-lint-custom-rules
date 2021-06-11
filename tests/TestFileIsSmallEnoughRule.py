@@ -27,8 +27,6 @@ class Base:
     this_mod: common.MaybeModT = TT
     rule_memoized = ['max_lines', 'exceeds_max_lines']
 
-    use_lint_v2 = True
-
 
 class RuleTestCase(Base, common.RuleTestCase):
     pass
