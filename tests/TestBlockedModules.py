@@ -13,7 +13,7 @@ from tests import common
 class Base:
     this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
-    rule_memoized = ['blocked_modules']
+    memoized = ['blocked_modules']
 
 
 class RuleTestCase(Base, common.RuleTestCase):

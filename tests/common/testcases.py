@@ -43,7 +43,7 @@ class BaseTestCase(unittest.TestCase):
     this_mod: MaybeModT = None
 
     clear_fn: MaybeCallableT = None
-    rule_memoized: typing.List[str] = []
+    memoized: typing.List[str] = []
 
     initialized: bool = False
 
@@ -70,7 +70,7 @@ class BaseTestCase(unittest.TestCase):
             self.clear_fn, self.rule.get_config.cache_clear
         ] + list(
             cache_clear_itr(
-                getattr(self.rule, n, False) for n in self.rule_memoized
+                getattr(self.rule, n, False) for n in self.memoized
             )
         )
         self.initialized = True
