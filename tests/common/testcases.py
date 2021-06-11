@@ -151,19 +151,11 @@ class CliTestCase(RuleTestCase):
 
         self.init()
 
-        skip_list = [rid for rid in runner.list_rule_ids()
-                     if rid != self.rule.id]
+        skip_list = [
+            rid for rid in runner.list_rule_ids() if rid != self.rule.id
+        ]
         self.config = dict(skip_list=skip_list)
         self.cmd = f'ansible-lint -r {constants.RULES_DIR!s}'.split()
-
-    def dump_config(self, stream: typing.IO,
-                    conf: typing.Optional[
-                        typing.Dict[str, typing.Any]
-                    ] = None) -> None:
-        """
-        Generate .ansible-lint configurations as a string.
-        """
-        yaml.safe_dump(conf if conf else self.config, stream)
 
     def lint(self, success: bool = True):
         """
@@ -178,7 +170,7 @@ class CliTestCase(RuleTestCase):
                 if data.conf:
                     conf.update(data.conf)
 
-                self.dump_config(cio, conf)
+                yaml.safe_dump(conf, cio)
 
                 res = subprocess.run(
                     self.cmd + ['-c', cio.name, str(data.inpath)],
