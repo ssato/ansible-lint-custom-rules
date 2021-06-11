@@ -8,6 +8,9 @@ import itertools
 import pathlib
 import typing
 
+import yaml
+
+from .datatypes import DataT, TData
 from . import constants
 
 
@@ -40,6 +43,25 @@ def list_resources(name: str, success: bool = True,
 
     root = constants.TESTS_RES_DIR / name / subdir
     return sorted(str(p) for p in root.glob(pattern) if p.is_file())
+
+
+def each_test_data_for_rule(rule: str, success: bool = True,
+                            root: str = constants.TESTS_RES_DIR
+                            ) -> typing.Iterator[DataT]:
+    """
+    Yield test data files for the given rule ``rule`` (name).
+    """
+    datadir = root / rule / ('ok' if success else 'ng')
+    for data in datadir.glob('*.yml'):
+        if not data.is_file():
+            continue
+
+        conf = dict()
+        cpath = datadir / 'c' / data.name
+        if cpath.exists() and cpath.is_file():
+            conf = yaml.load(cpath.open(), Loader=yaml.FullLoader)
+
+        yield TData(datadir, data, conf)
 
 
 def get_rule_name(test_py: str = __file__) -> str:

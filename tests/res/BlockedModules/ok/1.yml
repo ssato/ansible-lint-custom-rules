@@ -1,6 +1,7 @@
+---
 - hosts: localhost
   connection: local
   gather_facts: false
   tasks:
-    - name: ZZZZZ
-      ping:
+    - name: Ping
+      include: roles/ping/tasks/do_ping.yml

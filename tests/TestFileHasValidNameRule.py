@@ -20,7 +20,9 @@ NG_VALID_NAME_RE = r'\S+NEVER_MATCH'
 class Base:
     this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
-    rule_memoized = ['is_valid_filename']
+    rule_memoized = ['valid_name_re', 'is_valid_filename']
+
+    use_lint_v2 = True
 
 
 @pytest.mark.parametrize(
@@ -45,10 +47,8 @@ def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
 
 
 class RuleTestCase(Base, common.RuleTestCase):
-    def test_30_ng_cases_by_config(self):
-        self.lint(False, 'ok', config=dict(name=NG_VALID_NAME_RE))
+    pass
 
 
 class CliTestCase(Base, common.CliTestCase):
-    def test_30_ng_cases_by_config(self):
-        self.lint(False, 'ok', config=dict(name=NG_VALID_NAME_RE))
+    pass

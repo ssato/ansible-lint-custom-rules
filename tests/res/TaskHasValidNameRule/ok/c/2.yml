@@ -1,0 +1,4 @@
+---
+rules:
+  task_has_valid_name:
+    name: ^\w+$

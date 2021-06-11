@@ -47,13 +47,19 @@ _OK_FILES: typing.List[str] = sorted(
     if f.is_file()
 )
 
+_NG_FILES: typing.List[str] = sorted(
+    str(f) for f
+    in pathlib.Path(C.TESTS_RES_DIR / _NAME / 'ng').glob('*.*')
+    if f.is_file()
+)
+
 
 @pytest.mark.parametrize(
     'success,subdir,expected',
     [(True, None, _OK_FILES),   # Default
      (False, 'ok', _OK_FILES),  # Override subdir
-     (False, None, []),
-     (True, 'ng', [])
+     (False, None, _NG_FILES),
+     (True, 'ng', _NG_FILES)
      ]
 )
 def test_list_resoruces_for_ok_cases(success, subdir, expected):

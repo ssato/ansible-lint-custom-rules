@@ -49,11 +49,9 @@ def get_collection(rule: typing.Optional[AnsibleLintRule] = None,
 
     if rule:
         # Hack to force setting options.
-        if rule_options:
-            setattr(
-                ansiblelint.config.options, 'rules', {rule.id: rule_options}
-            )
-
+        setattr(
+            ansiblelint.config.options, 'rules', {rule.id: rule_options or {}}
+        )
         collection.register(rule)
 
     return collection

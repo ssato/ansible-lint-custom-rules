@@ -1,6 +1,6 @@
 coveralls
 flake8
-mypy
 pytest
+pytest-profiling
 pycodestyle
 pylint
