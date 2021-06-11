@@ -4,13 +4,11 @@
 # pylint: disable=invalid-name
 """Common utility classes for test cases.
 """
-import os
 import subprocess
 import types
 import typing
 import tempfile
 import unittest
-import unittest.mock
 
 import yaml
 
@@ -99,16 +97,10 @@ class RuleTestCase(BaseTestCase):
     """Base class to test rules.
     """
     def run_playbook(self, filepath: str,
-                     env: typing.Optional[typing.Dict] = None,
                      config: runner.RuleOptionsT = None):
         """Run playbook.
         """
-        rnr = self.get_runner(config)
-        if env:
-            with unittest.mock.patch.dict(os.environ, env):
-                return rnr.run_playbook(filepath)
-
-        return rnr.run_playbook(filepath)
+        return self.get_runner(config).run_playbook(filepath)
 
     def load_datasets(self, success: bool = True):
         """Load datasets.
@@ -175,7 +167,7 @@ class CliTestCase(RuleTestCase):
 
     def lint(self, success: bool = True):
         """
-        Run ansible-lint with given arguments in given env.
+        Run ansible-lint with given arguments and config files.
         """
         if not self.initialized:
             return
