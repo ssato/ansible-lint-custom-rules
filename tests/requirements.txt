@@ -2,5 +2,7 @@ coveralls
 flake8
 pytest
 pytest-profiling
+pytest-randomly
+pytest-xdist[psutil]
 pycodestyle
 pylint
