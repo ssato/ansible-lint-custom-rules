@@ -54,24 +54,23 @@ class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     severity = 'MEDIUM'
     tags = [ID, 'playbook', 'readability', 'formatting']
 
-    @functools.lru_cache()
+    @functools.lru_cache(None)
     def valid_name_re(self) -> typing.Pattern:
         """A valid file name regex pattern.
         """
-        pattern_s = self.get_config(C_NAME_RE)
-        if isinstance(pattern_s, str):
-            if pattern_s and pattern_s.strip():
+        pattern = self.get_config(C_NAME_RE)
+        if isinstance(pattern, str):
+            if pattern and pattern.strip():
                 try:
                     if self.get_config(C_UNICODE):
-                        return re.compile(pattern_s)
+                        return re.compile(pattern)
 
-                    return re.compile(pattern_s, re.ASCII)
+                    return re.compile(pattern, re.ASCII)
                 except BaseException:  # pylint: disable=broad-except
-                    warnings.warn(f'Invalid pattern? "{pattern_s}"')
+                    warnings.warn(f'Invalid pattern? "{pattern}"')
 
         return DEFAULT_NAME_RE
 
-    @functools.lru_cache()
     def is_valid_filename(self, path: str) -> bool:
         """
         Test if given `filename` is valid and satisfies the rule.
