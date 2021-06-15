@@ -59,14 +59,15 @@ class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
         """A valid file name regex pattern.
         """
         pattern_s = self.get_config(C_NAME_RE)
-        if pattern_s:
-            try:
-                if self.get_config(C_UNICODE):
-                    return re.compile(pattern_s)
+        if isinstance(pattern_s, str):
+            if pattern_s and pattern_s.strip():
+                try:
+                    if self.get_config(C_UNICODE):
+                        return re.compile(pattern_s)
 
-                return re.compile(pattern_s, re.ASCII)
-            except BaseException:  # pylint: disable=broad-except
-                warnings.warn(f'Invalid pattern? "{pattern_s}"')
+                    return re.compile(pattern_s, re.ASCII)
+                except BaseException:  # pylint: disable=broad-except
+                    warnings.warn(f'Invalid pattern? "{pattern_s}"')
 
         return DEFAULT_NAME_RE
 
