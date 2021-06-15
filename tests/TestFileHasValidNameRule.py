@@ -43,6 +43,11 @@ def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
     rule = common.get_rule_instance_by_module(Base.this_py, Base.this_mod)
     assert rule.is_valid_filename(path) == expected
 
+    for fname in Base.memoized:
+        clear_fn = getattr(rule, f'{fname}.cache_clear', False)
+        if clear_fn is not None and callable(clear_fn):
+            clear_fn()
+
 
 class RuleTestCase(Base, common.RuleTestCase):
     pass
