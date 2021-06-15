@@ -43,6 +43,8 @@ class BaseTestCase(unittest.TestCase):
     clear_fn: MaybeCallableT = None
     memoized: typing.List[str] = []
 
+    use_default_rules: bool = False
+
     initialized: bool = False
 
     def clear(self):
@@ -79,7 +81,10 @@ class BaseTestCase(unittest.TestCase):
         Make ansiblelint.RulesCollection instance registered the rule with
         given config and get runner.RunFromFile instance from it.
         """
-        collection = runner.get_collection(self.rule, rule_options=config)
+        collection = runner.get_collection(
+            self.rule, rule_options=config,
+            use_default_rules=self.use_default_rules
+        )
         return runner.RunFromFile(collection)
 
     def setUp(self):

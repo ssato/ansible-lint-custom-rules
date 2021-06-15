@@ -32,12 +32,16 @@ RuleOptionsT = typing.Optional[typing.Dict[str, typing.Any]]
 
 
 def get_collection(rule: typing.Optional[AnsibleLintRule] = None,
-                   rule_options: RuleOptionsT = None
+                   rule_options: RuleOptionsT = None,
+                   use_default_rules: bool = False
                    ) -> RulesCollection:
     """
     Get RulesCollection instance with given rule registered.
     """
-    rulesdirs = [ansiblelint.constants.DEFAULT_RULESDIR]
+    if use_default_rules:
+        rulesdirs = [ansiblelint.constants.DEFAULT_RULESDIR]
+    else:
+        rulesdirs = []
 
     options = ansiblelint.config.options
     options.enable_list = ['no-same-owner']
