@@ -20,7 +20,7 @@ NG_VALID_NAME_RE = r'\S+NEVER_MATCH'
 class Base:
     this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
-    memoized = ['valid_name_re', 'is_valid_filename']
+    memoized = ['valid_name_re']
 
 
 @pytest.mark.parametrize(
@@ -35,18 +35,20 @@ class Base:
      ]
 )
 def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
+    rule = common.get_rule_instance_by_module(Base.this_py, Base.this_mod)
+    ansiblelint.config.options.rules = {
+        rule.id: dict(name=TT.DEFAULT_NAME_RE.pattern, unicode=False)
+    }
+
     if name:
         monkeypatch.setitem(
             ansiblelint.config.options.rules, TT.ID,
             dict(name=name, unicode=unicode)
         )
-    rule = common.get_rule_instance_by_module(Base.this_py, Base.this_mod)
     assert rule.is_valid_filename(path) == expected
 
     for fname in Base.memoized:
-        clear_fn = getattr(rule, f'{fname}.cache_clear', False)
-        if clear_fn is not None and callable(clear_fn):
-            clear_fn()
+        getattr(getattr(rule, fname), 'cache_clear')()
 
 
 class RuleTestCase(Base, common.RuleTestCase):
