@@ -23,6 +23,14 @@ class Base:
     memoized = ['valid_name_re']
 
 
+class RuleTestCase(Base, common.RuleTestCase):
+    pass
+
+
+class CliTestCase(Base, common.CliTestCase):
+    pass
+
+
 @pytest.mark.parametrize(
     'path,name,unicode,expected',
     [('main.yml', '', False, True),
@@ -35,7 +43,9 @@ class Base:
      ]
 )
 def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
-    rule = common.get_rule_instance_by_module(Base.this_py, Base.this_mod)
+    rule = common.get_rule_instance_by_name(
+        Base.this_mod, RuleTestCase.get_rule_name()
+    )
     ansiblelint.config.options.rules = {
         rule.id: dict(name=TT.DEFAULT_NAME_RE.pattern, unicode=False)
     }
@@ -49,11 +59,3 @@ def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
 
     for fname in Base.memoized:
         getattr(getattr(rule, fname), 'cache_clear')()
-
-
-class RuleTestCase(Base, common.RuleTestCase):
-    pass
-
-
-class CliTestCase(Base, common.CliTestCase):
-    pass

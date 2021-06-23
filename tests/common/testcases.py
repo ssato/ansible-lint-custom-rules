@@ -22,7 +22,8 @@ MaybeModNameT = typing.Optional[str]
 MaybeModT = typing.Optional[types.ModuleType]
 MaybeCallableT = typing.Optional[typing.Callable]
 
-RULE_NAME_RE = re.compile(r'^test_?(\w+).py$', re.IGNORECASE | re.ASCII)
+RULE_NAME_RE: typing.Pattern = re.compile(r'^test_?(\w+).py$',
+                                          re.IGNORECASE | re.ASCII)
 
 
 def cache_clear_itr(maybe_memoized_fns: typing.Iterable[typing.Any]
@@ -42,7 +43,6 @@ class BaseTestCase(unittest.TestCase):
     # .. todo::
     #    I don't know how to compute and set them in test case classes in
     #    modules import this module.
-    this_py: MaybeModNameT = None
     this_mod: MaybeModT = None
 
     clear_fn: MaybeCallableT = None
@@ -52,12 +52,34 @@ class BaseTestCase(unittest.TestCase):
 
     initialized: bool = False
 
+    @classmethod
+    def get_filename(cls) -> str:
+        """Resolve and get the filename of self like __file___ dynamically.
+
+        .. note::
+           This must be a class method because inspect.getfile(self) fails.
+        """
+        return pathlib.Path(inspect.getfile(cls)).name
+
+    @classmethod
+    def get_rule_name(cls) -> str:
+        """Resolve the name of the target rule by filename (__file__).
+        """
+        match = RULE_NAME_RE.match(cls.get_filename())
+        if match:
+            return match.groups()[0]
+
+        return ''
+
     def init(self):
         """Initialize.
         """
-        if not self.this_py or not self.this_mod:
+        if self.this_mod is None or not self.this_mod:
             return
 
+        # .. note::
+        #    The followings only happen in children classes inherits this and
+        #    have appropriate self.this_mod.
         self.name = self.get_rule_name()
         self.rule = utils.get_rule_instance_by_name(self.this_mod, self.name)
 
@@ -79,16 +101,6 @@ class BaseTestCase(unittest.TestCase):
         for clear_fn in self.clear_fns:
             if clear_fn and callable(clear_fn):
                 clear_fn()  # pylint: disable=not-callable
-
-    @classmethod
-    def get_rule_name(cls) -> str:
-        """Resolve the name of the target rule by filename (__file__).
-        """
-        match = RULE_NAME_RE.match(pathlib.Path(inspect.getfile(cls)).name)
-        if match:
-            return match.groups()[0]
-
-        return ''
 
     def get_runner(self, config: runner.RuleOptionsT = None
                    ) -> runner.RunFromFile:
@@ -166,7 +178,7 @@ class CliTestCase(RuleTestCase):
     def setUp(self):
         """Set up members.
         """
-        if not self.this_py or not self.this_mod:
+        if self.this_mod is None or not self.this_mod:
             return
 
         self.init()

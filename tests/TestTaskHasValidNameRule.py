@@ -26,6 +26,14 @@ class Base:
     memoized = ['valid_name_re', 'is_invalid_task_name']
 
 
+class RuleTestCase(Base, common.RuleTestCase):
+    pass
+
+
+class CliTestCase(Base, common.CliTestCase):
+    pass
+
+
 @pytest.mark.parametrize(
     'name,evalue,expected',
     [(VALID_NAME_0, '', False),  # default.
@@ -40,13 +48,7 @@ def test_is_invalid_task_name(name, evalue, expected, monkeypatch):
         ansiblelint.config.options.rules, TT.ID,
         dict(name=evalue)
     )
-    rule = common.get_rule_instance_by_module(Base.this_py, Base.this_mod)
+    rule = common.get_rule_instance_by_name(
+        Base.this_mod, RuleTestCase.get_rule_name()
+    )
     assert rule.is_invalid_task_name(name) == expected
-
-
-class RoleTestCase(Base, common.RuleTestCase):
-    pass
-
-
-class CliTestCase(Base, common.CliTestCase):
-    pass
