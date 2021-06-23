@@ -43,9 +43,7 @@ class CliTestCase(Base, common.CliTestCase):
      ]
 )
 def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
-    rule = common.get_rule_instance_by_name(
-        Base.this_mod, RuleTestCase.get_rule_name()
-    )
+    rule = RuleTestCase.get_rule_instance_by_name(RuleTestCase.get_rule_name())
     ansiblelint.config.options.rules = {
         rule.id: dict(name=TT.DEFAULT_NAME_RE.pattern, unicode=False)
     }

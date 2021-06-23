@@ -45,7 +45,5 @@ def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
             ansiblelint.config.options.rules, TT.ID,
             dict(name=name, unicode=unicode)
         )
-    rule = common.get_rule_instance_by_name(
-        Base.this_mod, RuleTestCase.get_rule_name()
-    )
+    rule = RuleTestCase.get_rule_instance_by_name(RuleTestCase.get_rule_name())
     assert rule.is_valid_filename(path) == expected
