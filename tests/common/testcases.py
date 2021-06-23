@@ -58,18 +58,34 @@ class BaseTestCase(unittest.TestCase):
 
         .. note::
            This must be a class method because inspect.getfile(self) fails.
+
+        .. note::
+           The test case of this method is implemented in tests.TestDebugRule.
         """
         return pathlib.Path(inspect.getfile(cls)).name
 
     @classmethod
     def get_rule_name(cls) -> str:
         """Resolve the name of the target rule by filename (__file__).
+
+        .. note::
+           The test case of this method is implemented in tests.TestDebugRule.
         """
         match = RULE_NAME_RE.match(cls.get_filename())
         if match:
             return match.groups()[0]
 
         return ''
+
+    @classmethod
+    def get_rule_instance_by_name(cls, rule_name):
+        """Get the rule instance to test.
+        """
+        rule_cls = getattr(cls.this_mod, rule_name)
+        if not rule_cls:
+            raise ValueError(f'No such rule class {rule_name} '
+                             f'in {cls.this_mod!r}.')
+        return rule_cls()
 
     def init(self):
         """Initialize.
@@ -81,7 +97,7 @@ class BaseTestCase(unittest.TestCase):
         #    The followings only happen in children classes inherits this and
         #    have appropriate self.this_mod.
         self.name = self.get_rule_name()
-        self.rule = utils.get_rule_instance_by_name(self.this_mod, self.name)
+        self.rule = self.get_rule_instance_by_name(self.name)
 
         self.clear_fns = [
             self.clear_fn, self.rule.get_config.cache_clear
