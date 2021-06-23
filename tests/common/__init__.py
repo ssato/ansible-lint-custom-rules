@@ -3,14 +3,17 @@
 #
 """Entry point of tests.common.*.
 """
+from .base import (
+    MaybeModT, Base
+)
 from .constants import (
     TESTS_DIR, TESTS_RES_DIR, RULES_DIR,
 )
 from .testcases import (
-    MaybeModT, Base, RuleTestCase, CliTestCase
+    RuleTestCase, CliTestCase
 )
 
 __all__ = [
-    'TESTS_DIR', 'TESTS_RES_DIR', 'RULES_DIR', 'DEFAULT_RULES_DIR',
+    'TESTS_DIR', 'TESTS_RES_DIR', 'RULES_DIR',
     'MaybeModT', 'Base', 'RuleTestCase', 'CliTestCase',
 ]
