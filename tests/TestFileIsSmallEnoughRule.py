@@ -22,15 +22,14 @@ def test_exceeds_max_lines(max_lines, expected):
     assert TT.exceeds_max_lines(__file__, max_lines) == expected
 
 
-class Base:
-    this_py: common.MaybeModNameT = __file__
+class Base(common.Base):
     this_mod: common.MaybeModT = TT
     memoized = ['max_lines', 'exceeds_max_lines']
 
 
-class RuleTestCase(Base, common.RuleTestCase):
-    pass
+class RuleTestCase(common.RuleTestCase):
+    base_cls = Base
 
 
-class CliTestCase(Base, common.CliTestCase):
-    pass
+class CliTestCase(common.CliTestCase):
+    base_cls = Base

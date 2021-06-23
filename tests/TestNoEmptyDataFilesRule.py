@@ -6,6 +6,8 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule.
 """
+import typing
+
 import pytest
 
 from rules import NoEmptyDataFilesRule as TT
@@ -31,15 +33,14 @@ def test_yml_file_has_some_data(content, expected, tmp_path):
     _CLEAR_FUN()
 
 
-class Base:
-    this_py: common.MaybeModNameT = __file__
+class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    clear_fn: common.MaybeCallableT = _CLEAR_FUN
+    clear_fns: typing.List[typing.Callable] = [_CLEAR_FUN]
 
 
-class RuleTestCase(Base, common.RuleTestCase):
-    pass
+class RuleTestCase(common.RuleTestCase):
+    base_cls = Base
 
 
-class CliTestCase(Base, common.CliTestCase):
-    pass
+class CliTestCase(common.CliTestCase):
+    base_cls = Base

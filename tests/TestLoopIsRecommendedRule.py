@@ -10,14 +10,13 @@ from rules import LoopIsRecommendedRule as TT
 from tests import common
 
 
-class Base:
-    this_py: common.MaybeModNameT = __file__
+class Base(common.Base):
     this_mod: common.MaybeModT = TT
 
 
-class RuleTestCase(Base, common.RuleTestCase):
-    pass
+class RuleTestCase(common.RuleTestCase):
+    base_cls = Base
 
 
-class CliTestCase(Base, common.CliTestCase):
-    pass
+class CliTestCase(common.CliTestCase):
+    base_cls = Base
