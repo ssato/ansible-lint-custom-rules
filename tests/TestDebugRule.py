@@ -16,7 +16,12 @@ class Base:
 
 
 class RuleTestCase(Base, common.RuleTestCase):
-    pass
+
+    def test_get_filename(self):
+        self.assertEqual(self.get_filename(), 'TestDebugRule.py')
+
+    def test_get_rule_name(self):
+        self.assertEqual(self.get_rule_name(), 'DebugRule')
 
 
 class CliTestCase(Base, common.CliTestCase):
