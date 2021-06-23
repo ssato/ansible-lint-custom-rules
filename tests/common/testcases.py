@@ -19,7 +19,6 @@ from . import constants, runner, utils
 
 
 MaybeModT = typing.Optional[types.ModuleType]
-MaybeCallableT = typing.Optional[typing.Callable]
 
 RULE_NAME_RE: typing.Pattern = re.compile(r'^test_?(\w+).py$',
                                           re.IGNORECASE | re.ASCII)
@@ -44,7 +43,7 @@ class BaseTestCase(unittest.TestCase):
     #    modules import this module.
     this_mod: MaybeModT = None
 
-    clear_fn: MaybeCallableT = None
+    clear_fns: typing.List[typing.Callable] = []
     memoized: typing.List[str] = []
 
     use_default_rules: bool = False
@@ -98,24 +97,20 @@ class BaseTestCase(unittest.TestCase):
         self.name = self.get_rule_name()
         self.rule = self.get_rule_instance_by_name(self.name)
 
-        self.clear_fns = [
-            self.clear_fn, self.rule.get_config.cache_clear
-        ] + list(
+        self.clear_fns.append(self.rule.get_config.cache_clear)
+        self.clear_fns.extend(
             cache_clear_itr(
                 getattr(self.rule, n, False) for n in self.memoized
             )
         )
+
         self.initialized = True
 
     def clear(self):
         """Call clear function if it's callable.
         """
-        if not self.initialized:
-            return
-
         for clear_fn in self.clear_fns:
-            if clear_fn and callable(clear_fn):
-                clear_fn()  # pylint: disable=not-callable
+            clear_fn()  # pylint: disable=not-callable
 
     def get_runner(self, config: runner.RuleOptionsT = None
                    ) -> runner.RunFromFile:

@@ -6,15 +6,20 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule, VarsShouldNotBeUsedRule.
 """
+import typing
+
 import pytest
 
 from rules import VarsShouldNotBeUsedRule as TT
 from tests import common
 
 
+_CLEAR_FN = TT.contains_vars_directive.cache_clear
+
+
 class Base:
     this_mod: common.MaybeModT = TT
-    clear_fn: common.MaybeCallableT = TT.contains_vars_directive.cache_clear
+    clear_fns: typing.List[typing.Callable] = [_CLEAR_FN]
 
 
 @pytest.mark.parametrize(
@@ -26,7 +31,7 @@ class Base:
 )
 def test_contains_vars_directive(path, expected):
     assert TT.contains_vars_directive(path) == expected
-    Base.clear_fn()
+    _CLEAR_FN()
 
 
 class RuleTestCase(Base, common.RuleTestCase):
