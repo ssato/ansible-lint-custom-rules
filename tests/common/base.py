@@ -19,17 +19,6 @@ RULE_NAME_RE: typing.Pattern = re.compile(r'^test_?(\w+).py$',
                                           re.IGNORECASE | re.ASCII)
 
 
-def cache_clear_itr(maybe_memoized_fns: typing.Iterable[typing.Any]
-                    ) -> typing.Callable[..., None]:
-    """Yield callable object from ``maybe_memoized_fns``.
-    """
-    for candidate in maybe_memoized_fns:
-        if candidate and callable(candidate):
-            clear_fn = getattr(candidate, 'cache_clear', False)
-            if clear_fn and callable(clear_fn):
-                yield clear_fn
-
-
 class Base:
     """Base class for test rule cases.
     """
@@ -92,7 +81,7 @@ class Base:
 
         self.clear_fns.append(self.rule.get_config.cache_clear)
         self.clear_fns.extend(
-            cache_clear_itr(
+            utils.each_clear_fn(
                 getattr(self.rule, n, False) for n in self.memoized
             )
         )

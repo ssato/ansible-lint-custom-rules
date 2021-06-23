@@ -7,13 +7,23 @@ import typing
 
 import yaml
 
-from .datatypes import DataT, TData
-from . import constants
+from . import constants, datatypes
+
+
+def each_clear_fn(maybe_memoized_fns: typing.Iterable[typing.Any]
+                  ) -> typing.Callable[..., None]:
+    """Yield callable object from ``maybe_memoized_fns``.
+    """
+    for fun in maybe_memoized_fns:
+        if fun and callable(fun):
+            clear_fn = getattr(fun, 'cache_clear', False)
+            if clear_fn and callable(clear_fn):
+                yield clear_fn
 
 
 def each_test_data_for_rule(rule: str, success: bool = True,
                             root: str = constants.TESTS_RES_DIR
-                            ) -> typing.Iterator[DataT]:
+                            ) -> typing.Iterator[datatypes.DataT]:
     """
     Yield test data files for the given rule ``rule`` (name).
     """
@@ -27,6 +37,6 @@ def each_test_data_for_rule(rule: str, success: bool = True,
         if cpath.exists() and cpath.is_file():
             conf = yaml.load(cpath.open(), Loader=yaml.FullLoader)
 
-        yield TData(datadir, data, conf)
+        yield datatypes.TData(datadir, data, conf)
 
 # vim:sw=4:ts=4:et:
