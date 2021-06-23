@@ -18,7 +18,6 @@ NG_VALID_NAME_RE = r'\S+NEVER_MATCH'
 
 
 class Base:
-    this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
     memoized = ['valid_name_re']
 

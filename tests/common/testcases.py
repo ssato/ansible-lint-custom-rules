@@ -18,7 +18,6 @@ import yaml
 from . import constants, runner, utils
 
 
-MaybeModNameT = typing.Optional[str]
 MaybeModT = typing.Optional[types.ModuleType]
 MaybeCallableT = typing.Optional[typing.Callable]
 

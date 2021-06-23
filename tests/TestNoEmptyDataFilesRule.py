@@ -32,7 +32,6 @@ def test_yml_file_has_some_data(content, expected, tmp_path):
 
 
 class Base:
-    this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
     clear_fn: common.MaybeCallableT = _CLEAR_FUN
 

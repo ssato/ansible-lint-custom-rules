@@ -23,7 +23,6 @@ def test_exceeds_max_lines(max_lines, expected):
 
 
 class Base:
-    this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
     memoized = ['max_lines', 'exceeds_max_lines']
 

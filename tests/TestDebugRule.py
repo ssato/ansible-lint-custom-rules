@@ -11,7 +11,6 @@ from tests import common
 
 
 class Base:
-    this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
 
 

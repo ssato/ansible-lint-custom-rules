@@ -21,7 +21,6 @@ CNF_0 = dict(name=NAME_RE_0)
 
 
 class Base:
-    this_py: common.MaybeModNameT = __file__
     this_mod: common.MaybeModT = TT
     memoized = ['valid_name_re', 'is_invalid_task_name']
 
