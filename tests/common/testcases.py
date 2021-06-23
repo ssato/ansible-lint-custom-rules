@@ -4,6 +4,9 @@
 # pylint: disable=invalid-name
 """Common utility classes for test cases.
 """
+import inspect
+import pathlib
+import re
 import subprocess
 import types
 import typing
@@ -18,6 +21,8 @@ from . import constants, runner, utils
 MaybeModNameT = typing.Optional[str]
 MaybeModT = typing.Optional[types.ModuleType]
 MaybeCallableT = typing.Optional[typing.Callable]
+
+RULE_NAME_RE = re.compile(r'^test_?(\w+).py$', re.IGNORECASE | re.ASCII)
 
 
 def cache_clear_itr(maybe_memoized_fns: typing.Iterable[typing.Any]
@@ -47,23 +52,13 @@ class BaseTestCase(unittest.TestCase):
 
     initialized: bool = False
 
-    def clear(self):
-        """Call clear function if it's callable.
-        """
-        if not self.initialized:
-            return
-
-        for clear_fn in self.clear_fns:
-            if clear_fn and callable(clear_fn):
-                clear_fn()  # pylint: disable=not-callable
-
     def init(self):
         """Initialize.
         """
         if not self.this_py or not self.this_mod:
             return
 
-        self.name = utils.get_rule_name(self.this_py)
+        self.name = self.get_rule_name()
         self.rule = utils.get_rule_instance_by_name(self.this_mod, self.name)
 
         self.clear_fns = [
@@ -74,6 +69,26 @@ class BaseTestCase(unittest.TestCase):
             )
         )
         self.initialized = True
+
+    def clear(self):
+        """Call clear function if it's callable.
+        """
+        if not self.initialized:
+            return
+
+        for clear_fn in self.clear_fns:
+            if clear_fn and callable(clear_fn):
+                clear_fn()  # pylint: disable=not-callable
+
+    @classmethod
+    def get_rule_name(cls) -> str:
+        """Resolve the name of the target rule by filename (__file__).
+        """
+        match = RULE_NAME_RE.match(pathlib.Path(inspect.getfile(cls)).name)
+        if match:
+            return match.groups()[0]
+
+        return ''
 
     def get_runner(self, config: runner.RuleOptionsT = None
                    ) -> runner.RunFromFile:
