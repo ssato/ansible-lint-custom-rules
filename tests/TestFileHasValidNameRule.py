@@ -17,17 +17,17 @@ from tests import common
 NG_VALID_NAME_RE = r'\S+NEVER_MATCH'
 
 
-class Base:
+class Base(common.Base):
     this_mod: common.MaybeModT = TT
     memoized = ['valid_name_re']
 
 
-class RuleTestCase(Base, common.RuleTestCase):
-    pass
+class RuleTestCase(common.RuleTestCase):
+    base_cls = Base
 
 
-class CliTestCase(Base, common.CliTestCase):
-    pass
+class CliTestCase(common.CliTestCase):
+    base_cls = Base
 
 
 @pytest.mark.parametrize(
@@ -42,7 +42,7 @@ class CliTestCase(Base, common.CliTestCase):
      ]
 )
 def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
-    rule = RuleTestCase.get_rule_instance_by_name(RuleTestCase.get_rule_name())
+    rule = Base.get_rule_instance_by_name(Base.get_rule_name())
     ansiblelint.config.options.rules = {
         rule.id: dict(name=TT.DEFAULT_NAME_RE.pattern, unicode=False)
     }

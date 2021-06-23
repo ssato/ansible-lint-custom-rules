@@ -35,7 +35,7 @@ def cache_clear_itr(maybe_memoized_fns: typing.Iterable[typing.Any]
                 yield clear_fn
 
 
-class BaseTestCase(unittest.TestCase):
+class Base:
     """Base class for test cases.
     """
     # .. todo::
@@ -47,8 +47,6 @@ class BaseTestCase(unittest.TestCase):
     memoized: typing.List[str] = []
 
     use_default_rules: bool = False
-
-    initialized: bool = False
 
     @classmethod
     def get_filename(cls) -> str:
@@ -85,9 +83,8 @@ class BaseTestCase(unittest.TestCase):
                              f'in {cls.this_mod!r}.')
         return rule_cls()
 
-    def init(self):
-        """Initialize.
-        """
+    def __init__(self):
+        """Initialize."""
         if self.this_mod is None or not self.this_mod:
             return
 
@@ -96,6 +93,7 @@ class BaseTestCase(unittest.TestCase):
         #    have appropriate self.this_mod.
         self.name = self.get_rule_name()
         self.rule = self.get_rule_instance_by_name(self.name)
+        self.id = self.rule.id
 
         self.clear_fns.append(self.rule.get_config.cache_clear)
         self.clear_fns.extend(
@@ -104,7 +102,9 @@ class BaseTestCase(unittest.TestCase):
             )
         )
 
-        self.initialized = True
+    def is_ready(self):
+        """True if this instance can run."""
+        return bool(getattr(self, 'rule', False))
 
     def clear(self):
         """Call clear function if it's callable.
@@ -124,20 +124,6 @@ class BaseTestCase(unittest.TestCase):
         )
         return runner.RunFromFile(collection)
 
-    def setUp(self):
-        """Setup
-        """
-        self.init()
-
-    def tearDown(self):
-        """De-initialize.
-        """
-        self.clear()
-
-
-class RuleTestCase(BaseTestCase):
-    """Base class to test rules.
-    """
     def run_playbook(self, filepath: str,
                      config: runner.RuleOptionsT = None):
         """Run playbook.
@@ -155,23 +141,39 @@ class RuleTestCase(BaseTestCase):
 
         return datasets
 
+
+class RuleTestCase(unittest.TestCase):
+    """Base class to test rules.
+    """
+    base_cls = Base
+
+    def setUp(self):
+        """Setup
+        """
+        self.base = self.base_cls()
+
+    def tearDown(self):
+        """De-initialize.
+        """
+        self.base.clear()
+
     def lint(self, success: bool = True) -> None:
         """
         Run the lint rule's check to given resource data files.
         """
-        if not self.initialized:
+        if not self.base.is_ready():
             return
 
-        for data in self.load_datasets(success=success):
-            conf = data.conf.get('rules', {}).get(self.rule.id, {})
-            res = self.run_playbook(data.inpath, config=conf)
+        for data in self.base.load_datasets(success=success):
+            conf = data.conf.get('rules', {}).get(self.base.id, {})
+            res = self.base.run_playbook(data.inpath, config=conf)
             msg = f'{data!r}, {conf!r}, {res!r}'
             if success:
                 self.assertEqual(0, len(res), msg)  # No errors.
             else:
                 self.assertTrue(len(res) > 0, msg)  # It should fail.
 
-            self.clear()
+            self.base.clear()
 
     def test_ok_cases(self):
         """OK test cases"""
@@ -186,15 +188,14 @@ class CliTestCase(RuleTestCase):
     """Base class to test rules with CLI.
     """
     def setUp(self):
-        """Set up members.
-        """
-        if self.this_mod is None or not self.this_mod:
+        """Set up members."""
+        super().setUp()
+
+        if not self.base.is_ready():
             return
 
-        self.init()
-
         skip_list = [
-            rid for rid in runner.list_rule_ids() if rid != self.rule.id
+            rid for rid in runner.list_rule_ids() if rid != self.base.id
         ]
         self.config = dict(skip_list=skip_list)
         self.cmd = f'ansible-lint -r {constants.RULES_DIR!s}'.split()
@@ -203,10 +204,10 @@ class CliTestCase(RuleTestCase):
         """
         Run ansible-lint with given arguments and config files.
         """
-        if not self.initialized:
+        if not self.base.is_ready():
             return
 
-        for data in self.load_datasets(success=success):
+        for data in self.base.load_datasets(success=success):
             with tempfile.NamedTemporaryFile(mode='w') as cio:
                 conf = self.config.copy()
                 if data.conf:

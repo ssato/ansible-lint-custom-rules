@@ -17,7 +17,7 @@ from tests import common
 _CLEAR_FN = TT.contains_vars_directive.cache_clear
 
 
-class Base:
+class Base(common.Base):
     this_mod: common.MaybeModT = TT
     clear_fns: typing.List[typing.Callable] = [_CLEAR_FN]
 
@@ -34,9 +34,9 @@ def test_contains_vars_directive(path, expected):
     _CLEAR_FN()
 
 
-class RuleTestCase(Base, common.RuleTestCase):
-    pass
+class RuleTestCase(common.RuleTestCase):
+    base_cls = Base
 
 
-class CliTestCase(Base, common.CliTestCase):
-    pass
+class CliTestCase(common.CliTestCase):
+    base_cls = Base

@@ -13,17 +13,17 @@ from rules import TasksFileHasValidNameRule as TT
 from tests import common
 
 
-class Base:
+class Base(common.Base):
     this_mod: common.MaybeModT = TT
     memoized = ['valid_name_re', 'is_invalid_filename']
 
 
-class RuleTestCase(Base, common.RuleTestCase):
-    pass
+class RuleTestCase(common.RuleTestCase):
+    base_cls = Base
 
 
-class CliTestCase(Base, common.CliTestCase):
-    pass
+class CliTestCase(common.CliTestCase):
+    base_cls = Base
 
 
 @pytest.mark.parametrize(
@@ -44,5 +44,5 @@ def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
             ansiblelint.config.options.rules, TT.ID,
             dict(name=name, unicode=unicode)
         )
-    rule = RuleTestCase.get_rule_instance_by_name(RuleTestCase.get_rule_name())
+    rule = Base.get_rule_instance_by_name(Base.get_rule_name())
     assert rule.is_valid_filename(path) == expected

@@ -7,10 +7,10 @@ from .constants import (
     TESTS_DIR, TESTS_RES_DIR, RULES_DIR,
 )
 from .testcases import (
-    MaybeModT, RuleTestCase, CliTestCase
+    MaybeModT, Base, RuleTestCase, CliTestCase
 )
 
 __all__ = [
     'TESTS_DIR', 'TESTS_RES_DIR', 'RULES_DIR', 'DEFAULT_RULES_DIR',
-    'MaybeModT', 'RuleTestCase', 'CliTestCase',
+    'MaybeModT', 'Base', 'RuleTestCase', 'CliTestCase',
 ]

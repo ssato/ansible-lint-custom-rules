@@ -10,18 +10,19 @@ from rules import DebugRule as TT
 from tests import common
 
 
-class Base:
+class Base(common.Base):
     this_mod: common.MaybeModT = TT
 
 
-class RuleTestCase(Base, common.RuleTestCase):
+class RuleTestCase(common.RuleTestCase):
+    base_cls = Base
 
     def test_get_filename(self):
-        self.assertEqual(self.get_filename(), 'TestDebugRule.py')
+        self.assertEqual(self.base.get_filename(), 'TestDebugRule.py')
 
     def test_get_rule_name(self):
-        self.assertEqual(self.get_rule_name(), 'DebugRule')
+        self.assertEqual(self.base.get_rule_name(), 'DebugRule')
 
 
-class CliTestCase(Base, common.CliTestCase):
-    pass
+class CliTestCase(common.CliTestCase):
+    base_cls = Base
