@@ -2,7 +2,6 @@ coveralls
 flake8
 pytest
 pytest-cov
-pytest-profiling
 pytest-randomly
 pytest-xdist[psutil]
 pycodestyle
