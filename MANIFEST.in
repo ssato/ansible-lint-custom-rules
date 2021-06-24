@@ -2,7 +2,8 @@ include LICENSE.MIT
 include MANIFEST.in
 include README.*
 include setup.*
-include tox.ini
+include *.ini
+include *.txt
 recursive-include rules *.py
 # for f in tests/**/*.* ; do echo ${f/*\./*.}; done | sort | uniq
-recursive-include tests *.bats *.py *.txt *.yml
+recursive-include tests *.py *.txt *.yml
