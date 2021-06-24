@@ -17,11 +17,23 @@ class Base(common.Base):
 class RuleTestCase(common.RuleTestCase):
     base_cls = Base
 
-    def test_get_filename(self):
+    def test_base_get_filename(self):
         self.assertEqual(self.base.get_filename(), 'TestDebugRule.py')
 
-    def test_get_rule_name(self):
+    def test_base_get_rule_name(self):
         self.assertEqual(self.base.get_rule_name(), 'DebugRule')
+
+    def test_base_get_rule_instance_by_name(self):
+        rule = self.base.get_rule_instance_by_name(self.base.name)
+        self.assertTrue(bool(rule))
+        self.assertTrue(isinstance(rule, type(self.base.rule)))
+
+    def test_base_is_ready(self):
+        self.assertTrue(self.base.is_ready())
+
+    def test_base_load_datasets(self):
+        self.assertTrue(self.base.load_datasets())
+        self.assertTrue(self.base.load_datasets(False))
 
 
 class CliTestCase(common.CliTestCase):
