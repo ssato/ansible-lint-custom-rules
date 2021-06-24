@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: |
-          dnf install -y grpahviz
+          dnf install -y graphviz
           pip3 install tox tox-gh-actions
       - name: Test with tox
         run: tox
