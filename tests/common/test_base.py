@@ -4,7 +4,7 @@
 # pylint: disable=missing-function-docstring
 """Test cases of tests.common.base.
 """
-import  functools
+import functools
 
 import pytest
 
