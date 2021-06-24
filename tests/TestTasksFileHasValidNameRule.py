@@ -46,3 +46,4 @@ def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
         )
     rule = Base.get_rule_instance_by_name(Base.get_rule_name())
     assert rule.is_valid_filename(path) == expected
+    Base().clear()
