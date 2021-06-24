@@ -12,11 +12,16 @@ import yaml
 from tests.common import constants, datatypes, utils as TT
 
 
+@functools.lru_cache(None)
+def mid(obj):
+    return id(obj)
+
+
 @pytest.mark.parametrize(
     ('fns', 'exp'),
     (([], False),
      ([id], False),
-     ([functools.lru_cache(id)], True),
+     ([mid], True),
      )
 )
 def test_each_clear_fn(fns, exp):
