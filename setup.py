@@ -6,7 +6,7 @@ import setuptools
 import setuptools.command.bdist_rpm
 
 
-NAME = "ansiblelint_custom_rules"
+NAME = "ansiblelint_custom_rules_ex"
 VERSION = "0.2.2"
 
 # For daily snapshot versioning mode:
