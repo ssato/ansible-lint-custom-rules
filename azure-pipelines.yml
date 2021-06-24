@@ -22,6 +22,8 @@ jobs:
           pythonVersion: 3.7
         python38:
           pythonVersion: 3.8
+        python39:
+          pythonVersion: 3.9
 
     pool:
       vmImage: 'ubuntu-latest'
