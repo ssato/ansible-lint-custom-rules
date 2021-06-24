@@ -40,10 +40,12 @@ class CliTestCase(common.CliTestCase):
 )
 def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
     if name:
-        monkeypatch.setitem(
-            ansiblelint.config.options.rules, TT.ID,
-            dict(name=name, unicode=unicode)
-        )
+        patch = dict(name=name, unicode=unicode)
+    else:
+        patch = dict(unicode=unicode)
+
+    # pylint: disable=no-member
+    monkeypatch.setitem(ansiblelint.config.options.rules, TT.ID, patch)
     rule = Base.get_rule_instance_by_name(Base.get_rule_name())
     assert rule.is_valid_filename(path) == expected
     Base().clear()
