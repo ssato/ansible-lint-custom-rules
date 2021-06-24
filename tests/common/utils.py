@@ -28,7 +28,7 @@ def each_test_data_for_rule(rule: str, success: bool = True,
     Yield test data files for the given rule ``rule`` (name).
     """
     datadir = root / rule / ('ok' if success else 'ng')
-    for data in datadir.glob('*.yml'):
+    for data in sorted(datadir.glob('*.yml')):
         if not data.is_file():
             continue
 
