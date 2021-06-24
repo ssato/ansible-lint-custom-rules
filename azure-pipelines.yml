@@ -38,8 +38,8 @@ jobs:
           versionSpec: $(pythonVersion)
 
       - script: |
-          apt-get update
-          apt-get install -y graphviz
+          sudo apt-get update
+          sudo apt-get install -y graphviz
           python -m pip install --upgrade pip
           pip install tox tox-gh-actions
         displayName: Install some more test time dependencies
