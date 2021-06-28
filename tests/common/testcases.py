@@ -42,8 +42,7 @@ class RuleTestCase(unittest.TestCase):
             if data.env is None or not data.env:
                 res = self.base.run_playbook(data.inpath, config=conf)
             else:
-                with unittest.mock.patch.dict(os.environ, data.env,
-                                              clear=True):
+                with unittest.mock.patch.dict(os.environ, data.env):
                     res = self.base.run_playbook(data.inpath, config=conf)
                     # for debug:
                     # msg = f'{data!r}, {conf!r}, {res!r}, {os.environ!r}'
@@ -96,9 +95,13 @@ class CliTestCase(RuleTestCase):
 
                 yaml.safe_dump(conf, cio)
 
+                env = os.environ.copy()
+                if data.env is not None and data.env:
+                    env.update(data.env)
+
                 res = subprocess.run(
                     self.cmd + ['-c', cio.name, str(data.inpath)],
-                    stdout=subprocess.PIPE, check=False, env=data.env
+                    stdout=subprocess.PIPE, check=False, env=env
                 )
                 args = (res.returncode, 0, res.stdout.decode('utf-8'))
                 if success:
