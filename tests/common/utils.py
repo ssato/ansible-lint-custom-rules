@@ -37,6 +37,11 @@ def each_test_data_for_rule(rule: str, success: bool = True,
         if cpath.exists() and cpath.is_file():
             conf = yaml.load(cpath.open(), Loader=yaml.FullLoader)
 
-        yield datatypes.TData(datadir, data, conf)
+        env = dict()
+        epath = datadir / 'env' / data.name
+        if epath.exists() and epath.is_file():
+            env = yaml.load(epath.open(), Loader=yaml.FullLoader)
+
+        yield datatypes.TData(datadir, data, conf, env)
 
 # vim:sw=4:ts=4:et:

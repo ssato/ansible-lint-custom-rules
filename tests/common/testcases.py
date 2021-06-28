@@ -4,9 +4,11 @@
 # pylint: disable=invalid-name
 """Common utility classes for test cases.
 """
+import os
 import subprocess
 import tempfile
 import unittest
+import unittest.mock
 
 import yaml
 
@@ -37,7 +39,15 @@ class RuleTestCase(unittest.TestCase):
 
         for data in self.base.load_datasets(success=success):
             conf = data.conf.get('rules', {}).get(self.base.id, {})
-            res = self.base.run_playbook(data.inpath, config=conf)
+            if data.env is None or not data.env:
+                res = self.base.run_playbook(data.inpath, config=conf)
+            else:
+                with unittest.mock.patch.dict(os.environ, data.env,
+                                              clear=True):
+                    res = self.base.run_playbook(data.inpath, config=conf)
+                    # for debug:
+                    # msg = f'{data!r}, {conf!r}, {res!r}, {os.environ!r}'
+
             msg = f'{data!r}, {conf!r}, {res!r}'
             if success:
                 self.assertEqual(0, len(res), msg)  # No errors.
@@ -88,7 +98,7 @@ class CliTestCase(RuleTestCase):
 
                 res = subprocess.run(
                     self.cmd + ['-c', cio.name, str(data.inpath)],
-                    stdout=subprocess.PIPE, check=False
+                    stdout=subprocess.PIPE, check=False, env=data.env
                 )
                 args = (res.returncode, 0, res.stdout.decode('utf-8'))
                 if success:

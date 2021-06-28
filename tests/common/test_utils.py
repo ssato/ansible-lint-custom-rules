@@ -41,7 +41,12 @@ def gen_ref_tdata(role_name, filename, success=True,
     if cpath.exists():
         conf = yaml.load(cpath.open())
 
-    return datatypes.TData(datadir, datadir / filename, conf)
+    env = dict()
+    epath = datadir / 'env' / filename
+    if epath.exists():
+        env = yaml.load(epath.open())
+
+    return datatypes.TData(datadir, datadir / filename, conf, env)
 
 
 # .. seealso:: The output of ls tests/res/DebugRule/*/*.yml
@@ -51,7 +56,8 @@ def gen_ref_tdata(role_name, filename, success=True,
                           gen_ref_tdata('DebugRule', '1.yml'),
                           gen_ref_tdata('DebugRule', '2.yml')]),
      ('DebugRule', False, [gen_ref_tdata('DebugRule', '0.yml', False),
-                           gen_ref_tdata('DebugRule', '1.yml', False)]),
+                           gen_ref_tdata('DebugRule', '1.yml', False),
+                           gen_ref_tdata('DebugRule', '2.yml', False)]),
      )
 )
 def test_each_test_data_for_rule(rule_name, success, exp):

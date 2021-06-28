@@ -15,5 +15,6 @@ class TData(typing.NamedTuple):
     datadir: pathlib.Path
     inpath: pathlib.Path
     conf: typing.Dict[str, typing.Any]
+    env: typing.Dict[str, typing.Any]
 
 # vim:sw=4:ts=4:et:
