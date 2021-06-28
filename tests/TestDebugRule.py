@@ -6,12 +6,15 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule, DebugRule.
 """
+import typing
+
 from rules import DebugRule as TT
 from tests import common
 
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
+    clear_fns: typing.List[typing.Callable] = [TT.is_enabled.cache_clear]
 
 
 class RuleTestCase(common.RuleTestCase):

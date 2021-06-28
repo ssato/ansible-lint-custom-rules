@@ -4,6 +4,8 @@
 # pylint: disable=invalid-name
 """ Lint rule class to Debug
 """
+import functools
+import os
 import typing
 
 import ansiblelint.errors
@@ -17,6 +19,7 @@ if typing.TYPE_CHECKING:
 
 
 ID: str = 'debug'
+E_ENABLED_VAR: str = '_ANSIBLE_LINT_RULE_DEBUG'
 C_ENABLED: str = 'enabled'
 
 DESC: str = """Rule to debug and monitor ansible-lint behavior.
@@ -32,7 +35,21 @@ DESC: str = """Rule to debug and monitor ansible-lint behavior.
   rules:
     debug:
       enabled: true
+
+- Environment variables
+
+  - Set ``_ANSIBLE_LINT_RULE_DEBUG`` to any value evaluated to true like 1,
+    '0', 'foo', if you want to enable this rule. The value to enable this rule
+    will be given higher priority than the above configuration value.
 """
+
+
+@functools.lru_cache(None)
+def is_enabled(default: bool = False) -> bool:
+    """
+    Is this rule enabled with the environment variable?
+    """
+    return bool(os.environ.get(E_ENABLED_VAR, default))
 
 
 class DebugRule(ansiblelint.rules.AnsibleLintRule):
@@ -51,6 +68,9 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         .. seealso:: ansiblelint.config.options
         .. seealso:: ansiblelint.cli.load_config
         """
+        if is_enabled():
+            return True  # Gives higher prio. to the environment variable.
+
         return self.get_config(C_ENABLED)
 
     def match(self, line: str) -> typing.Union[bool, str]:
