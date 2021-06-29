@@ -109,10 +109,11 @@ class Base:
         return runner.RunFromFile(collection)
 
     def run_playbook(self, filepath: str,
-                     config: runner.RuleOptionsT = None):
+                     config: runner.RuleOptionsT = None,
+                     skip_list: typing.Optional[typing.List[str]] = None):
         """Run playbook.
         """
-        return self.get_runner(config).run_playbook(filepath)
+        return self.get_runner(config).run_playbook(filepath, skip_list)
 
     def load_datasets(self, success: bool = True):
         """Load datasets.

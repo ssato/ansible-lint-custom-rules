@@ -24,26 +24,34 @@ class RuleTestCase(unittest.TestCase):
         """Setup
         """
         self.base = self.base_cls()
+        self.skip_list = [
+            rid for rid in runner.list_rule_ids() if rid != self.base.id
+        ]
 
     def tearDown(self):
         """De-initialize.
         """
         self.base.clear()
 
-    def lint(self, success: bool = True) -> None:
+    def lint(self, success: bool = True, isolated: bool = True
+             ) -> None:
         """
         Run the lint rule's check to given resource data files.
         """
         if not self.base.is_ready():
             return
 
+        skip_list = self.skip_list if isolated else []
+
         for data in self.base.load_datasets(success=success):
             conf = data.conf.get('rules', {}).get(self.base.id, {})
+            opts = dict(config=conf, skip_list=skip_list)
+
             if data.env is None or not data.env:
-                res = self.base.run_playbook(data.inpath, config=conf)
+                res = self.base.run_playbook(data.inpath, **opts)
             else:
                 with unittest.mock.patch.dict(os.environ, data.env):
-                    res = self.base.run_playbook(data.inpath, config=conf)
+                    res = self.base.run_playbook(data.inpath, **opts)
                     # for debug:
                     # msg = f'{data!r}, {conf!r}, {res!r}, {os.environ!r}'
 
@@ -59,9 +67,17 @@ class RuleTestCase(unittest.TestCase):
         """OK test cases"""
         self.lint()
 
+    def test_ok_cases_with_other_rules(self):
+        """OK test cases"""
+        self.lint(isolated=False)
+
     def test_ng_cases(self):
         """NG test cases"""
         self.lint(success=False)
+
+    def test_ng_cases_with_other_rules(self):
+        """NG test cases"""
+        self.lint(success=False, isolated=False)
 
 
 class CliTestCase(RuleTestCase):
@@ -74,22 +90,20 @@ class CliTestCase(RuleTestCase):
         if not self.base.is_ready():
             return
 
-        skip_list = [
-            rid for rid in runner.list_rule_ids() if rid != self.base.id
-        ]
-        self.config = dict(skip_list=skip_list)
         self.cmd = f'ansible-lint -r {constants.RULES_DIR!s}'.split()
 
-    def lint(self, success: bool = True):
+    def lint(self, success: bool = True, isolated: bool = True):
         """
         Run ansible-lint with given arguments and config files.
         """
         if not self.base.is_ready():
             return
 
+        config = dict(skip_list=self.skip_list) if isolated else {}
+
         for data in self.base.load_datasets(success=success):
             with tempfile.NamedTemporaryFile(mode='w') as cio:
-                conf = self.config.copy()
+                conf = config.copy()
                 if data.conf:
                     conf.update(data.conf)
 

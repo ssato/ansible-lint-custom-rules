@@ -71,13 +71,18 @@ class RunFromFile:
         """
         self._collection = collection
 
-    def run_playbook(self, path: typing.Union[str, pathlib.Path]
+    def run_playbook(self, path: typing.Union[str, pathlib.Path],
+                     skip_list: typing.Optional[typing.List[str]] = None
                      ) -> typing.List[ansiblelint.errors.MatchError]:
         """Lints received playbook file.
         """
+        if skip_list is None:
+            skip_list = []
+
         return ansiblelint.runner.Runner(
             ansiblelint.file_utils.Lintable(path, kind='playbook'),
-            rules=self._collection
+            rules=self._collection,
+            skip_list=skip_list
         ).run()
 
 # vim:sw=4:ts=4:et:
