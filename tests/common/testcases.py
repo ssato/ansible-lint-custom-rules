@@ -63,20 +63,20 @@ class RuleTestCase(unittest.TestCase):
 
             self.base.clear()
 
-    def test_ok_cases(self):
-        """OK test cases"""
+    def test_ok_cases_only_with_the_rule(self):
+        """Run test cases only with the rule, should succeed."""
         self.lint()
 
     def test_ok_cases_with_other_rules(self):
-        """OK test cases"""
+        """Run test cases together with other rules, should succeed."""
         self.lint(isolated=False)
 
-    def test_ng_cases(self):
-        """NG test cases"""
+    def test_ng_cases_only_with_the_rule(self):
+        """Run test cases only with the rule, should fail."""
         self.lint(success=False)
 
     def test_ng_cases_with_other_rules(self):
-        """NG test cases"""
+        """Run test cases together with other rules, should fail."""
         self.lint(success=False, isolated=False)
 
 
