@@ -36,8 +36,8 @@ DESC: str = r"""Rule to test if files are smalll enough.
 VERBS: typing.List[str] = """\
 ask be become begin call can come could do feel find ensure get give go have
 hear help keep know leave let like live look make may mean might move need play
-put run say see seem should show start take talk tell think try turn use want
-will work would\
+put run say see seem should show start take talk tell test think try turn use
+want will work would\
 """.split()
 
 DEFAULT_NAME_RE: typing.Pattern = re.compile(
