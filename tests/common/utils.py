@@ -3,7 +3,9 @@
 #
 """Common utility test routines and classes - utilities.
 """
+import pathlib
 import typing
+import warnings
 
 import yaml
 
@@ -21,6 +23,18 @@ def each_clear_fn(maybe_memoized_fns: typing.Iterable[typing.Any]
                 yield clear_fn
 
 
+def yaml_load(path: pathlib.Path):
+    """An wrapper for yaml.load.
+    """
+    try:
+        with path.open(encoding='utf-8') as fio:
+            return yaml.load(fio, Loader=yaml.FullLoader)
+    except (IOError, OSError) as exc:
+        warnings.warn(f'Failed to open {path!s}, exc={exc!r}')
+
+    return {}
+
+
 def each_test_data_for_rule(rule: str, success: bool = True,
                             root: str = constants.TESTS_RES_DIR
                             ) -> typing.Iterator[datatypes.DataT]:
@@ -35,12 +49,12 @@ def each_test_data_for_rule(rule: str, success: bool = True,
         conf = dict()
         cpath = datadir / 'c' / data.name
         if cpath.exists() and cpath.is_file():
-            conf = yaml.load(cpath.open(), Loader=yaml.FullLoader)
+            conf = yaml_load(cpath)
 
         env = dict()
         epath = datadir / 'env' / data.name
         if epath.exists() and epath.is_file():
-            env = yaml.load(epath.open(), Loader=yaml.FullLoader)
+            env = yaml_load(epath)
 
         yield datatypes.TData(datadir, data, conf, env)
 

@@ -7,7 +7,6 @@
 import functools
 
 import pytest
-import yaml
 
 from tests.common import constants, datatypes, utils as TT
 
@@ -32,32 +31,46 @@ def test_each_clear_fn(fns, exp):
             assert callable(fun)
 
 
-def gen_ref_tdata(role_name, filename, success=True,
-                  root=constants.TESTS_RES_DIR):
-    datadir = root / role_name / ('ok' if success else 'ng')
+@pytest.mark.parametrize(
+    ('path', 'exp'),
+    ((constants.TESTS_RES_DIR / 'DebugRule/ng/env/2.yml', True),
+     (constants.TESTS_RES_DIR / 'not_exist.yml', False),
+     )
+)
+def test_yaml_load(path, exp):
+    result = TT.yaml_load(path)
+    assert bool(result) == exp
+
+
+def gen_ref_tdata(path):
+    datadir = path.parent
+    filename = path.name
 
     conf = dict()
     cpath = datadir / 'c' / filename
     if cpath.exists():
-        conf = yaml.load(cpath.open())
+        conf = TT.yaml_load(cpath)
 
     env = dict()
     epath = datadir / 'env' / filename
     if epath.exists():
-        env = yaml.load(epath.open())
+        env = TT.yaml_load(epath)
 
-    return datatypes.TData(datadir, datadir / filename, conf, env)
+    return datatypes.TData(datadir, path, conf, env)
+
+
+def each_ref_tdata(role_name, success=True,
+                   root=constants.TESTS_RES_DIR):
+    datadir = root / role_name / ('ok' if success else 'ng')
+    for path in sorted(datadir.glob('*.yml')):
+        yield gen_ref_tdata(path)
 
 
 # .. seealso:: The output of ls tests/res/DebugRule/*/*.yml
 @pytest.mark.parametrize(
     ('rule_name', 'success', 'exp'),
-    (('DebugRule', True, [gen_ref_tdata('DebugRule', '0.yml'),
-                          gen_ref_tdata('DebugRule', '1.yml'),
-                          gen_ref_tdata('DebugRule', '2.yml')]),
-     ('DebugRule', False, [gen_ref_tdata('DebugRule', '0.yml', False),
-                           gen_ref_tdata('DebugRule', '1.yml', False),
-                           gen_ref_tdata('DebugRule', '2.yml', False)]),
+    (('DebugRule', True, list(each_ref_tdata('DebugRule', True))),
+     ('DebugRule', False, list(each_ref_tdata('DebugRule', False))),
      )
 )
 def test_each_test_data_for_rule(rule_name, success, exp):
