@@ -8,7 +8,6 @@ import functools
 import pathlib
 import re
 import typing
-import warnings
 
 import ansiblelint.errors
 import ansiblelint.file_utils
@@ -16,6 +15,9 @@ import ansiblelint.rules
 
 if typing.TYPE_CHECKING:
     from ansiblelint.constants import odict
+
+# .. seealso: [options] section in setup.cfg
+from ansiblelint.rules.custom.ssato import _utils
 
 
 ID: str = 'tasks_file_has_valid_name'
@@ -33,11 +35,8 @@ DESC: str = r"""Rule to test if file defines tasks has valid filename.
     rules:
       tasks_file_has_valid_name:
         name: ^\w+\.ya?ml$
-        unicode: false
+        unicode: true
 """
-C_NAME_RE: str = 'name'
-C_UNICODE: str = 'unicode'
-
 DEFAULT_NAME_RE: typing.Pattern = re.compile(r'^\w+\.ya?ml$', re.ASCII)
 
 
@@ -56,24 +55,18 @@ class TasksFileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     def valid_name_re(self) -> typing.Pattern:
         """A valid task name pattern.
         """
-        pattern_s = self.get_config(C_NAME_RE)
-        if pattern_s:
-            try:
-                if self.get_config(C_UNICODE):
-                    return re.compile(pattern_s)
-
-                return re.compile(pattern_s, re.ASCII)
-            except BaseException:  # pylint: disable=broad-except
-                warnings.warn(f'Invalid pattern "{pattern_s}"')
-
-        return DEFAULT_NAME_RE
+        return _utils.make_valid_name_pattern_from_rule_config(
+            self, DEFAULT_NAME_RE
+        )
 
     @functools.lru_cache()
     def is_valid_filename(self, path: str) -> bool:
         """
         Test if given task's filename is valid.
         """
-        return self.valid_name_re().match(pathlib.Path(path).name) is not None
+        return _utils.is_valid_name(
+            self.valid_name_re(), pathlib.Path(path).name
+        )
 
     def matchplay(self, file: ansiblelint.file_utils.Lintable,
                   _data: 'odict[str, typing.Any]'
