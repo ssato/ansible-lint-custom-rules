@@ -25,7 +25,8 @@ def yml_file_has_some_data(filepath: str) -> bool:
     Is given YAML file has some data?
     """
     try:
-        return bool(yaml.safe_load(open(filepath)))
+        with open(filepath) as fio:
+            return bool(yaml.safe_load(fio))
     except yaml.parser.ParserError:
         pass
 
