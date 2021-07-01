@@ -6,7 +6,6 @@ r"""Lint rule class to test if tasks have valid names.
 import functools
 import re
 import typing
-import warnings
 
 import ansiblelint.utils
 import ansiblelint.rules
@@ -15,14 +14,17 @@ if typing.TYPE_CHECKING:
     from typing import Optional
     from ansiblelint.file_utils import Lintable
 
+# .. seealso: [options] section in setup.cfg
+from ansiblelint.rules.custom.ssato import _utils
+
 
 ID: str = 'task_has_valid_name'
-C_NAME_RE: str = 'name'
 DESC: str = r"""Rule to test if files are smalll enough.
 
 - Options
 
   - ``name`` gives a valid task name pattern (regexp)
+  - ``unicode`` allows unicode characters are used in filenames
 
 - Configuration
 
@@ -31,6 +33,7 @@ DESC: str = r"""Rule to test if files are smalll enough.
     rules:
         task_has_valid_name:
             name: ^\S+$
+            unicode: false
 """
 
 VERBS: typing.List[str] = """\
@@ -78,21 +81,16 @@ class TaskHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     def valid_name_re(self) -> typing.Pattern:
         """A valid task name pattern.
         """
-        pattern_s = self.get_config(C_NAME_RE)
-        if pattern_s:
-            try:
-                return re.compile(pattern_s)
-            except BaseException:  # pylint: disable=broad-except
-                warnings.warn(f'Invalid pattern "{pattern_s}"')
-
-        return DEFAULT_NAME_RE
+        return _utils.make_valid_name_pattern_from_rule_config(
+            self, DEFAULT_NAME_RE
+        )
 
     @functools.lru_cache()
     def is_invalid_task_name(self, name: str) -> bool:
         """
         Test if given task's name is invalid.
         """
-        return self.valid_name_re().match(name) is None
+        return _utils.is_valid_name(self.valid_name_re(), name)
 
     def matchtask(self, task: typing.Dict[str, typing.Any],
                   file: 'Optional[Lintable]' = None

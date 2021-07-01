@@ -8,11 +8,13 @@ import functools
 import pathlib
 import re
 import typing
-import warnings
 
 import ansiblelint.errors
 import ansiblelint.file_utils
 import ansiblelint.rules
+
+# .. seealso: [options] section in setup.cfg
+from ansiblelint.rules.custom.ssato import _utils
 
 
 ID: str = 'file_has_valid_name'
@@ -32,9 +34,6 @@ DESC = r"""Rule to check if file has a valid name.
         name: ^\w+\.ya?ml$
         unicode: false
 """
-
-C_NAME_RE: str = 'name'
-C_UNICODE: str = 'unicode'
 
 DEFAULT_NAME_RE: typing.Pattern = re.compile(r'^\w+\.ya?ml$', re.ASCII)
 
@@ -58,24 +57,17 @@ class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
     def valid_name_re(self) -> typing.Pattern:
         """A valid file name regex pattern.
         """
-        pattern = self.get_config(C_NAME_RE)
-        if isinstance(pattern, str):
-            if pattern and pattern.strip():
-                try:
-                    if self.get_config(C_UNICODE):
-                        return re.compile(pattern)
-
-                    return re.compile(pattern, re.ASCII)
-                except BaseException:  # pylint: disable=broad-except
-                    warnings.warn(f'Invalid pattern? "{pattern}"')
-
-        return DEFAULT_NAME_RE
+        return _utils.make_valid_name_pattern_from_rule_config(
+            self, DEFAULT_NAME_RE
+        )
 
     def is_valid_filename(self, path: str) -> bool:
         """
         Test if given `filename` is valid and satisfies the rule.
         """
-        return self.valid_name_re().match(pathlib.Path(path).name) is not None
+        return _utils.is_valid_name(
+            self.valid_name_re(), pathlib.Path(path).name
+        )
 
     def matchyaml(self, file: ansiblelint.file_utils.Lintable
                   ) -> typing.List[ansiblelint.errors.MatchError]:
