@@ -12,7 +12,7 @@ import unittest.mock
 
 import yaml
 
-from . import base, constants, runner
+from . import base, constants
 
 
 class RuleTestCase(unittest.TestCase):
