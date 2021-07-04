@@ -16,6 +16,7 @@ from tests import common
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
     memoized = ['valid_name_re', 'is_invalid_filename']
+    default_skip_list = ['file_has_valid_name']
 
 
 class RuleTestCase(common.RuleTestCase):
