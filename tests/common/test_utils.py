@@ -32,23 +32,38 @@ def test_each_clear_fn(fns, exp):
             assert callable(fun)
 
 
+# see: tests/res/DebugRule/ng/**/*.*
+DATA_PATH_EX_0 = constants.TESTS_RES_DIR / 'DebugRule/ng/2.yml'
+SUB_DATA_PATH_EX_0 = constants.TESTS_RES_DIR / 'DebugRule/ng/env/2.yml'
+
+
 @pytest.mark.parametrize(
     ('path', 'exp'),
-    ((constants.TESTS_RES_DIR / 'DebugRule/ng/env/2.yml', True),
+    ((SUB_DATA_PATH_EX_0, True),
      (constants.TESTS_RES_DIR / 'not_exist.yml', False),
      )
 )
-def test_yaml_load(path, exp):
+def test_load_data(path, exp):
     with warnings.catch_warnings(record=True) as warns:
         warnings.simplefilter("always")
 
-        result = TT.yaml_load(path)
+        result = TT.load_data(path)
         assert bool(result) == exp
 
         if not exp:
             assert len(warns) > 0
             assert issubclass(warns[-1].category, UserWarning)
             assert 'Failed to open' in str(warns[-1].message)
+
+
+@pytest.mark.parametrize(
+    ('path', 'subdir', 'exp'),
+    ((DATA_PATH_EX_0, 'env', SUB_DATA_PATH_EX_0),
+     (SUB_DATA_PATH_EX_0, 'c', None),
+     )
+)
+def test_find_sub_data_path(path, subdir, exp):
+    assert TT.find_sub_data_path(path, subdir) == exp
 
 
 def gen_ref_tdata(path):
@@ -58,12 +73,12 @@ def gen_ref_tdata(path):
     conf = dict()
     cpath = datadir / 'c' / filename
     if cpath.exists():
-        conf = TT.yaml_load(cpath)
+        conf = TT.load_data(cpath)
 
     env = dict()
     epath = datadir / 'env' / filename
     if epath.exists():
-        env = TT.yaml_load(epath)
+        env = TT.load_data(epath)
 
     return datatypes.TData(datadir, path, conf, env)
 

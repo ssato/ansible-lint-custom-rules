@@ -3,6 +3,7 @@
 #
 """Common utility test routines and classes - utilities.
 """
+import json
 import pathlib
 import typing
 import warnings
@@ -23,16 +24,42 @@ def each_clear_fn(maybe_memoized_fns: typing.Iterable[typing.Any]
                 yield clear_fn
 
 
-def yaml_load(path: pathlib.Path):
-    """An wrapper for yaml.load.
+def load_data(path: pathlib.Path):
+    """An wrapper for json.load and yaml.load.
     """
     try:
         with path.open(encoding='utf-8') as fio:
-            return yaml.load(fio, Loader=yaml.FullLoader)
+            if path.suffix == '.json':
+                return json.load(fio)
+
+            if path.suffix in ('.yaml', '.yml'):
+                return yaml.load(fio, Loader=yaml.FullLoader)
+
     except (IOError, OSError) as exc:
         warnings.warn(f'Failed to open {path!s}, exc={exc!r}')
 
     return {}
+
+
+VALID_SUFFIXES: typing.FrozenSet = frozenset(
+    ('.json', '.yaml', '.yml')
+)
+
+
+def find_sub_data_path(data_path: pathlib.Path, subdir: str,
+                       valid_suffixes=VALID_SUFFIXES
+                       ) -> typing.Optional[pathlib.Path]:
+    """
+    Find a sub data path.
+    """
+    files = sorted(
+        f for f in data_path.parent.glob(f'{subdir}/{data_path.stem}.*')
+        if f.is_file() and f.suffix in valid_suffixes
+    )
+    if files:
+        return files[0]
+
+    return None
 
 
 def each_test_data_for_rule(rule_datadir: pathlib.Path,
@@ -47,14 +74,14 @@ def each_test_data_for_rule(rule_datadir: pathlib.Path,
             continue
 
         conf = dict()
-        cpath = datadir / 'c' / data.name
-        if cpath.exists() and cpath.is_file():
-            conf = yaml_load(cpath)
+        cpath = find_sub_data_path(data, 'c')
+        if cpath:
+            conf = load_data(cpath)
 
         env = dict()
-        epath = datadir / 'env' / data.name
-        if epath.exists() and epath.is_file():
-            env = yaml_load(epath)
+        epath = find_sub_data_path(data, 'env')
+        if epath:
+            env = load_data(epath)
 
         yield datatypes.TData(datadir, data, conf, env)
 
