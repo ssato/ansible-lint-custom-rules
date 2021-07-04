@@ -143,12 +143,18 @@ class Base:
         )
         return runner.RunFromFile(collection)
 
-    def run_playbook(self, filepath: str,
+    def run_playbook(self, filepath: pathlib.Path,
                      config: runner.RuleOptionsT = None,
-                     skip_list: typing.Optional[typing.List[str]] = None):
+                     skip_list: typing.Optional[typing.List[str]] = None,
+                     chdir: bool = False):
         """Run playbook.
         """
-        return self.get_runner(config).run_playbook(filepath, skip_list)
+        args = (filepath, skip_list)
+        if chdir:
+            with utils.chdir(filepath.parent):
+                return self.get_runner(config).run_playbook(*args)
+
+        return self.get_runner(config).run_playbook(*args)
 
     def load_datasets(self, success: bool = True,
                       root: pathlib.Path = constants.TESTS_RES_DIR):
