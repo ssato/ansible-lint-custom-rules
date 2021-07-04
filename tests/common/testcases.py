@@ -32,8 +32,8 @@ class RuleTestCase(unittest.TestCase):
         """
         self.base.clear()
 
-    def lint(self, success: bool = True, isolated: bool = True
-             ) -> None:
+    def lint(self, success: bool = True, isolated: bool = True,
+             chdir: bool = False) -> None:
         """
         Run the lint rule's check to given resource data files.
         """
@@ -44,7 +44,7 @@ class RuleTestCase(unittest.TestCase):
 
         for data in self.base.load_datasets(success=success):
             conf = data.conf.get('rules', {}).get(self.base.id, {})
-            opts = dict(config=conf, skip_list=skip_list)
+            opts = dict(config=conf, skip_list=skip_list, chdir=chdir)
 
             if data.env is None or not data.env:
                 res = self.base.run_playbook(data.inpath, **opts)
@@ -91,7 +91,8 @@ class CliTestCase(RuleTestCase):
 
         self.cmd = f'ansible-lint -r {constants.RULES_DIR!s}'.split()
 
-    def lint(self, success: bool = True, isolated: bool = True):
+    def lint(self, success: bool = True, isolated: bool = True,
+             chdir: bool = False):
         """
         Run ansible-lint with given arguments and config files.
         """
@@ -113,14 +114,29 @@ class CliTestCase(RuleTestCase):
                 if data.env is not None and data.env:
                     env.update(data.env)
 
-                res = subprocess.run(
-                    self.cmd + ['-c', cio.name, str(data.inpath)],
-                    stdout=subprocess.PIPE, check=False, env=env
-                )
+                opts = dict(stdout=subprocess.PIPE, check=False, env=env)
+
+                if chdir:
+                    cargs = ['-c', cio.name]
+                    opts['cwd'] = str(data.inpath.parent)
+                else:
+                    cargs = ['-c', cio.name, str(data.inpath)]
+
+                res = subprocess.run(self.cmd + cargs, **opts)
                 args = (res.returncode, 0, res.stdout.decode('utf-8'))
                 if success:
                     self.assertEqual(*args)
                 else:
                     self.assertNotEqual(*args)
+
+    @unittest.skip('WIP')
+    def test_ok_cases_with_other_rules_and_chdir(self):
+        """Run test cases together with other rules, should succeed."""
+        self.lint(isolated=False, chdir=True)
+
+    @unittest.skip('WIP')
+    def test_ng_cases_with_other_rules_and_chdir(self):
+        """Run test cases together with other rules, should fail."""
+        self.lint(success=False, isolated=False, chdir=True)
 
 # vim:sw=4:ts=4:et:
