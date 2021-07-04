@@ -14,7 +14,7 @@ import ansiblelint.file_utils
 import ansiblelint.rules
 
 
-ID: str = "vars-should-not-be-used"
+ID: str = "vars_should_not_be_used"
 
 VARS_DIRECTIVES: typing.FrozenSet = frozenset("""
 include_vars
