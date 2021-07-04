@@ -12,7 +12,7 @@ from tests.common import runner as TT
 
 
 # ansiblelint.rules.IncludeMissingFileRule:
-STD_RULE_EX_ID: str = 'missing-import'
+STD_RULE_EX_ID: str = 'deprecated-module'
 
 
 @pytest.mark.parametrize(
