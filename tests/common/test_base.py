@@ -24,7 +24,7 @@ def test_get_rule_name():
     assert FakeBase.get_rule_name() == 'base'
 
 
-@functools.lru_cache()
+@functools.lru_cache(None)
 def error():
     raise RuntimeError('Expected RuntimeError from memoized function')
 
