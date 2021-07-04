@@ -5,6 +5,7 @@
 """Test cases of tests.common.runner.
 """
 import functools
+import warnings
 
 import pytest
 
@@ -38,8 +39,16 @@ def test_each_clear_fn(fns, exp):
      )
 )
 def test_yaml_load(path, exp):
-    result = TT.yaml_load(path)
-    assert bool(result) == exp
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter("always")
+
+        result = TT.yaml_load(path)
+        assert bool(result) == exp
+
+        if not exp:
+            assert len(warns) > 0
+            assert issubclass(warns[-1].category, UserWarning)
+            assert 'Failed to open' in str(warns[-1].message)
 
 
 def gen_ref_tdata(path):
@@ -66,14 +75,17 @@ def each_ref_tdata(role_name, success=True,
         yield gen_ref_tdata(path)
 
 
+RULE_TEST_DATA_DIR = constants.TESTS_RES_DIR / 'DebugRule'
+
+
 # .. seealso:: The output of ls tests/res/DebugRule/*/*.yml
 @pytest.mark.parametrize(
-    ('rule_name', 'success', 'exp'),
-    (('DebugRule', True, list(each_ref_tdata('DebugRule', True))),
-     ('DebugRule', False, list(each_ref_tdata('DebugRule', False))),
+    ('rule_datadir', 'success', 'exp'),
+    ((RULE_TEST_DATA_DIR, True, list(each_ref_tdata('DebugRule', True))),
+     (RULE_TEST_DATA_DIR, False, list(each_ref_tdata('DebugRule', False))),
      )
 )
-def test_each_test_data_for_rule(rule_name, success, exp):
-    assert list(TT.each_test_data_for_rule(rule_name, success)) == exp
+def test_each_test_data_for_rule(rule_datadir, success, exp):
+    assert list(TT.each_test_data_for_rule(rule_datadir, success)) == exp
 
 # vim:sw=4:ts=4:et:

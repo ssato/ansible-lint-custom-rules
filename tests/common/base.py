@@ -10,7 +10,7 @@ import re
 import types
 import typing
 
-from . import runner, utils
+from . import constants, runner, utils
 
 
 MaybeModT = typing.Optional[types.ModuleType]
@@ -67,6 +67,14 @@ class Base:
                              f'in {cls.this_mod!r}.')
         return rule_cls()
 
+    @classmethod
+    def get_test_data_dir(cls,
+                          root: pathlib.Path = constants.TESTS_RES_DIR
+                          ) -> pathlib.Path:
+        """Get the top dir to keep test data for this rule.
+        """
+        return root / cls.get_rule_name()
+
     def __init__(self):
         """Initialize."""
         if self.this_mod is None or not self.this_mod:
@@ -115,11 +123,13 @@ class Base:
         """
         return self.get_runner(config).run_playbook(filepath, skip_list)
 
-    def load_datasets(self, success: bool = True):
+    def load_datasets(self, success: bool = True,
+                      root: pathlib.Path = constants.TESTS_RES_DIR):
         """Load datasets.
         """
+        datadir = self.get_test_data_dir(root)
         datasets = sorted(
-            utils.each_test_data_for_rule(self.name, success=success)
+            utils.each_test_data_for_rule(datadir, success=success)
         )
         if not datasets:
             raise OSError(f'{self.name}: No test data found [{success}]')

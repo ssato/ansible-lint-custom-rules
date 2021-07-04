@@ -9,7 +9,7 @@ import warnings
 
 import yaml
 
-from . import constants, datatypes
+from . import datatypes
 
 
 def each_clear_fn(maybe_memoized_fns: typing.Iterable[typing.Any]
@@ -35,13 +35,13 @@ def yaml_load(path: pathlib.Path):
     return {}
 
 
-def each_test_data_for_rule(rule: str, success: bool = True,
-                            root: str = constants.TESTS_RES_DIR
+def each_test_data_for_rule(rule_datadir: pathlib.Path,
+                            success: bool = True,
                             ) -> typing.Iterator[datatypes.DataT]:
     """
     Yield test data files for the given rule ``rule`` (name).
     """
-    datadir = root / rule / ('ok' if success else 'ng')
+    datadir = rule_datadir / ('ok' if success else 'ng')
     for data in sorted(datadir.glob('*.yml')):
         if not data.is_file():
             continue
