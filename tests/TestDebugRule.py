@@ -31,8 +31,8 @@ class RuleTestCase(common.RuleTestCase):
         self.assertTrue(bool(rule))
         self.assertTrue(isinstance(rule, type(self.base.rule)))
 
-    def test_base_is_ready(self):
-        self.assertTrue(self.base.is_ready())
+    def test_base_is_runnable(self):
+        self.assertTrue(self.base.is_runnable())
 
     def test_base_load_datasets(self):
         self.assertTrue(self.base.load_datasets())

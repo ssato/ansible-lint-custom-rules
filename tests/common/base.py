@@ -15,8 +15,13 @@ from . import constants, runner, utils
 
 MaybeModT = typing.Optional[types.ModuleType]
 
-RULE_NAME_RE: typing.Pattern = re.compile(r'^test_?(\w+).py$',
-                                          re.IGNORECASE | re.ASCII)
+# Try to resolve the name of the rule class from the name of the test code. For
+# example, name will be resolved to 'DebugRule' if the test code for the rule
+# DebugRule is TestDebugRule.py.
+RULE_NAME_RE: typing.Pattern = re.compile(
+    r'^test_?(\w+).py$',
+    re.IGNORECASE | re.ASCII
+)
 
 
 class Base:
@@ -31,6 +36,14 @@ class Base:
     memoized: typing.List[str] = []
 
     use_default_rules: bool = False
+
+    @classmethod
+    def is_runnable(cls):
+        """
+        This class is not runnable but chidlren classes have the appropriate
+        member this_mod should be runnable.
+        """
+        return bool(cls.this_mod)
 
     @classmethod
     def get_filename(cls) -> str:
@@ -77,7 +90,7 @@ class Base:
 
     def __init__(self):
         """Initialize."""
-        if self.this_mod is None or not self.this_mod:
+        if not self.is_runnable():
             return
 
         # .. note::
@@ -93,10 +106,6 @@ class Base:
                 getattr(self.rule, n, False) for n in self.memoized
             )
         )
-
-    def is_ready(self):
-        """True if this instance can run."""
-        return bool(getattr(self, 'rule', False))
 
     def clear(self):
         """Call clear function if it's callable.

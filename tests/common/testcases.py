@@ -24,6 +24,9 @@ class RuleTestCase(unittest.TestCase):
         """Setup
         """
         self.base = self.base_cls()
+        if not self.base.is_runnable():
+            return
+
         self.skip_list = [
             rid for rid in runner.list_rule_ids() if rid != self.base.id
         ]
@@ -38,7 +41,7 @@ class RuleTestCase(unittest.TestCase):
         """
         Run the lint rule's check to given resource data files.
         """
-        if not self.base.is_ready():
+        if not self.base.is_runnable():
             return
 
         skip_list = self.skip_list if isolated else []
@@ -87,7 +90,7 @@ class CliTestCase(RuleTestCase):
         """Set up members."""
         super().setUp()
 
-        if not self.base.is_ready():
+        if not self.base.is_runnable():
             return
 
         self.cmd = f'ansible-lint -r {constants.RULES_DIR!s}'.split()
@@ -96,7 +99,7 @@ class CliTestCase(RuleTestCase):
         """
         Run ansible-lint with given arguments and config files.
         """
-        if not self.base.is_ready():
+        if not self.base.is_runnable():
             return
 
         config = dict(skip_list=self.skip_list) if isolated else {}
