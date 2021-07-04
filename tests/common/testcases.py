@@ -27,10 +27,6 @@ class RuleTestCase(unittest.TestCase):
         if not self.base.is_runnable():
             return
 
-        self.skip_list = [
-            rid for rid in runner.list_rule_ids() if rid != self.base.id
-        ]
-
     def tearDown(self):
         """De-initialize.
         """
@@ -44,7 +40,7 @@ class RuleTestCase(unittest.TestCase):
         if not self.base.is_runnable():
             return
 
-        skip_list = self.skip_list if isolated else []
+        skip_list = self.base.get_skip_list(isolated=isolated)
 
         for data in self.base.load_datasets(success=success):
             conf = data.conf.get('rules', {}).get(self.base.id, {})
@@ -102,7 +98,8 @@ class CliTestCase(RuleTestCase):
         if not self.base.is_runnable():
             return
 
-        config = dict(skip_list=self.skip_list) if isolated else {}
+        skip_list = self.base.get_skip_list(isolated=isolated)
+        config = dict(skip_list=skip_list) if skip_list else {}
 
         for data in self.base.load_datasets(success=success):
             with tempfile.NamedTemporaryFile(mode='w') as cio:

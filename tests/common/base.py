@@ -37,6 +37,9 @@ class Base:
 
     use_default_rules: bool = False
 
+    # List other rules' IDs conflict with this during tests.
+    default_skip_list: typing.List[str] = []
+
     @classmethod
     def is_runnable(cls):
         """
@@ -100,6 +103,12 @@ class Base:
         self.rule = self.get_rule_instance_by_name(self.name)
         self.id = self.rule.id
 
+        self.other_ids = [
+            rid for rid
+            in runner.each_rule_ids(use_default=self.use_default_rules)
+            if rid != self.id
+        ]
+
         self.clear_fns.append(self.rule.get_config.cache_clear)
         self.clear_fns.extend(
             utils.each_clear_fn(
@@ -112,6 +121,15 @@ class Base:
         """
         for clear_fn in self.clear_fns:
             clear_fn()  # pylint: disable=not-callable
+
+    def get_skip_list(self, isolated: bool = True):
+        """
+        Get the list of other rules' IDs to skip.
+        """
+        if isolated:
+            return self.other_ids + self.default_skip_list
+
+        return self.default_skip_list
 
     def get_runner(self, config: runner.RuleOptionsT = None
                    ) -> runner.RunFromFile:
