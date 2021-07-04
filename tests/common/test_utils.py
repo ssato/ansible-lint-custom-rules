@@ -48,8 +48,8 @@ def test_each_clear_fn(fns, exp):
 
 
 # see: tests/res/DebugRule/ng/**/*.*
-DATA_PATH_EX_0 = constants.TESTS_RES_DIR / 'DebugRule/ng/2.yml'
-SUB_DATA_PATH_EX_0 = constants.TESTS_RES_DIR / 'DebugRule/ng/env/2.yml'
+DATA_PATH_EX_0 = constants.TESTS_RES_DIR / 'DebugRule/ng/2.json'
+SUB_DATA_PATH_EX_0 = constants.TESTS_RES_DIR / 'DebugRule/ng/env/2.json'
 
 
 @pytest.mark.parametrize(
@@ -86,12 +86,12 @@ def gen_ref_tdata(path):
     filename = path.name
 
     conf = dict()
-    cpath = datadir / 'c' / filename
+    cpath = datadir / 'c' / filename.replace('yml', 'json')
     if cpath.exists():
         conf = TT.load_data(cpath)
 
     env = dict()
-    epath = datadir / 'env' / filename
+    epath = datadir / 'env' / filename.replace('yml', 'json')
     if epath.exists():
         env = TT.load_data(epath)
 
