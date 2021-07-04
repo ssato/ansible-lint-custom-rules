@@ -5,11 +5,26 @@
 """Test cases of tests.common.runner.
 """
 import functools
+import pathlib
 import warnings
 
 import pytest
 
 from tests.common import constants, datatypes, utils as TT
+
+
+def test_chdir(tmp_path):
+    # todo:
+    # with pytest.raises(OSError):
+    #    TT.chdir(tmp_path / 'this_dir_should_not_exist')
+
+    pwd = pathlib.Path().cwd()
+    with TT.chdir(tmp_path):
+        assert pathlib.Path().cwd() != pwd
+        assert pathlib.Path().cwd() == tmp_path
+
+    assert pathlib.Path().cwd() != tmp_path
+    assert pathlib.Path().cwd() == pwd
 
 
 @functools.lru_cache(None)

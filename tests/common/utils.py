@@ -3,7 +3,9 @@
 #
 """Common utility test routines and classes - utilities.
 """
+import contextlib
 import json
+import os
 import pathlib
 import typing
 import warnings
@@ -11,6 +13,21 @@ import warnings
 import yaml
 
 from . import datatypes
+
+
+@contextlib.contextmanager
+def chdir(destdir: pathlib.Path):
+    """Chnage dir temporary.
+    """
+    if not destdir.exists():
+        raise OSError(f'Destination dir does NOT exist: {destdir!s}')
+
+    saved = pathlib.Path().cwd()
+    try:
+        os.chdir(str(destdir))
+        yield
+    finally:
+        os.chdir(str(saved))
 
 
 def each_clear_fn(maybe_memoized_fns: typing.Iterable[typing.Any]
