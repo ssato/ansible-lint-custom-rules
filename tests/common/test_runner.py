@@ -11,16 +11,22 @@ from rules.DebugRule import DebugRule
 from tests.common import runner as TT
 
 
+# ansiblelint.rules.IncludeMissingFileRule:
+STD_RULE_EX_ID: str = 'missing-import'
+
+
 @pytest.mark.parametrize(
-    'rdirs',
-    [[],
-     [str(TT.constants.RULES_DIR)],
-     ]
+    ('rdirs', 'use_default', 'rule_id_ex'),
+    (([], False, DebugRule.id),
+     ([], True, STD_RULE_EX_ID),
+     ([str(TT.constants.RULES_DIR)], False, DebugRule.id),
+     ([str(TT.constants.RULES_DIR)], True, STD_RULE_EX_ID),
+     )
 )
-def test_list_rule_ids(rdirs):
-    res = list(TT.list_rule_ids(*rdirs))
+def test_each_rule_ids(rdirs, use_default, rule_id_ex):
+    res = list(TT.each_rule_ids(*rdirs, use_default=use_default))
     assert res, res
-    assert DebugRule.id in res, f'{res!r}'
+    assert rule_id_ex in res, f'{res!r}'
 
 
 @pytest.mark.parametrize(

@@ -18,11 +18,17 @@ from ansiblelint.rules import AnsibleLintRule, RulesCollection
 from . import constants
 
 
-def list_rule_ids(*rdirs: str) -> typing.Iterator[str]:
+def each_rule_ids(*rdirs: str, use_default: bool = False
+                  ) -> typing.Iterator[str]:
     """List the IDs of rules in given dirs.
     """
-    if not rdirs:
+    if rdirs:
+        rdirs = list(rdirs)
+    else:
         rdirs = [str(constants.RULES_DIR)]
+
+    if use_default:
+        rdirs.append(ansiblelint.constants.DEFAULT_RULESDIR)
 
     for rule in ansiblelint.rules.RulesCollection(rdirs):
         yield rule.id
