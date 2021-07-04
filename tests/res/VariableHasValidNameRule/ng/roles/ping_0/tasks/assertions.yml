@@ -1,0 +1,16 @@
+---
+- name: Test variables are set
+  assert:
+    that:
+      - foo is defined
+      - foo is number
+      - foo > 0
+      - bar is defined
+      - bar is mapping
+      - bar | bool
+      - bar.baz is defined
+      - bar.baz is mapping
+      - bar.baz | bool
+      - bar.baz.foo_bar_baz is defined
+      - bar.baz.foo_bar_baz is string
+      - bar.baz.foo_bar_baz | bool

@@ -1,0 +1,7 @@
+---
+foo: 1
+bar:
+  barz:
+    foo_bar_baz: aaa
+invalid_var_name_ex-0: true
+'invalid var_name_ex_1': true

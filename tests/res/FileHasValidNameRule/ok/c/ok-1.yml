@@ -1,5 +1,0 @@
----
-rules:
-  file_has_valid_name:
-    name: ^[\w-]+\.ya?ml$
-    unicode: false

@@ -1,0 +1,11 @@
+---
+- name: include task 1
+  include_tasks: "assertions.yml"
+  vars:
+    foo: true
+    bar:
+      baz:
+        foo_bar_baz: BAZ
+
+- name: include task 2
+  include_tasks: "do_ping.yml"
