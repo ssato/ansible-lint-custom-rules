@@ -122,7 +122,7 @@ class Base:
         for clear_fn in self.clear_fns:
             clear_fn()  # pylint: disable=not-callable
 
-    def list_test_data_dirs(self, success: bool = True,
+    def list_test_data_dirs(self, subdir: str,
                             root: typing.Optional[pathlib.Path] = None
                             ) -> typing.Iterator[pathlib.Path]:
         """List test data dirs contain playbook and related data.
@@ -131,12 +131,11 @@ class Base:
             root = constants.TESTS_RES_DIR
 
         datadir = self.get_test_data_dir(root)
-        subdir = 'ok' if success else 'ng'
         dirs = sorted(
             d for d in datadir.glob(f'{subdir}/*') if d.is_dir()
         )
         if not dirs:
-            raise OSError(f'{self.name}: No test data dirs found [{success}]')
+            raise OSError(f'{self.name}: No test data dirs found [{subdir}]')
 
         return dirs
 
