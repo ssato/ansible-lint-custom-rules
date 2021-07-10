@@ -15,8 +15,15 @@ from tests.common import constants, datatypes, utils as TT
 
 def test_chdir(tmp_path):
     # todo:
-    # with pytest.raises(OSError):
-    #    TT.chdir(tmp_path / 'this_dir_should_not_exist')
+    # a_file_path = tmp_path / 'a_file.txt'
+    # a_file_path.touch()
+    # assert a_file_path.exists() and a_file_path.is_file(), a_file_path
+
+    # with pytest.raises(NotADirectoryError):
+    #     TT.chdir(a_file_path)
+
+    # with pytest.raises(FileNotFoundError):
+    #     TT.chdir(tmp_path / 'this_dir_should_not_exist')
 
     pwd = pathlib.Path().cwd()
     with TT.chdir(tmp_path):

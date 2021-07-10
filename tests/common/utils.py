@@ -19,9 +19,6 @@ from . import datatypes
 def chdir(destdir: pathlib.Path):
     """Chnage dir temporary.
     """
-    if not destdir.exists():
-        raise OSError(f'Destination dir does NOT exist: {destdir!s}')
-
     saved = pathlib.Path().cwd()
     try:
         os.chdir(str(destdir))
