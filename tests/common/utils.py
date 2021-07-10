@@ -10,9 +10,7 @@ import pathlib
 import typing
 import warnings
 
-import yaml
-
-from . import datatypes
+from . import constants, datatypes
 
 
 @contextlib.contextmanager
@@ -38,16 +36,33 @@ def each_clear_fn(maybe_memoized_fns: typing.Iterable[typing.Any]
                 yield clear_fn
 
 
-def load_data(path: pathlib.Path):
-    """An wrapper for json.load and yaml.load.
+def get_env(env_updates: typing.Dict[str, str],
+            safe_list: typing.Iterable[str] = constants.SAFE_ENV_VARS
+            ) -> typing.Dict[str, str]:
+    """Get os.environ subset updated with ``env_updates``.
+
+    .. seealso:: ansiblelint.testing.run_ansible_lint
     """
+    env = env_updates.copy() if env_updates else dict()
+
+    for val in safe_list:
+        if val in os.environ and val not in env:
+            env[val] = os.environ[val]
+
+    return env
+
+
+def load_data(path: pathlib.Path, warn: bool = False):
+    """An wrapper for json.load.
+    """
+    if not path.exists():
+        if warn:
+            warnings.warn(f'Not exist: {path!s}')
+        return {}
+
     try:
         with path.open(encoding='utf-8') as fio:
-            if path.suffix == '.json':
-                return json.load(fio)
-
-            if path.suffix in ('.yaml', '.yml'):
-                return yaml.load(fio, Loader=yaml.FullLoader)
+            return json.load(fio)
 
     except (IOError, OSError) as exc:
         warnings.warn(f'Failed to open {path!s}, exc={exc!r}')
@@ -55,48 +70,16 @@ def load_data(path: pathlib.Path):
     return {}
 
 
-VALID_SUFFIXES: typing.FrozenSet = frozenset(
-    ('.json', '.yaml', '.yml')
-)
-
-
-def find_sub_data_path(data_path: pathlib.Path, subdir: str,
-                       valid_suffixes=VALID_SUFFIXES
-                       ) -> typing.Optional[pathlib.Path]:
+def load_sub_data_in_dir(workdir: typing.Optional[pathlib.Path] = None):
+    """Load data (env or config) from given dir.
     """
-    Find a sub data path.
-    """
-    files = sorted(
-        f for f in data_path.parent.glob(f'{subdir}/{data_path.stem}.*')
-        if f.is_file() and f.suffix in valid_suffixes
+    if workdir and workdir.is_dir():
+        with chdir(workdir):
+            return load_sub_data_in_dir()
+
+    return datatypes.SubData(
+        load_data(pathlib.Path('conf.json')),
+        load_data(pathlib.Path('env.json'))
     )
-    if files:
-        return files[0]
-
-    return None
-
-
-def each_test_data_for_rule(rule_datadir: pathlib.Path,
-                            success: bool = True,
-                            ) -> typing.Iterator[datatypes.DataT]:
-    """
-    Yield test data files for the given rule ``rule`` (name).
-    """
-    datadir = rule_datadir / ('ok' if success else 'ng')
-    for data in sorted(datadir.glob('*.yml')):
-        if not data.is_file():
-            continue
-
-        conf = dict()
-        cpath = find_sub_data_path(data, 'c')
-        if cpath:
-            conf = load_data(cpath)
-
-        env = dict()
-        epath = find_sub_data_path(data, 'env')
-        if epath:
-            env = load_data(epath)
-
-        yield datatypes.TData(datadir, data, conf, env)
 
 # vim:sw=4:ts=4:et:
