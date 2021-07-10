@@ -84,8 +84,7 @@ class Base:
         return rule_cls()
 
     @classmethod
-    def get_test_data_dir(cls,
-                          root: pathlib.Path = constants.TESTS_RES_DIR
+    def get_test_data_dir(cls, root: pathlib.Path = constants.TESTS_RES_DIR
                           ) -> pathlib.Path:
         """Get the top dir to keep test data for this rule.
         """
@@ -101,13 +100,6 @@ class Base:
         #    have appropriate self.this_mod.
         self.name = self.get_rule_name()
         self.rule = self.get_rule_instance_by_name(self.name)
-        self.id = self.rule.id
-
-        self.other_ids = [
-            rid for rid
-            in runner.each_rule_ids(use_default=self.use_default_rules)
-            if rid != self.id
-        ]
 
         self.clear_fns.append(self.rule.get_config.cache_clear)
         self.clear_fns.extend(
@@ -116,57 +108,36 @@ class Base:
             )
         )
 
+        (args, kwargs) = (
+            (self.rule, constants.RULES_DIR),
+            dict(skip_list=self.default_skip_list,
+                 enable_default=self.use_default_rules)
+        )
+        self.rule_runner = runner.RuleRunner(*args, **kwargs)
+        self.cli_runner = runner.CliRunner(*args, **kwargs)
+
     def clear(self):
         """Call clear function if it's callable.
         """
         for clear_fn in self.clear_fns:
             clear_fn()  # pylint: disable=not-callable
 
-    def get_skip_list(self, isolated: bool = True):
+    def list_test_data_dirs(self, success: bool = True,
+                            root: typing.Optional[pathlib.Path] = None
+                            ) -> typing.Iterator[pathlib.Path]:
+        """List test data dirs contain playbook and related data.
         """
-        Get the list of other rules' IDs to skip.
-        """
-        if isolated:
-            return self.other_ids + self.default_skip_list
+        if root is None or not root:
+            root = constants.TESTS_RES_DIR
 
-        return self.default_skip_list
-
-    def get_runner(self, config: runner.RuleOptionsT = None
-                   ) -> runner.RunFromFile:
-        """
-        Make ansiblelint.RulesCollection instance registered the rule with
-        given config and get runner.RunFromFile instance from it.
-        """
-        collection = runner.get_collection(
-            self.rule, rule_options=config,
-            use_default_rules=self.use_default_rules
-        )
-        return runner.RunFromFile(collection)
-
-    def run_playbook(self, filepath: pathlib.Path,
-                     config: runner.RuleOptionsT = None,
-                     skip_list: typing.Optional[typing.List[str]] = None,
-                     chdir: bool = False):
-        """Run playbook.
-        """
-        args = (filepath, skip_list)
-        if chdir:
-            with utils.chdir(filepath.parent):
-                return self.get_runner(config).run_playbook(*args)
-
-        return self.get_runner(config).run_playbook(*args)
-
-    def load_datasets(self, success: bool = True,
-                      root: pathlib.Path = constants.TESTS_RES_DIR):
-        """Load datasets.
-        """
         datadir = self.get_test_data_dir(root)
-        datasets = sorted(
-            utils.each_test_data_for_rule(datadir, success=success)
+        subdir = 'ok' if success else 'ng'
+        dirs = sorted(
+            d for d in datadir.glob(f'{subdir}/*') if d.is_dir()
         )
-        if not datasets:
-            raise OSError(f'{self.name}: No test data found [{success}]')
+        if not dirs:
+            raise OSError(f'{self.name}: No test data dirs found [{success}]')
 
-        return datasets
+        return dirs
 
 # vim:sw=4:ts=4:et:
