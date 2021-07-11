@@ -113,17 +113,20 @@ DEBUG_RES_DIR = constants.TESTS_RES_DIR / 'DebugRule'
 
 # see tests/res/DebugRule/{ok,ng}/...
 @pytest.mark.parametrize(
-    ('workdir', 'isolated', 'exp'),
+    ('workdir', 'isolated', 'success'),
     ((DEBUG_RES_DIR / 'ok/0', True, True),
      (DEBUG_RES_DIR / 'ok/0', False, True),
      (DEBUG_RES_DIR / 'ng/0', True, False),
      (DEBUG_RES_DIR / 'ng/0', False, False),
      )
 )
-def test_RuleRunner_run(workdir, isolated, exp):
+def test_RuleRunner_run(workdir, isolated, success):
     runner = TT.RuleRunner(DebugRule(), constants.RULES_DIR)
     res = runner.run(workdir, isolated=isolated)
-    assert not res if exp else res, res
+    if success:
+        assert not res.result, res.result
+    else:
+        assert res.result
 
 
 @pytest.mark.parametrize(
@@ -143,20 +146,21 @@ def test_CliRunner__init__(enable_default):
 
 
 @pytest.mark.parametrize(
-    ('workdir', 'exp'),
+    ('workdir', 'success'),
     ((DEBUG_RES_DIR / 'ok/0', True),
      (DEBUG_RES_DIR / 'ng/0', False),
      )
 )
-def test_CliRunner_run(workdir, exp):
+def test_CliRunner_run(workdir, success):
     runner = TT.CliRunner(DebugRule(), constants.RULES_DIR)
     res = runner.run(workdir)
-    if exp:
-        assert res[0] == 0
-        assert res[1:] == ('', '')
+    if success:
+        assert res.result.returncode == 0
+        assert res.result.stdout == ''
+        assert res.result.stderr == ''
     else:
-        assert res[0] != 0
-        assert bool(res[1])
-        assert bool(res[2])
+        assert res.result.returncode != 0
+        assert bool(res.result.stdout)
+        assert bool(res.result.stderr)
 
 # vim:sw=4:ts=4:et:

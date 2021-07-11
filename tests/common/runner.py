@@ -103,7 +103,7 @@ class RuleRunner:
         return skip_list
 
     def run_with_env(self, ctx: datatypes.Context,
-                     isolated: bool = True):
+                     isolated: bool = True) -> datatypes.Result:
         """
         Run runner with (os) environment variables are set as needed.
         """
@@ -114,9 +114,11 @@ class RuleRunner:
         if ctx.os_env:
             with unittest.mock.patch.dict(os.environ, ctx.os_env,
                                           clear=True):
-                return runner.run()
+                res = runner.run()
+        else:
+            res = runner.run()
 
-        return runner.run()
+        return datatypes.Result(res, ctx)
 
     def run(self, workdir: pathlib.Path, isolated: bool = True
             ) -> typing.List[ansiblelint.errors.MatchError]:
@@ -187,6 +189,6 @@ class CliRunner(RuleRunner):
 
             # pylint: disable=subprocess-run-check
             res = subprocess.run(self.cmd + ['-c', cio.name], **opts)
-            return (res.returncode, res.stdout, res.stderr)
+            return datatypes.Result(res, ctx)
 
 # vim:sw=4:ts=4:et:
