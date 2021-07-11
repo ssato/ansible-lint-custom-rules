@@ -34,9 +34,9 @@ class RuleTestCase(common.RuleTestCase):
     def test_base_is_runnable(self):
         self.assertTrue(self.base.is_runnable())
 
-    def test_list_data_dirs(self):
-        self.assertTrue(self.list_data_dirs(True))
-        self.assertTrue(self.list_data_dirs(False))
+    def test_list_test_data_dirs(self):
+        self.assertTrue(self.list_test_data_dirs(True))
+        self.assertTrue(self.list_test_data_dirs(False))
 
 
 class CliTestCase(common.CliTestCase):
