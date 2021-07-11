@@ -24,8 +24,8 @@ class RuleTestCase(unittest.TestCase):
         """De-initialize."""
         self.base.clear()
 
-    def list_data_dirs(self, success: bool = True
-                       ) -> typing.Iterator[pathlib.Path]:
+    def list_test_data_dirs(self, success: bool = True
+                            ) -> typing.Iterator[pathlib.Path]:
         """Yield the test data dirs for the rule."""
         subdir = 'ok' if success else 'ng'
         for datadir in self.base.list_test_data_dirs(subdir):
@@ -37,8 +37,8 @@ class RuleTestCase(unittest.TestCase):
         if not self.base.is_runnable():
             return
 
-        for datadir in self.list_data_dirs(success):
-            res = self.base.rule_runner.run(datadir, isolated=isolated)
+        for datadir in self.list_test_data_dirs(success):
+            res = self.base.run(datadir, isolated=isolated)
 
             msg = f'{datadir!r}, {res!r}'
             if success:
@@ -73,8 +73,8 @@ class CliTestCase(RuleTestCase):
         if not self.base.is_runnable():
             return
 
-        for datadir in self.list_data_dirs(success):
-            res = self.base.cli_runner.run(datadir, isolated=isolated)
+        for datadir in self.list_test_data_dirs(success):
+            res = self.base.run(datadir, isolated=isolated, cli=True)
 
             msg = f'{datadir!r}, {res!r}'
             args = (res[0], 0, msg)
