@@ -27,12 +27,10 @@ def test_is_enabled(env, exp):
     with unittest.mock.patch.dict(os.environ, env, clear=True):
         assert TT.is_enabled() == exp
 
-    TT.is_enabled.cache_clear()
-
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    clear_fns: typing.List[typing.Callable] = [TT.is_enabled.cache_clear]
+    memoized: typing.List[str] = ['enabled']
 
 
 class RuleTestCase(common.RuleTestCase):

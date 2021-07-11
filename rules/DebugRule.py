@@ -44,7 +44,6 @@ DESC: str = """Rule to debug and monitor ansible-lint behavior.
 """
 
 
-@functools.lru_cache(None)
 def is_enabled(default: bool = False) -> bool:
     """
     Is this rule enabled with the environment variable?
@@ -63,6 +62,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
     tags = ['debug']
 
     @property
+    @functools.lru_cache(None)
     def enabled(self):
         """
         .. seealso:: ansiblelint.config.options
