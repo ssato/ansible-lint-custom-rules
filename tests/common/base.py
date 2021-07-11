@@ -139,4 +139,15 @@ class Base:
 
         return dirs
 
+    def run(self, workdir: pathlib.Path, isolated: bool = True,
+            cli: bool = False):
+        """Run Ansible Lint Runner at dir ``workdir``."""
+        if not self.is_runnable():
+            raise ValueError(f'Not initialized! rule: {self.rule}')
+
+        if cli:
+            return self.cli_runner.run(workdir, isolated=isolated)
+
+        return self.cli_runner.run(workdir, isolated=isolated)
+
 # vim:sw=4:ts=4:et:
