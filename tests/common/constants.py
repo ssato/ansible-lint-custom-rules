@@ -12,6 +12,8 @@ TESTS_RES_DIR = TESTS_DIR / 'res'
 
 RULES_DIR = TESTS_DIR.parent / 'rules'
 
+SUB_CTX_NAMES: typing.Tuple[str, str] = ('conf.json', 'env.json')
+
 # .. seealso:: ansiblelint.testsing.run_ansible_lint
 SAFE_ENV_VARS: typing.Iterable[str] = (
     'LANG',

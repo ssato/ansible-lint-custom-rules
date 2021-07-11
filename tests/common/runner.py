@@ -44,7 +44,7 @@ class RuleRunner:
         if enable_default:
             self.rulesdirs.append(ansiblelint.constants.DEFAULT_RULESDIR)
 
-        self.skip_list = skip_list.copy()
+        self.skip_list = skip_list.copy() if skip_list else []
 
         options = ansiblelint.config.options
         # .. seealso:: ansiblelint.testing.fixtures.default_rules_collection
@@ -73,7 +73,8 @@ class RuleRunner:
         :param workdir: Working dir to run runner later
         :param isolated: True if to disable other rules
         """
-        with utils.chdir(workdir.resolve()):
+        workdir = workdir.resolve()
+        with utils.chdir(workdir):
             lintables = ansiblelint.utils.get_lintables(
                 options=ansiblelint.config.options
             )
@@ -81,13 +82,13 @@ class RuleRunner:
                 lintables
             ), f'No lintables were found at {workdir!s}'
 
-            sub_data = utils.load_sub_data_in_dir()
+            ctx = utils.make_context(workdir, lintables)
 
             rid = self.rule.id
             # Hack to force setting options for the rule.
             setattr(
                 ansiblelint.config.options, 'rules',
-                {rid: sub_data.conf.get('rules', {}).get(rid, {})}
+                {rid: ctx.conf.get('rules', {}).get(rid, {})}
             )
 
             runner = ansiblelint.runner.Runner(
@@ -95,9 +96,9 @@ class RuleRunner:
                 skip_list=self.get_skip_list(isolated)
             )
 
-            if sub_data.env:
-                env = utils.get_env(sub_data.env)
-                with unittest.mock.patch.dict(os.environ, env, clear=True):
+            if ctx.os_env:
+                with unittest.mock.patch.dict(os.environ, ctx.os_env,
+                                              clear=True):
                     return runner.run()
 
             return runner.run()
@@ -136,10 +137,10 @@ class CliRunner(RuleRunner):
         .. seealso:: ansiblelint.testing.run_ansible_lint
         """
         workdir = workdir.resolve()
-        sub_data = utils.load_sub_data_in_dir(workdir)
+        ctx = utils.make_context(workdir, ['N/A'])
 
-        conf = sub_data.conf if sub_data.conf else dict()
-        env = utils.get_env(sub_data.env or {})
+        conf = ctx.conf if ctx.conf else dict()
+        env = utils.get_env(ctx.env or {})
 
         skip_list = self.get_skip_list(isolated)
         if skip_list:

@@ -100,11 +100,30 @@ def test_load_data(path, warn, exp):
      (constants.TESTS_RES_DIR / 'DebugRule/ng/2', False, True),
      )
 )
-def test_load_sub_data_in_dir(workdir, conf, env):
-    res = TT.load_sub_data_in_dir(workdir)
+def test_load_sub_ctx_data_in_dir(workdir, conf, env):
+    res = TT.load_sub_ctx_data_in_dir(workdir)
     assert bool(res)
-    assert isinstance(res, datatypes.SubData), res
+    assert isinstance(res, datatypes.SubCtx)
     assert bool(res.conf) == conf, res.conf  # TBD
     assert bool(res.env) == env, res.env  # TBD
+    assert bool(res.os_env) == env, res.os_env  # TBD
+
+
+@pytest.mark.parametrize(
+    ('workdir', 'conf', 'env'),
+    ((constants.TESTS_RES_DIR / 'DebugRule/ok/0', False, False),
+     (constants.TESTS_RES_DIR / 'DebugRule/ng/1', True, False),
+     (constants.TESTS_RES_DIR / 'DebugRule/ng/2', False, True),
+     )
+)
+def test_make_context(workdir, conf, env):
+    ctx = TT.make_context(workdir, [])
+    assert bool(ctx)
+    assert isinstance(ctx, datatypes.Context)
+    assert ctx.workdir == workdir.resolve()
+    assert ctx.lintables == []
+    assert bool(ctx.conf) == conf, ctx.conf  # TBD
+    assert bool(ctx.env) == env, ctx.env  # TBD
+    assert bool(ctx.os_env) == env, ctx.os_env  # TBD
 
 # vim:sw=4:ts=4:et:

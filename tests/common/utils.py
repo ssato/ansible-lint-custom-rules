@@ -70,16 +70,27 @@ def load_data(path: pathlib.Path, warn: bool = False):
     return {}
 
 
-def load_sub_data_in_dir(workdir: typing.Optional[pathlib.Path] = None):
-    """Load data (env or config) from given dir.
+def load_sub_ctx_data_in_dir(
+    workdir: typing.Optional[pathlib.Path],
+    sub_ctx_names: typing.Tuple[str, str] = constants.SUB_CTX_NAMES
+) -> datatypes.SubCtx:
+    """Load sub context data (env and/or config) from given or current dir.
     """
-    if workdir and workdir.is_dir():
-        with chdir(workdir):
-            return load_sub_data_in_dir()
+    conf = load_data(workdir / sub_ctx_names[0])
+    env = load_data(workdir / sub_ctx_names[1])
+    os_env = get_env(env) if env else {}
 
-    return datatypes.SubData(
-        load_data(pathlib.Path('conf.json')),
-        load_data(pathlib.Path('env.json'))
+    return datatypes.SubCtx(conf, env, os_env)
+
+
+def make_context(
+    workdir: pathlib.Path,
+    lintables: typing.List[typing.Any]
+) -> datatypes.Context:
+    """Make a context object from args and loaded data.
+    """
+    return datatypes.Context(
+        workdir, lintables, *load_sub_ctx_data_in_dir(workdir)
     )
 
 # vim:sw=4:ts=4:et:
