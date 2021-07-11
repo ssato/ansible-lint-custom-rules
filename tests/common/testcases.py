@@ -40,11 +40,10 @@ class RuleTestCase(unittest.TestCase):
         for datadir in self.list_test_data_dirs(success):
             res = self.base.run(datadir, isolated=isolated)
 
-            msg = f'{datadir!r}, {res!r}'
             if success:
-                self.assertEqual(0, len(res), msg)  # No errors.
+                self.assertEqual(0, len(res.result), res)  # No errors.
             else:
-                self.assertTrue(len(res) > 0, msg)  # It should fail.
+                self.assertTrue(len(res.result) > 0, res)  # It should fail.
 
             self.base.clear()
 
@@ -76,9 +75,7 @@ class CliTestCase(RuleTestCase):
         for datadir in self.list_test_data_dirs(success):
             res = self.base.run(datadir, isolated=isolated, cli=True)
 
-            msg = f'{datadir!r}, {res!r}'
-            args = (res[0], 0, msg)
-
+            args = (res.result.returncode, 0, res)
             if success:
                 self.assertEqual(*args)
             else:
