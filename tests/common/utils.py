@@ -82,15 +82,4 @@ def load_sub_ctx_data_in_dir(
 
     return datatypes.SubCtx(conf, env, os_env)
 
-
-def make_context(
-    workdir: pathlib.Path,
-    lintables: typing.List[typing.Any]
-) -> datatypes.Context:
-    """Make a context object from args and loaded data.
-    """
-    return datatypes.Context(
-        workdir, lintables, *load_sub_ctx_data_in_dir(workdir)
-    )
-
 # vim:sw=4:ts=4:et:

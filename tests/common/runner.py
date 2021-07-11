@@ -16,9 +16,45 @@ import ansiblelint.constants
 import ansiblelint.errors
 import ansiblelint.rules
 import ansiblelint.runner
+import ansiblelint.utils
 import yaml
 
-from . import utils
+from . import datatypes, utils
+
+if typing.TYPE_CHECKING:
+    from ansiblelint.file_utils import Lintable
+
+
+def get_lintables(fail_if_no_data: bool = True) -> typing.List['Lintable']:
+    """Get a list of lintables in workdir.
+
+    note: It must change dir to the workdir to collect lintables.
+
+    .. seealso:: ansiblelint.utils.get_lintables
+    """
+    lintables = ansiblelint.utils.get_lintables(
+        options=ansiblelint.config.options
+    )
+    if not lintables:
+        if fail_if_no_data:
+            raise FileNotFoundError(
+                f'No lintables were found: {pathlib.Path().cwd()!s}'
+            )
+
+        return []
+
+    return lintables
+
+
+def make_context(workdir: pathlib.Path,
+                 fail_if_no_data: bool = True) -> datatypes.Context:
+    """Make a context object from args and loaded data.
+    """
+    return datatypes.Context(
+        workdir,
+        get_lintables(fail_if_no_data=fail_if_no_data),
+        *utils.load_sub_ctx_data_in_dir(workdir)
+    )
 
 
 class RuleRunner:
@@ -66,6 +102,22 @@ class RuleRunner:
 
         return skip_list
 
+    def run_with_env(self, ctx: datatypes.Context,
+                     isolated: bool = True):
+        """
+        Run runner with (os) environment variables are set as needed.
+        """
+        runner = ansiblelint.runner.Runner(
+            *ctx.lintables, rules=self.rules,
+            skip_list=self.get_skip_list(isolated)
+        )
+        if ctx.os_env:
+            with unittest.mock.patch.dict(os.environ, ctx.os_env,
+                                          clear=True):
+                return runner.run()
+
+        return runner.run()
+
     def run(self, workdir: pathlib.Path, isolated: bool = True
             ) -> typing.List[ansiblelint.errors.MatchError]:
         """Lint in the workdir.
@@ -73,35 +125,17 @@ class RuleRunner:
         :param workdir: Working dir to run runner later
         :param isolated: True if to disable other rules
         """
-        workdir = workdir.resolve()
         with utils.chdir(workdir):
-            lintables = ansiblelint.utils.get_lintables(
-                options=ansiblelint.config.options
-            )
-            assert bool(
-                lintables
-            ), f'No lintables were found at {workdir!s}'
+            ctx = make_context(workdir.resolve())
+            rule_config = ctx.conf.get('rules', {})
 
-            ctx = utils.make_context(workdir, lintables)
+            if rule_config:
+                # pylint: disable=no-member
+                with unittest.mock.patch.dict(ansiblelint.config.options.rules,
+                                              rule_config):
+                    return self.run_with_env(ctx, isolated)
 
-            rid = self.rule.id
-            # Hack to force setting options for the rule.
-            setattr(
-                ansiblelint.config.options, 'rules',
-                {rid: ctx.conf.get('rules', {}).get(rid, {})}
-            )
-
-            runner = ansiblelint.runner.Runner(
-                *lintables, rules=self.rules,
-                skip_list=self.get_skip_list(isolated)
-            )
-
-            if ctx.os_env:
-                with unittest.mock.patch.dict(os.environ, ctx.os_env,
-                                              clear=True):
-                    return runner.run()
-
-            return runner.run()
+            return self.run_with_env(ctx, isolated)
 
 
 class CliRunner(RuleRunner):
@@ -137,14 +171,12 @@ class CliRunner(RuleRunner):
         .. seealso:: ansiblelint.testing.run_ansible_lint
         """
         workdir = workdir.resolve()
-        ctx = utils.make_context(workdir, ['N/A'])
+        ctx = make_context(workdir, fail_if_no_data=False)
 
         conf = ctx.conf if ctx.conf else dict()
         env = utils.get_env(ctx.env or {})
 
-        skip_list = self.get_skip_list(isolated)
-        if skip_list:
-            conf['skip_list'] = skip_list
+        conf['skip_list'] = self.get_skip_list(isolated)
 
         with tempfile.NamedTemporaryFile(mode='w') as cio:
             yaml.safe_dump(conf, cio)

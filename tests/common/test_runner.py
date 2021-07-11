@@ -9,11 +9,52 @@ import pytest
 from ansiblelint.rules.DeprecatedModuleRule import DeprecatedModuleRule
 from rules.BlockedModules import ID as OTHER_CUSTOM_RULE_ID_EX
 from rules.DebugRule import DebugRule
-from tests.common import constants, runner as TT
+from tests.common import constants, datatypes, runner as TT, utils
 
 
 # ansiblelint.rules.DeprecatedModuleRule:
 DEFAULT_RULE_ID_EX: str = DeprecatedModuleRule.id
+
+
+@pytest.mark.parametrize(
+    ('workdir', ),
+    ((constants.TESTS_RES_DIR / 'DebugRule/ok/0', ),
+     )
+)
+def test_get_lintables_success(workdir):
+    with utils.chdir(workdir):
+        assert TT.get_lintables(False)
+        assert TT.get_lintables(True)
+
+
+def test_get_lintables_failure(tmp_path):
+    with utils.chdir(tmp_path):
+        res = TT.get_lintables(False)
+        assert not res, res
+
+        with pytest.raises(FileNotFoundError) as exc:
+            TT.get_lintables(True)
+
+        assert 'No lintables' in str(exc)
+
+
+@pytest.mark.parametrize(
+    ('workdir', 'conf', 'env'),
+    ((constants.TESTS_RES_DIR / 'DebugRule/ok/0', False, False),
+     (constants.TESTS_RES_DIR / 'DebugRule/ng/1', True, False),
+     (constants.TESTS_RES_DIR / 'DebugRule/ng/2', False, True),
+     )
+)
+def test_make_context(workdir, conf, env):
+    ctx = TT.make_context(workdir)
+    assert bool(ctx)
+    assert isinstance(ctx, datatypes.Context)
+
+    assert ctx.workdir == workdir.resolve()
+    assert ctx.lintables != []
+    assert bool(ctx.conf) == conf, ctx.conf  # TBD
+    assert bool(ctx.env) == env, ctx.env  # TBD
+    assert bool(ctx.os_env) == env, ctx.os_env  # TBD
 
 
 @pytest.mark.parametrize(
