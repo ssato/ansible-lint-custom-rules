@@ -148,6 +148,6 @@ class Base:
         if cli:
             return self.cli_runner.run(workdir, isolated=isolated)
 
-        return self.cli_runner.run(workdir, isolated=isolated)
+        return self.rule_runner.run(workdir, isolated=isolated)
 
 # vim:sw=4:ts=4:et:
