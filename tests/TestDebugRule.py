@@ -6,10 +6,28 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule, DebugRule.
 """
+import os
 import typing
+import unittest.mock
+
+import pytest
 
 from rules import DebugRule as TT
 from tests import common
+
+
+@pytest.mark.parametrize(
+    ('env', 'exp'),
+    (({}, False),
+     ({TT.E_ENABLED_VAR: ''}, False),
+     ({TT.E_ENABLED_VAR: '1'}, True),
+     )
+)
+def test_is_enabled(env, exp):
+    with unittest.mock.patch.dict(os.environ, env, clear=True):
+        assert TT.is_enabled() == exp
+
+    TT.is_enabled.cache_clear()
 
 
 class Base(common.Base):
