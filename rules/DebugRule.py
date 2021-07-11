@@ -71,7 +71,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         if is_enabled():
             return True  # Gives higher prio. to the environment variable.
 
-        return self.get_config(C_ENABLED)
+        return bool(self.get_config(C_ENABLED))
 
     def match(self, line: str) -> typing.Union[bool, str]:
         """
