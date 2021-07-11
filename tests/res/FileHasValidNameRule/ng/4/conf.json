@@ -1,0 +1,1 @@
+{"rules": {"file_has_valid_name": {"name": "^NEVER_MATCH.ya?ml$", "unicode": false}}}

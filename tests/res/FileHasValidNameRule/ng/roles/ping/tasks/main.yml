@@ -1,3 +1,0 @@
----
-- name: include task
-  include_tasks: "ping .yml"
