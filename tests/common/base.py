@@ -87,8 +87,7 @@ class Base:
         return rule_cls()
 
     @classmethod
-    def get_test_data_dir(cls, root: pathlib.Path = constants.TESTS_RES_DIR
-                          ) -> pathlib.Path:
+    def get_test_data_dir(cls, root: pathlib.Path) -> pathlib.Path:
         """Get the top dir to keep test data for this rule."""
         return root / cls.get_rule_name()
 
@@ -119,8 +118,7 @@ class Base:
         self.cli_runner = runner.CliRunner(*args, **kwargs)
 
     def clear(self):
-        """Call clear function if it's callable.
-        """
+        """Call clear function if it's callable."""
         for clear_fn in self.clear_fns:
             clear_fn()  # pylint: disable=not-callable
 
