@@ -26,6 +26,14 @@ RULE_NAME_RE: typing.Pattern = re.compile(
 
 class Base:
     """Base class for test rule cases.
+
+    .. note::
+
+       The test case of the following methods are implemented in
+       tests.TestDebugRule because it needs a concrete rule class to run.
+
+       - get_rule_name
+       - get_rule_instance_by_name
     """
     # .. todo::
     #    I don't know how to compute and set them in test case classes in
@@ -53,19 +61,15 @@ class Base:
         """Resolve and get the filename of self like __file___ dynamically.
 
         .. note::
-           This must be a class method because inspect.getfile(self) fails.
 
-        .. note::
-           The test case of this method is implemented in tests.TestDebugRule.
+           This method must be a class method because inspect.getfile(self)
+           should fail.
         """
         return pathlib.Path(inspect.getfile(cls)).name
 
     @classmethod
     def get_rule_name(cls) -> str:
         """Resolve the name of the target rule by filename (__file__).
-
-        .. note::
-           The test case of this method is implemented in tests.TestDebugRule.
         """
         match = RULE_NAME_RE.match(cls.get_filename())
         if match:
@@ -75,8 +79,7 @@ class Base:
 
     @classmethod
     def get_rule_instance_by_name(cls, rule_name):
-        """Get the rule instance to test.
-        """
+        """Get the rule instance to test."""
         rule_cls = getattr(cls.this_mod, rule_name)
         if not rule_cls:
             raise ValueError(f'No such rule class {rule_name} '
@@ -86,8 +89,7 @@ class Base:
     @classmethod
     def get_test_data_dir(cls, root: pathlib.Path = constants.TESTS_RES_DIR
                           ) -> pathlib.Path:
-        """Get the top dir to keep test data for this rule.
-        """
+        """Get the top dir to keep test data for this rule."""
         return root / cls.get_rule_name()
 
     def __init__(self):
@@ -108,10 +110,10 @@ class Base:
             )
         )
 
-        (args, kwargs) = (
-            (self.rule, constants.RULES_DIR),
-            dict(skip_list=self.default_skip_list,
-                 enable_default=self.use_default_rules)
+        args = (self.rule, constants.RULES_DIR)
+        kwargs = dict(
+            skip_list=self.default_skip_list,
+            enable_default=self.use_default_rules
         )
         self.rule_runner = runner.RuleRunner(*args, **kwargs)
         self.cli_runner = runner.CliRunner(*args, **kwargs)
