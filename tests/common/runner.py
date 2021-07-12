@@ -173,7 +173,8 @@ class CliRunner(RuleRunner):
         .. seealso:: ansiblelint.testing.run_ansible_lint
         """
         workdir = workdir.resolve()
-        ctx = make_context(workdir, fail_if_no_data=False)
+        with utils.chdir(workdir):
+            ctx = make_context(workdir, fail_if_no_data=False)
 
         conf = ctx.conf if ctx.conf else dict()
         env = utils.get_env(ctx.env or {})
