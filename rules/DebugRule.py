@@ -61,7 +61,6 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
     severity = 'LOW'
     tags = ['debug']
 
-    @property
     @functools.lru_cache(None)
     def enabled(self):
         """
@@ -77,7 +76,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
         """
-        return f'match() at: {line}' if self.enabled else False
+        return f'match() at: {line}' if self.enabled() else False
 
     def matchtask(self, task: typing.Dict[str, typing.Any],
                   file: 'Optional[Lintable]' = None
@@ -85,7 +84,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
         """
-        return f'matchtask(): {task!r}, {file!r}' if self.enabled else False
+        return f'matchtask(): {task!r}, {file!r}' if self.enabled() else False
 
     def matchplay(self, file: ansiblelint.file_utils.Lintable,
                   data: 'odict[str, typing.Any]'
@@ -93,7 +92,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
         """
-        if self.enabled:
+        if self.enabled():
             msg = f'matchplay(): {file!r}, {data!r}'
             return [self.create_matcherror(message=msg, filename=file.name)]
 
