@@ -25,6 +25,18 @@ if typing.TYPE_CHECKING:
     from ansiblelint.file_utils import Lintable
 
 
+def clear_internal_caches():
+    """
+    Clear the internal caches of ansible-lint by functools.lru_cache.
+
+    Because runner will run many times for different test data, all of the
+    caches must be cleared for each run.
+
+    .. todo:: Any others?
+    """
+    ansiblelint.utils.parse_yaml_linenumbers.cache_clear()
+
+
 def get_lintables(fail_if_no_data: bool = True) -> typing.List['Lintable']:
     """Get a list of lintables in workdir.
 
@@ -118,6 +130,7 @@ class RuleRunner:
         else:
             res = runner.run()
 
+        clear_internal_caches()
         return datatypes.Result(res, ctx)
 
     def run(self, workdir: pathlib.Path, isolated: bool = True
