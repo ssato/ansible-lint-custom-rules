@@ -4,24 +4,21 @@
 """Common utility test routines and classes - utilities.
 """
 import contextlib
+import functools
+import gc
 import json
 import os
 import pathlib
 import typing
 import warnings
 
-import yaml
-
-from . import datatypes
+from . import constants, datatypes
 
 
 @contextlib.contextmanager
 def chdir(destdir: pathlib.Path):
     """Chnage dir temporary.
     """
-    if not destdir.exists():
-        raise OSError(f'Destination dir does NOT exist: {destdir!s}')
-
     saved = pathlib.Path().cwd()
     try:
         os.chdir(str(destdir))
@@ -30,27 +27,46 @@ def chdir(destdir: pathlib.Path):
         os.chdir(str(saved))
 
 
-def each_clear_fn(maybe_memoized_fns: typing.Iterable[typing.Any]
-                  ) -> typing.Callable[..., None]:
-    """Yield callable object from ``maybe_memoized_fns``.
+# pylint: disable=protected-access
+def clear_all_lru_cache():
+    """Clear the cache of all lru_cache-ed functions.
     """
-    for fun in maybe_memoized_fns:
-        if fun and callable(fun):
-            clear_fn = getattr(fun, 'cache_clear', False)
-            if clear_fn and callable(clear_fn):
-                yield clear_fn
+    gc.collect()
+    wrappers = (
+        obj for obj in gc.get_objects()
+        if callable(obj) and isinstance(obj, functools._lru_cache_wrapper)
+    )
+    for wrapper in wrappers:
+        wrapper.cache_clear()
 
 
-def load_data(path: pathlib.Path):
-    """An wrapper for json.load and yaml.load.
+def get_env(env_updates: typing.Dict[str, str],
+            safe_list: typing.Iterable[str] = constants.SAFE_ENV_VARS
+            ) -> typing.Dict[str, str]:
+    """Get os.environ subset updated with ``env_updates``.
+
+    .. seealso:: ansiblelint.testing.run_ansible_lint
     """
+    env = env_updates.copy() if env_updates else dict()
+
+    for val in safe_list:
+        if val in os.environ and val not in env:
+            env[val] = os.environ[val]
+
+    return env
+
+
+def load_data(path: pathlib.Path, warn: bool = False):
+    """An wrapper for json.load.
+    """
+    if not path.exists():
+        if warn:
+            warnings.warn(f'Not exist: {path!s}')
+        return {}
+
     try:
         with path.open(encoding='utf-8') as fio:
-            if path.suffix == '.json':
-                return json.load(fio)
-
-            if path.suffix in ('.yaml', '.yml'):
-                return yaml.load(fio, Loader=yaml.FullLoader)
+            return json.load(fio)
 
     except (IOError, OSError) as exc:
         warnings.warn(f'Failed to open {path!s}, exc={exc!r}')
@@ -58,48 +74,16 @@ def load_data(path: pathlib.Path):
     return {}
 
 
-VALID_SUFFIXES: typing.FrozenSet = frozenset(
-    ('.json', '.yaml', '.yml')
-)
-
-
-def find_sub_data_path(data_path: pathlib.Path, subdir: str,
-                       valid_suffixes=VALID_SUFFIXES
-                       ) -> typing.Optional[pathlib.Path]:
+def load_sub_ctx_data_in_dir(
+    workdir: typing.Optional[pathlib.Path],
+    sub_ctx_names: typing.Tuple[str, str] = constants.SUB_CTX_NAMES
+) -> datatypes.SubCtx:
+    """Load sub context data (env and/or config) from given or current dir.
     """
-    Find a sub data path.
-    """
-    files = sorted(
-        f for f in data_path.parent.glob(f'{subdir}/{data_path.stem}.*')
-        if f.is_file() and f.suffix in valid_suffixes
-    )
-    if files:
-        return files[0]
+    conf = load_data(workdir / sub_ctx_names[0])
+    env = load_data(workdir / sub_ctx_names[1])
+    os_env = get_env(env) if env else {}
 
-    return None
-
-
-def each_test_data_for_rule(rule_datadir: pathlib.Path,
-                            success: bool = True,
-                            ) -> typing.Iterator[datatypes.DataT]:
-    """
-    Yield test data files for the given rule ``rule`` (name).
-    """
-    datadir = rule_datadir / ('ok' if success else 'ng')
-    for data in sorted(datadir.glob('*.yml')):
-        if not data.is_file():
-            continue
-
-        conf = dict()
-        cpath = find_sub_data_path(data, 'c')
-        if cpath:
-            conf = load_data(cpath)
-
-        env = dict()
-        epath = find_sub_data_path(data, 'env')
-        if epath:
-            env = load_data(epath)
-
-        yield datatypes.TData(datadir, data, conf, env)
+    return datatypes.SubCtx(conf, env, os_env)
 
 # vim:sw=4:ts=4:et:

@@ -4,10 +4,7 @@
 # pylint: disable=missing-function-docstring
 """Test cases of tests.common.base.
 """
-import functools
-
-import pytest
-
+from rules import DebugRule  # This depends on it.
 from tests.common import base as TT
 
 
@@ -24,19 +21,11 @@ def test_get_rule_name():
     assert FakeBase.get_rule_name() == 'base'
 
 
-@functools.lru_cache(None)
-def error():
-    raise RuntimeError('Expected RuntimeError from memoized function')
+def test_each_lru_cache_clear_fns():
+    clear_fns = list(TT.each_lru_cache_clear_fns(DebugRule))
+    assert not clear_fns  # No lru_cache-ed in module level.
 
-
-class FakeBaseWithClearFns(TT.Base):
-    """Fake Base class."""
-    clear_fns = [error]
-
-
-def test_clear():
-    base = FakeBaseWithClearFns()
-    with pytest.raises(RuntimeError):
-        base.clear()
+    clear_fns = list(TT.each_lru_cache_clear_fns(DebugRule.DebugRule))
+    assert clear_fns  # lru_cache-ed are in class level.
 
 # vim:sw=4:ts=4:et:

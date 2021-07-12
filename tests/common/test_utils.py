@@ -5,7 +5,9 @@
 """Test cases of tests.common.runner.
 """
 import functools
+import os
 import pathlib
+import random
 import warnings
 
 import pytest
@@ -15,8 +17,15 @@ from tests.common import constants, datatypes, utils as TT
 
 def test_chdir(tmp_path):
     # todo:
-    # with pytest.raises(OSError):
-    #    TT.chdir(tmp_path / 'this_dir_should_not_exist')
+    # a_file_path = tmp_path / 'a_file.txt'
+    # a_file_path.touch()
+    # assert a_file_path.exists() and a_file_path.is_file(), a_file_path
+
+    # with pytest.raises(NotADirectoryError):
+    #     TT.chdir(a_file_path)
+
+    # with pytest.raises(FileNotFoundError):
+    #     TT.chdir(tmp_path / 'this_dir_should_not_exist')
 
     pwd = pathlib.Path().cwd()
     with TT.chdir(tmp_path):
@@ -28,94 +37,71 @@ def test_chdir(tmp_path):
 
 
 @functools.lru_cache(None)
-def mid(obj):
-    return id(obj)
+def randome_int(imax: int = 100000000):
+    return random.randint(0, imax)
+
+
+def test_clear_all_lru_cache():
+    first = randome_int()
+    second = randome_int()  # It should be cached one, first.
+    assert first == second
+
+    TT.clear_all_lru_cache()
+    # There is an 1 / imax chance that it fails.
+    assert first != randome_int()
 
 
 @pytest.mark.parametrize(
-    ('fns', 'exp'),
-    (([], False),
-     ([id], False),
-     ([mid], True),
+    ('updates', 'safe_list'),
+    ((dict(), constants.SAFE_ENV_VARS),
+     (dict(FOO='FOO'), constants.SAFE_ENV_VARS),
      )
 )
-def test_each_clear_fn(fns, exp):
-    res = list(TT.each_clear_fn(fns))
-    assert bool(res) == exp
-    if res:
-        for fun in res:
-            assert callable(fun)
+def test_get_env(updates, safe_list):
+    env = TT.get_env(updates, safe_list)
+    assert env
+    assert all(v in env for v in safe_list if v in os.environ), env
+    assert all(v not in env for v in os.environ
+               if v not in safe_list and v not in updates), env
+    assert all(env[v] == updates[v] for v in updates.keys()), env
+    assert all(env[v] == os.environ[v] for v in safe_list
+               if v in os.environ and v not in updates), env
 
 
 # see: tests/res/DebugRule/ng/**/*.*
-DATA_PATH_EX_0 = constants.TESTS_RES_DIR / 'DebugRule/ng/2.json'
-SUB_DATA_PATH_EX_0 = constants.TESTS_RES_DIR / 'DebugRule/ng/env/2.json'
-
-
 @pytest.mark.parametrize(
-    ('path', 'exp'),
-    ((SUB_DATA_PATH_EX_0, True),
-     (constants.TESTS_RES_DIR / 'not_exist.yml', False),
+    ('path', 'warn', 'exp'),
+    ((constants.TESTS_RES_DIR / 'DebugRule/ng/2/env.json', False, True),
+     (constants.TESTS_RES_DIR / 'not_exist.json', False, False),
+     (constants.TESTS_RES_DIR / 'not_exist.json', True, False),
      )
 )
-def test_load_data(path, exp):
+def test_load_data(path, warn, exp):
     with warnings.catch_warnings(record=True) as warns:
         warnings.simplefilter("always")
 
-        result = TT.load_data(path)
+        result = TT.load_data(path, warn=warn)
         assert bool(result) == exp
 
-        if not exp:
+        if not exp and warn:
             assert len(warns) > 0
             assert issubclass(warns[-1].category, UserWarning)
-            assert 'Failed to open' in str(warns[-1].message)
+            assert 'Not exist' in str(warns[-1].message)
 
 
 @pytest.mark.parametrize(
-    ('path', 'subdir', 'exp'),
-    ((DATA_PATH_EX_0, 'env', SUB_DATA_PATH_EX_0),
-     (SUB_DATA_PATH_EX_0, 'c', None),
+    ('workdir', 'conf', 'env'),
+    ((constants.TESTS_RES_DIR / 'DebugRule/ok/0', False, False),
+     (constants.TESTS_RES_DIR / 'DebugRule/ng/1', True, False),
+     (constants.TESTS_RES_DIR / 'DebugRule/ng/2', False, True),
      )
 )
-def test_find_sub_data_path(path, subdir, exp):
-    assert TT.find_sub_data_path(path, subdir) == exp
-
-
-def gen_ref_tdata(path):
-    datadir = path.parent
-    filename = path.name
-
-    conf = dict()
-    cpath = datadir / 'c' / filename.replace('yml', 'json')
-    if cpath.exists():
-        conf = TT.load_data(cpath)
-
-    env = dict()
-    epath = datadir / 'env' / filename.replace('yml', 'json')
-    if epath.exists():
-        env = TT.load_data(epath)
-
-    return datatypes.TData(datadir, path, conf, env)
-
-
-def each_ref_tdata(role_name, success=True,
-                   root=constants.TESTS_RES_DIR):
-    datadir = root / role_name / ('ok' if success else 'ng')
-    for path in sorted(datadir.glob('*.yml')):
-        yield gen_ref_tdata(path)
-
-
-RULE_TEST_DATA_DIR = constants.TESTS_RES_DIR / 'DebugRule'
-
-
-# .. seealso:: The output of ls tests/res/DebugRule/*/*.yml
-@pytest.mark.parametrize(
-    ('rule_datadir', 'success', 'exp'),
-    ((RULE_TEST_DATA_DIR, True, list(each_ref_tdata('DebugRule', True))),
-     (RULE_TEST_DATA_DIR, False, list(each_ref_tdata('DebugRule', False))),
-     )
-)
-def test_each_test_data_for_rule(rule_datadir, success, exp):
-    assert list(TT.each_test_data_for_rule(rule_datadir, success)) == exp
+def test_load_sub_ctx_data_in_dir(workdir, conf, env):
+    res = TT.load_sub_ctx_data_in_dir(workdir)
+    assert bool(res)
+    assert isinstance(res, datatypes.SubCtx)
+    assert bool(res.conf) == conf, res.conf  # TBD
+    assert bool(res.env) == env, res.env  # TBD
+    assert bool(res.os_env) == env, res.os_env  # TBD
 
 # vim:sw=4:ts=4:et:

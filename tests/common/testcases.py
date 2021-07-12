@@ -4,15 +4,11 @@
 # pylint: disable=invalid-name
 """Common utility classes for test cases.
 """
-import os
-import subprocess
-import tempfile
+import pathlib
+import typing
 import unittest
-import unittest.mock
 
-import yaml
-
-from . import base, constants
+from . import base
 
 
 class RuleTestCase(unittest.TestCase):
@@ -21,60 +17,50 @@ class RuleTestCase(unittest.TestCase):
     base_cls = base.Base
 
     def setUp(self):
-        """Setup
-        """
+        """Setup base."""
         self.base = self.base_cls()
-        if not self.base.is_runnable():
-            return
 
     def tearDown(self):
-        """De-initialize.
-        """
+        """De-initialize."""
         self.base.clear()
 
-    def lint(self, success: bool = True, isolated: bool = True,
-             chdir: bool = False) -> None:
-        """
-        Run the lint rule's check to given resource data files.
+    def list_test_data_dirs(self, success: bool = True
+                            ) -> typing.Iterator[pathlib.Path]:
+        """Yield the test data dirs for the rule."""
+        subdir = 'ok' if success else 'ng'
+        for datadir in self.base.list_test_data_dirs(subdir):
+            yield datadir
+
+    def lint(self, success: bool = True, isolated: bool = True) -> None:
+        """Lint the lintables found under test data dirs with the rule.
         """
         if not self.base.is_runnable():
             return
 
-        skip_list = self.base.get_skip_list(isolated=isolated)
+        for datadir in self.list_test_data_dirs(success):
+            res = self.base.run(datadir, isolated=isolated)
 
-        for data in self.base.load_datasets(success=success):
-            conf = data.conf.get('rules', {}).get(self.base.id, {})
-            opts = dict(config=conf, skip_list=skip_list, chdir=chdir)
-
-            if data.env is None or not data.env:
-                res = self.base.run_playbook(data.inpath, **opts)
-            else:
-                with unittest.mock.patch.dict(os.environ, data.env):
-                    res = self.base.run_playbook(data.inpath, **opts)
-                    # for debug:
-                    # msg = f'{data!r}, {conf!r}, {res!r}, {os.environ!r}'
-
-            msg = f'{data!r}, {conf!r}, {res!r}'
+            msg = f'{res!r}'
             if success:
-                self.assertEqual(0, len(res), msg)  # No errors.
+                self.assertEqual(0, len(res.result), msg)  # No errors.
             else:
-                self.assertTrue(len(res) > 0, msg)  # It should fail.
+                self.assertTrue(len(res.result) > 0, msg)  # It should fail.
 
             self.base.clear()
 
-    def test_ok_cases_only_with_the_rule(self):
+    def test_success_cases_only_with_the_rule(self):
         """Run test cases only with the rule, should succeed."""
         self.lint()
 
-    def test_ok_cases_with_other_rules(self):
+    def test_success_cases_with_other_rules(self):
         """Run test cases together with other rules, should succeed."""
         self.lint(isolated=False)
 
-    def test_ng_cases_only_with_the_rule(self):
+    def test_failure_cases_only_with_the_rule(self):
         """Run test cases only with the rule, should fail."""
         self.lint(success=False)
 
-    def test_ng_cases_with_other_rules(self):
+    def test_failure_cases_with_other_rules(self):
         """Run test cases together with other rules, should fail."""
         self.lint(success=False, isolated=False)
 
@@ -82,61 +68,19 @@ class RuleTestCase(unittest.TestCase):
 class CliTestCase(RuleTestCase):
     """Base class to test rules with CLI.
     """
-    def setUp(self):
-        """Set up members."""
-        super().setUp()
-
+    def lint(self, success: bool = True, isolated: bool = True) -> None:
+        """Run ansible-lint in test data dirs with the rule."""
         if not self.base.is_runnable():
             return
 
-        self.cmd = f'ansible-lint -r {constants.RULES_DIR!s}'.split()
+        for datadir in self.list_test_data_dirs(success):
+            res = self.base.run(datadir, isolated=isolated, cli=True)
 
-    def lint(self, success: bool = True, isolated: bool = True,
-             chdir: bool = False):
-        """
-        Run ansible-lint with given arguments and config files.
-        """
-        if not self.base.is_runnable():
-            return
-
-        skip_list = self.base.get_skip_list(isolated=isolated)
-        config = dict(skip_list=skip_list) if skip_list else {}
-
-        for data in self.base.load_datasets(success=success):
-            with tempfile.NamedTemporaryFile(mode='w') as cio:
-                conf = config.copy()
-                if data.conf:
-                    conf.update(data.conf)
-
-                yaml.safe_dump(conf, cio)
-
-                env = os.environ.copy()
-                if data.env is not None and data.env:
-                    env.update(data.env)
-
-                opts = dict(stdout=subprocess.PIPE, check=False, env=env)
-
-                if chdir:
-                    cargs = ['-c', cio.name]
-                    opts['cwd'] = str(data.inpath.parent)
-                else:
-                    cargs = ['-c', cio.name, str(data.inpath)]
-
-                res = subprocess.run(self.cmd + cargs, **opts)
-                args = (res.returncode, 0, res.stdout.decode('utf-8'))
-                if success:
-                    self.assertEqual(*args)
-                else:
-                    self.assertNotEqual(*args)
-
-    @unittest.skip('WIP')
-    def test_ok_cases_with_other_rules_and_chdir(self):
-        """Run test cases together with other rules, should succeed."""
-        self.lint(isolated=False, chdir=True)
-
-    @unittest.skip('WIP')
-    def test_ng_cases_with_other_rules_and_chdir(self):
-        """Run test cases together with other rules, should fail."""
-        self.lint(success=False, isolated=False, chdir=True)
+            msg = f'{res!r}'
+            args = (res.result.returncode, 0, msg)
+            if success:
+                self.assertEqual(*args)
+            else:
+                self.assertNotEqual(*args)
 
 # vim:sw=4:ts=4:et:

@@ -4,6 +4,7 @@
 # pylint: disable=invalid-name
 """An abstract class to help to collect test data and tests for target rule.
 """
+import functools
 import inspect
 import pathlib
 import re
@@ -24,16 +25,34 @@ RULE_NAME_RE: typing.Pattern = re.compile(
 )
 
 
+# pylint: disable=protected-access
+def each_lru_cache_clear_fns(*objs):
+    """Get the callable object which wrapped with functools.lru_cache.
+    """
+    for obj in objs:
+        funcs = [
+            (fun, name) for name, fun in inspect.getmembers(obj)
+            if isinstance(fun, functools._lru_cache_wrapper)
+        ]
+        for fun, _name in funcs:
+            yield getattr(fun, 'cache_clear')  # It should have this attr.
+
+
 class Base:
     """Base class for test rule cases.
+
+    .. note::
+
+       The test case of the following methods are implemented in
+       tests.TestDebugRule because it needs a concrete rule class to run.
+
+       - get_rule_name
+       - get_rule_instance_by_name
     """
     # .. todo::
     #    I don't know how to compute and set them in test case classes in
     #    modules import this module.
     this_mod: MaybeModT = None
-
-    clear_fns: typing.List[typing.Callable] = []
-    memoized: typing.List[str] = []
 
     use_default_rules: bool = False
 
@@ -53,19 +72,15 @@ class Base:
         """Resolve and get the filename of self like __file___ dynamically.
 
         .. note::
-           This must be a class method because inspect.getfile(self) fails.
 
-        .. note::
-           The test case of this method is implemented in tests.TestDebugRule.
+           This method must be a class method because inspect.getfile(self)
+           should fail.
         """
         return pathlib.Path(inspect.getfile(cls)).name
 
     @classmethod
     def get_rule_name(cls) -> str:
         """Resolve the name of the target rule by filename (__file__).
-
-        .. note::
-           The test case of this method is implemented in tests.TestDebugRule.
         """
         match = RULE_NAME_RE.match(cls.get_filename())
         if match:
@@ -74,21 +89,17 @@ class Base:
         return ''
 
     @classmethod
-    def get_rule_instance_by_name(cls, rule_name):
-        """Get the rule instance to test.
-        """
+    def get_rule_class_by_name(cls, rule_name):
+        """Get the rule instance to test."""
         rule_cls = getattr(cls.this_mod, rule_name)
         if not rule_cls:
             raise ValueError(f'No such rule class {rule_name} '
                              f'in {cls.this_mod!r}.')
-        return rule_cls()
+        return rule_cls
 
     @classmethod
-    def get_test_data_dir(cls,
-                          root: pathlib.Path = constants.TESTS_RES_DIR
-                          ) -> pathlib.Path:
-        """Get the top dir to keep test data for this rule.
-        """
+    def get_test_data_dir(cls, root: pathlib.Path) -> pathlib.Path:
+        """Get the top dir to keep test data for this rule."""
         return root / cls.get_rule_name()
 
     def __init__(self):
@@ -100,73 +111,61 @@ class Base:
         #    The followings only happen in children classes inherits this and
         #    have appropriate self.this_mod.
         self.name = self.get_rule_name()
-        self.rule = self.get_rule_instance_by_name(self.name)
-        self.id = self.rule.id
+        self.rule_class = self.get_rule_class_by_name(self.name)
+        self.rule = self.rule_class()
 
-        self.other_ids = [
-            rid for rid
-            in runner.each_rule_ids(use_default=self.use_default_rules)
-            if rid != self.id
-        ]
-
-        self.clear_fns.append(self.rule.get_config.cache_clear)
-        self.clear_fns.extend(
-            utils.each_clear_fn(
-                getattr(self.rule, n, False) for n in self.memoized
-            )
+        self.clear_fns = list(
+            each_lru_cache_clear_fns(self.this_mod, self.rule_class)
         )
+
+        args = (self.rule, constants.RULES_DIR)
+        kwargs = dict(
+            skip_list=self.default_skip_list,
+            enable_default=self.use_default_rules
+        )
+        self.rule_runner = runner.RuleRunner(*args, **kwargs)
+        self.cli_runner = runner.CliRunner(*args, **kwargs)
 
     def clear(self):
         """Call clear function if it's callable.
+
+        .. note::
+
+           It depends on each_lru_cache_clear_fns entirely. It might need to
+           call utis.clear_all_lru_cache instead.
         """
         for clear_fn in self.clear_fns:
             clear_fn()  # pylint: disable=not-callable
 
-    def get_skip_list(self, isolated: bool = True):
-        """
-        Get the list of other rules' IDs to skip.
-        """
-        if isolated:
-            return self.other_ids + self.default_skip_list
+        # Ensure all cache were cleared just in case.
+        utils.clear_all_lru_cache()  # May be too powerful.
 
-        return self.default_skip_list
-
-    def get_runner(self, config: runner.RuleOptionsT = None
-                   ) -> runner.RunFromFile:
+    def list_test_data_dirs(self, subdir: str,
+                            root: typing.Optional[pathlib.Path] = None
+                            ) -> typing.Iterator[pathlib.Path]:
+        """List test data dirs contain playbook and related data.
         """
-        Make ansiblelint.RulesCollection instance registered the rule with
-        given config and get runner.RunFromFile instance from it.
-        """
-        collection = runner.get_collection(
-            self.rule, rule_options=config,
-            use_default_rules=self.use_default_rules
-        )
-        return runner.RunFromFile(collection)
+        if root is None or not root:
+            root = constants.TESTS_RES_DIR
 
-    def run_playbook(self, filepath: pathlib.Path,
-                     config: runner.RuleOptionsT = None,
-                     skip_list: typing.Optional[typing.List[str]] = None,
-                     chdir: bool = False):
-        """Run playbook.
-        """
-        args = (filepath, skip_list)
-        if chdir:
-            with utils.chdir(filepath.parent):
-                return self.get_runner(config).run_playbook(*args)
-
-        return self.get_runner(config).run_playbook(*args)
-
-    def load_datasets(self, success: bool = True,
-                      root: pathlib.Path = constants.TESTS_RES_DIR):
-        """Load datasets.
-        """
         datadir = self.get_test_data_dir(root)
-        datasets = sorted(
-            utils.each_test_data_for_rule(datadir, success=success)
+        dirs = sorted(
+            d for d in datadir.glob(f'{subdir}/*') if d.is_dir()
         )
-        if not datasets:
-            raise OSError(f'{self.name}: No test data found [{success}]')
+        if not dirs:
+            raise OSError(f'{self.name}: No test data dirs found [{subdir}]')
 
-        return datasets
+        return dirs
+
+    def run(self, workdir: pathlib.Path, isolated: bool = True,
+            cli: bool = False):
+        """Run Ansible Lint Runner at dir ``workdir``."""
+        if not self.is_runnable():
+            raise ValueError(f'Not initialized! rule: {self.rule}')
+
+        if cli:
+            return self.cli_runner.run(workdir, isolated=isolated)
+
+        return self.rule_runner.run(workdir, isolated=isolated)
 
 # vim:sw=4:ts=4:et:

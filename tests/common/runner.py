@@ -4,91 +4,192 @@
 # pylint: disable=invalid-name,too-few-public-methods
 """Common utility test routines and classes.
 """
+import os
 import pathlib
+import subprocess
+import tempfile
 import typing
+import unittest.mock
 
 import ansiblelint.config
 import ansiblelint.constants
 import ansiblelint.errors
-import ansiblelint.file_utils
+import ansiblelint.rules
 import ansiblelint.runner
+import ansiblelint.utils
+import yaml
 
-from ansiblelint.rules import AnsibleLintRule, RulesCollection
+from . import datatypes, utils
 
-from . import constants
+if typing.TYPE_CHECKING:
+    from ansiblelint.file_utils import Lintable
 
 
-def each_rule_ids(*rdirs: str, use_default: bool = False
-                  ) -> typing.Iterator[str]:
-    """List the IDs of rules in given dirs.
+def get_lintables(fail_if_no_data: bool = True) -> typing.List['Lintable']:
+    """Get a list of lintables in workdir.
+
+    note: It must change dir to the workdir to collect lintables.
+
+    .. seealso:: ansiblelint.utils.get_lintables
     """
-    if rdirs:
-        rdirs = list(rdirs)
-    else:
-        rdirs = [str(constants.RULES_DIR)]
+    lintables = ansiblelint.utils.get_lintables(
+        options=ansiblelint.config.options
+    )
+    if not lintables:
+        if fail_if_no_data:
+            raise FileNotFoundError(
+                f'No lintables were found: {pathlib.Path().cwd()!s}'
+            )
 
-    if use_default:
-        rdirs.append(ansiblelint.constants.DEFAULT_RULESDIR)
+        return []
 
-    for rule in ansiblelint.rules.RulesCollection(rdirs):
-        yield rule.id
+    return lintables
 
 
-RuleOptionsT = typing.Optional[typing.Dict[str, typing.Any]]
-
-
-def get_collection(rule: typing.Optional[AnsibleLintRule] = None,
-                   rule_options: RuleOptionsT = None,
-                   use_default_rules: bool = False
-                   ) -> RulesCollection:
+def make_context(workdir: pathlib.Path,
+                 fail_if_no_data: bool = True) -> datatypes.Context:
+    """Make a context object from args and loaded data.
     """
-    Get RulesCollection instance with given rule registered.
-    """
-    if use_default_rules:
-        rulesdirs = [ansiblelint.constants.DEFAULT_RULESDIR]
-    else:
-        rulesdirs = []
-
-    options = ansiblelint.config.options
-    options.enable_list = ['no-same-owner']
-
-    try:
-        collection = RulesCollection(rulesdirs=rulesdirs, options=options)
-    except TypeError:
-        collection = RulesCollection(rulesdirs=rulesdirs)
-
-    if rule:
-        # Hack to force setting options.
-        setattr(
-            ansiblelint.config.options, 'rules', {rule.id: rule_options or {}}
-        )
-        collection.register(rule)
-
-    return collection
+    return datatypes.Context(
+        workdir,
+        get_lintables(fail_if_no_data=fail_if_no_data),
+        *utils.load_sub_ctx_data_in_dir(workdir)
+    )
 
 
-class RunFromFile:
-    """Base Class to run ansiblelint for given files.
+class RuleRunner:
+    """Base Class to run ansiblelint without a lintable in a dir.
 
     .. seealso:: ansiblelint.testing.RunFromText
     """
-    def __init__(self, collection: RulesCollection):
+    def __init__(self, rule: ansiblelint.rules.AnsibleLintRule,
+                 rules_dir: pathlib.Path,
+                 skip_list: typing.Optional[typing.List[str]] = None,
+                 enable_default: bool = False):
         """Initialize an instance with given rules collection.
-        """
-        self._collection = collection
 
-    def run_playbook(self, path: typing.Union[str, pathlib.Path],
-                     skip_list: typing.Optional[typing.List[str]] = None
-                     ) -> typing.List[ansiblelint.errors.MatchError]:
-        """Lints received playbook file.
+        :param rule: An AnsibleLintRule instance to test
+        :param rules_dir: The path to a dir contains custom rules
+        :param skip_list: A list of rule IDs to disable (skip)
+        :param enable_default:
+            True if default rules will be enabled also
         """
-        if skip_list is None:
-            skip_list = []
+        self.rule = rule
 
-        return ansiblelint.runner.Runner(
-            ansiblelint.file_utils.Lintable(path, kind='playbook'),
-            rules=self._collection,
-            skip_list=skip_list
-        ).run()
+        self.rulesdirs = [str(rules_dir.resolve())]
+        if enable_default:
+            self.rulesdirs.append(ansiblelint.constants.DEFAULT_RULESDIR)
+
+        self.skip_list = skip_list.copy() if skip_list else []
+
+        options = ansiblelint.config.options
+        # .. seealso:: ansiblelint.testing.fixtures.default_rules_collection
+        options.enable_list = ['no-same-owner']
+        self.rules = ansiblelint.rules.RulesCollection(
+            rulesdirs=self.rulesdirs, options=options
+        )
+
+    def get_skip_list(self, isolated: bool = True) -> typing.List[str]:
+        """Get a list of rule IDs to skip.
+
+        :param isolated: True if to disable other rules
+        """
+        skip_list = self.skip_list.copy() if self.skip_list else []
+        if isolated:
+            skip_list.extend([
+                r.id for r in self.rules if r.id != self.rule.id
+            ])
+
+        return skip_list
+
+    def run_with_env(self, ctx: datatypes.Context,
+                     isolated: bool = True) -> datatypes.Result:
+        """
+        Run runner with (os) environment variables are set as needed.
+        """
+        runner = ansiblelint.runner.Runner(
+            *ctx.lintables, rules=self.rules,
+            skip_list=self.get_skip_list(isolated)
+        )
+        if ctx.os_env:
+            with unittest.mock.patch.dict(os.environ, ctx.os_env,
+                                          clear=True):
+                res = runner.run()
+        else:
+            res = runner.run()
+
+        return datatypes.Result(res, ctx)
+
+    def run(self, workdir: pathlib.Path, isolated: bool = True
+            ) -> typing.List[ansiblelint.errors.MatchError]:
+        """Lint in the workdir.
+
+        :param workdir: Working dir to run runner later
+        :param isolated: True if to disable other rules
+        """
+        with utils.chdir(workdir):
+            ctx = make_context(workdir.resolve())
+            rule_config = ctx.conf.get('rules', {})
+
+            if rule_config:
+                # pylint: disable=no-member
+                with unittest.mock.patch.dict(ansiblelint.config.options.rules,
+                                              rule_config):
+                    return self.run_with_env(ctx, isolated)
+
+            return self.run_with_env(ctx, isolated)
+
+
+class CliRunner(RuleRunner):
+    """Base Class to run ansiblelint without a lintable in a dir.
+
+    .. seealso:: RuleRunner
+    """
+    def __init__(self, rule: ansiblelint.rules.AnsibleLintRule,
+                 rules_dir: pathlib.Path,
+                 skip_list: typing.Optional[typing.List[str]] = None,
+                 enable_default: bool = False):
+        """Initialize an instance with given rules collection.
+
+        :param rule: An AnsibleLintRule instance to test
+        :param rules_dir: The path to a dir contains custom rules
+        :param skip_list: A list of rule IDs to disable (skip)
+        :param enable_default:
+            True if default rules will be enabled also
+        """
+        super().__init__(rule, rules_dir, skip_list, enable_default)
+
+        self.cmd = ['ansible-lint', '-r', f'{rules_dir.resolve()!s}']
+        if enable_default:
+            self.cmd.append('-R')
+
+    def run(self, workdir: pathlib.Path, isolated: bool = True
+            ) -> typing.Tuple[int, str, str]:
+        """Run Ansible Lint in the workdir.
+
+        :param workdir: Working dir to run runner later
+        :param isolated: True if to disable other rules
+
+        .. seealso:: ansiblelint.testing.run_ansible_lint
+        """
+        workdir = workdir.resolve()
+        with utils.chdir(workdir):
+            ctx = make_context(workdir, fail_if_no_data=False)
+
+        conf = ctx.conf if ctx.conf else dict()
+        env = utils.get_env(ctx.env or {})
+
+        conf['skip_list'] = self.get_skip_list(isolated)
+
+        with tempfile.NamedTemporaryFile(mode='w') as cio:
+            yaml.safe_dump(conf, cio)
+
+            opts = dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        check=False, shell=False, env=env, cwd=str(workdir),
+                        universal_newlines=True)
+
+            # pylint: disable=subprocess-run-check
+            res = subprocess.run(self.cmd + ['-c', cio.name], **opts)
+            return datatypes.Result(res, ctx)
 
 # vim:sw=4:ts=4:et:

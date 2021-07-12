@@ -20,9 +20,27 @@ NAME_RE_0 = r'^\S+$'
 CNF_0 = dict(name=NAME_RE_0)
 
 
+@pytest.mark.parametrize(
+    ('name', 'evalue', 'expected'),
+    ((VALID_NAME_0, '', False),  # default.
+     (INVALID_NAME_0, '', True),
+     (VALID_NAME_0, r'NEVER_MATCH', True),
+     (VALID_NAME_0, NAME_RE_0, True),
+     (INVALID_NAME_0, NAME_RE_0, False),
+     )
+)
+def test_is_invalid_task_name(name, evalue, expected, monkeypatch):
+    monkeypatch.setitem(
+        ansiblelint.config.options.rules, TT.ID,
+        dict(name=evalue)
+    )
+    base = Base()
+    rule = base.rule
+    assert rule.is_invalid_task_name(name) == expected
+
+
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    memoized = ['valid_name_re', 'is_invalid_task_name']
 
 
 class RuleTestCase(common.RuleTestCase):
@@ -31,21 +49,3 @@ class RuleTestCase(common.RuleTestCase):
 
 class CliTestCase(common.CliTestCase):
     base_cls = Base
-
-
-@pytest.mark.parametrize(
-    'name,evalue,expected',
-    [(VALID_NAME_0, '', False),  # default.
-     (INVALID_NAME_0, '', True),
-     (VALID_NAME_0, r'NEVER_MATCH', True),
-     (VALID_NAME_0, NAME_RE_0, True),
-     (INVALID_NAME_0, NAME_RE_0, False),
-     ]
-)
-def test_is_invalid_task_name(name, evalue, expected, monkeypatch):
-    monkeypatch.setitem(
-        ansiblelint.config.options.rules, TT.ID,
-        dict(name=evalue)
-    )
-    rule = Base.get_rule_instance_by_name(Base.get_rule_name())
-    assert rule.is_invalid_task_name(name) == expected

@@ -6,15 +6,29 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule, DebugRule.
 """
-import typing
+import os
+import unittest.mock
+
+import pytest
 
 from rules import DebugRule as TT
 from tests import common
 
 
+@pytest.mark.parametrize(
+    ('env', 'exp'),
+    (({}, False),
+     ({TT.E_ENABLED_VAR: ''}, False),
+     ({TT.E_ENABLED_VAR: '1'}, True),
+     )
+)
+def test_is_enabled(env, exp):
+    with unittest.mock.patch.dict(os.environ, env, clear=True):
+        assert TT.is_enabled() == exp
+
+
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    clear_fns: typing.List[typing.Callable] = [TT.is_enabled.cache_clear]
 
 
 class RuleTestCase(common.RuleTestCase):
@@ -26,17 +40,22 @@ class RuleTestCase(common.RuleTestCase):
     def test_base_get_rule_name(self):
         self.assertEqual(self.base.get_rule_name(), 'DebugRule')
 
-    def test_base_get_rule_instance_by_name(self):
-        rule = self.base.get_rule_instance_by_name(self.base.name)
-        self.assertTrue(bool(rule))
-        self.assertTrue(isinstance(rule, type(self.base.rule)))
+    def test_base_get_rule_class_by_name(self):
+        rule_class = self.base.get_rule_class_by_name(self.base.name)
+        self.assertTrue(bool(rule_class))
+        self.assertTrue(isinstance(rule_class(), type(self.base.rule)))
 
     def test_base_is_runnable(self):
         self.assertTrue(self.base.is_runnable())
 
-    def test_base_load_datasets(self):
-        self.assertTrue(self.base.load_datasets())
-        self.assertTrue(self.base.load_datasets(False))
+    def test_list_test_data_dirs(self):
+        self.assertTrue(self.list_test_data_dirs(True))
+        self.assertTrue(self.list_test_data_dirs(False))
+
+    def test_clear_fns(self):
+        fns = self.base.clear_fns
+        self.assertTrue(fns)
+        self.assertTrue(len(fns) > 1)
 
 
 class CliTestCase(common.CliTestCase):

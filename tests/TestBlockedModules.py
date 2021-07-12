@@ -12,7 +12,6 @@ from tests import common
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    memoized = ['blocked_modules']
 
 
 class RuleTestCase(common.RuleTestCase):

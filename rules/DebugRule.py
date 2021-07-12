@@ -44,7 +44,6 @@ DESC: str = """Rule to debug and monitor ansible-lint behavior.
 """
 
 
-@functools.lru_cache(None)
 def is_enabled(default: bool = False) -> bool:
     """
     Is this rule enabled with the environment variable?
@@ -62,7 +61,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
     severity = 'LOW'
     tags = ['debug']
 
-    @property
+    @functools.lru_cache(None)
     def enabled(self):
         """
         .. seealso:: ansiblelint.config.options
@@ -71,13 +70,13 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         if is_enabled():
             return True  # Gives higher prio. to the environment variable.
 
-        return self.get_config(C_ENABLED)
+        return bool(self.get_config(C_ENABLED))
 
     def match(self, line: str) -> typing.Union[bool, str]:
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchlines
         """
-        return f'match() at: {line}' if self.enabled else False
+        return f'match() at: {line}' if self.enabled() else False
 
     def matchtask(self, task: typing.Dict[str, typing.Any],
                   file: 'Optional[Lintable]' = None
@@ -85,7 +84,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
         """
-        return f'matchtask(): {task!r}, {file!r}' if self.enabled else False
+        return f'matchtask(): {task!r}, {file!r}' if self.enabled() else False
 
     def matchplay(self, file: ansiblelint.file_utils.Lintable,
                   data: 'odict[str, typing.Any]'
@@ -93,7 +92,7 @@ class DebugRule(ansiblelint.rules.AnsibleLintRule):
         """
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchtasks
         """
-        if self.enabled:
+        if self.enabled():
             msg = f'matchplay(): {file!r}, {data!r}'
             return [self.create_matcherror(message=msg, filename=file.name)]
 
