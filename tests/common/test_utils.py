@@ -7,6 +7,7 @@
 import functools
 import os
 import pathlib
+import random
 import warnings
 
 import pytest
@@ -36,23 +37,18 @@ def test_chdir(tmp_path):
 
 
 @functools.lru_cache(None)
-def mid(obj):
-    return id(obj)
+def randome_int(imax: int = 100000000):
+    return random.randint(0, imax)
 
 
-@pytest.mark.parametrize(
-    ('fns', 'exp'),
-    (([], False),
-     ([id], False),
-     ([mid], True),
-     )
-)
-def test_each_clear_fn(fns, exp):
-    res = list(TT.each_clear_fn(fns))
-    assert bool(res) == exp
-    if res:
-        for fun in res:
-            assert callable(fun)
+def test_clear_all_lru_cache():
+    first = randome_int()
+    second = randome_int()  # It should be cached one, first.
+    assert first == second
+
+    TT.clear_all_lru_cache()
+    # There is an 1 / imax chance that it fails.
+    assert first != randome_int()
 
 
 @pytest.mark.parametrize(
@@ -65,7 +61,7 @@ def test_get_env(updates, safe_list):
     env = TT.get_env(updates, safe_list)
     assert env
     assert all(v in env for v in safe_list if v in os.environ), env
-    assert all(v not in env for v in os.environ.keys()
+    assert all(v not in env for v in os.environ
                if v not in safe_list and v not in updates), env
     assert all(env[v] == updates[v] for v in updates.keys()), env
     assert all(env[v] == os.environ[v] for v in safe_list

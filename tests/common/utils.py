@@ -4,6 +4,8 @@
 """Common utility test routines and classes - utilities.
 """
 import contextlib
+import functools
+import gc
 import json
 import os
 import pathlib
@@ -25,15 +27,17 @@ def chdir(destdir: pathlib.Path):
         os.chdir(str(saved))
 
 
-def each_clear_fn(maybe_memoized_fns: typing.Iterable[typing.Any]
-                  ) -> typing.Callable[..., None]:
-    """Yield callable object from ``maybe_memoized_fns``.
+# pylint: disable=protected-access
+def clear_all_lru_cache():
+    """Clear the cache of all lru_cache-ed functions.
     """
-    for fun in maybe_memoized_fns:
-        if fun and callable(fun):
-            clear_fn = getattr(fun, 'cache_clear', False)
-            if clear_fn and callable(clear_fn):
-                yield clear_fn
+    gc.collect()
+    wrappers = (
+        obj for obj in gc.get_objects()
+        if callable(obj) and isinstance(obj, functools._lru_cache_wrapper)
+    )
+    for wrapper in wrappers:
+        wrapper.cache_clear()
 
 
 def get_env(env_updates: typing.Dict[str, str],
