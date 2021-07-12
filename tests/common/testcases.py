@@ -8,7 +8,7 @@ import pathlib
 import typing
 import unittest
 
-from . import base, utils
+from . import base
 
 
 class RuleTestCase(unittest.TestCase):

@@ -5,7 +5,6 @@
 """Lint rule class to test if playbook files have valid filenames.
 """
 import functools
-import pathlib
 import re
 import typing
 import warnings

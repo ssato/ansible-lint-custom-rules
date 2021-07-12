@@ -6,8 +6,6 @@
 # pylint: disable=missing-function-docstring
 """Test cases for the rule.
 """
-import typing
-
 import pytest
 
 from rules import NoEmptyDataFilesRule as TT
