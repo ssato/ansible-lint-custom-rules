@@ -38,9 +38,14 @@ C_UNICODE: str = 'unicode'
 
 DEFAULT_NAME_RE: typing.Pattern = re.compile(r'^\w+\.ya?ml$', re.ASCII)
 
-FILE_KINDS: typing.FrozenSet[str] = frozenset(
-    'playbook meta tasks handlers role yaml'.split()
-)
+FILE_KINDS: typing.FrozenSet[str] = frozenset((
+    'playbook',
+    'meta',
+    'tasks',
+    'handlers',
+    'role',
+    'yaml'
+))
 
 
 class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
@@ -59,8 +64,9 @@ class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
         """A valid file name regex pattern.
         """
         pattern = self.get_config(C_NAME_RE)
-        if isinstance(pattern, str):
-            if pattern and pattern.strip():
+        if pattern is not None and pattern:
+            pattern = str(pattern).strip()
+            if pattern:
                 try:
                     if self.get_config(C_UNICODE):
                         return re.compile(pattern)
@@ -71,11 +77,11 @@ class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
 
         return DEFAULT_NAME_RE
 
-    def is_valid_filename(self, path: str) -> bool:
+    def is_invalid_filename(self, filename: str) -> bool:
         """
-        Test if given `filename` is valid and satisfies the rule.
+        Test if given `filename` is NOT valid and does NOT satisfy the rule.
         """
-        return self.valid_name_re().match(pathlib.Path(path).name) is not None
+        return self.valid_name_re().match(filename) is None
 
     def matchyaml(self, file: ansiblelint.file_utils.Lintable
                   ) -> typing.List[ansiblelint.errors.MatchError]:
@@ -83,11 +89,12 @@ class FileHasValidNameRule(ansiblelint.rules.AnsibleLintRule):
         .. seealso:: ansiblelint.rules.AnsibleLintRule.matchyaml
         """
         if file.kind in FILE_KINDS:
-            path = str(file.path)
-            if not self.is_valid_filename(path):
+            if self.is_invalid_filename(file.path.name):
                 return [
-                    self.create_matcherror(message=f'{self.shortdesc}: {path}',
-                                           filename=file.filename)
+                    self.create_matcherror(
+                        filename=file,
+                        message=f'{self.shortdesc}: {file.path.name}'
+                    )
                 ]
 
         return []

@@ -17,32 +17,20 @@ from tests import common
 NG_VALID_NAME_RE = r'\S+NEVER_MATCH'
 
 
-class Base(common.Base):
-    this_mod: common.MaybeModT = TT
-    memoized = ['valid_name_re']
-
-
-class RuleTestCase(common.RuleTestCase):
-    base_cls = Base
-
-
-class CliTestCase(common.CliTestCase):
-    base_cls = Base
-
-
 @pytest.mark.parametrize(
-    'path,name,unicode,expected',
-    [('main.yml', '', False, True),
-     ('main-0.yml', '', False, False),
-     ('main .yml', '', False, False),
-     ('ng_１.yml', '', False, False),
-     ('ng_１.yml', r'^\w+\.ya?ml$', True, True),
-     ('ng-２.yml', '', False, False),
-     ('main-0.yml', r'\S+', False, True),
-     ]
+    ('path', 'name', 'unicode', 'expected'),
+    (('main.yml', '', False, False),
+     ('main-0.yml', '', False, True),
+     ('main .yml', '', False, True),
+     ('ng_１.yml', '', False, True),
+     ('ng_１.yml', r'^\w+\.ya?ml$', True, False),
+     ('ng-２.yml', '', False, True),
+     ('main-0.yml', r'\S+', False, False),
+     )
 )
-def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
-    rule = Base.get_rule_instance_by_name(Base.get_rule_name())
+def test_is_invalid_filename(path, name, unicode, expected, monkeypatch):
+    base = Base()
+    rule = base.rule
     ansiblelint.config.options.rules = {
         rule.id: dict(name=TT.DEFAULT_NAME_RE.pattern, unicode=False)
     }
@@ -52,7 +40,17 @@ def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
             ansiblelint.config.options.rules, TT.ID,
             dict(name=name, unicode=unicode)
         )
-    assert rule.is_valid_filename(path) == expected
+    assert rule.is_invalid_filename(path) == expected
+    base.clear()
 
-    for fname in Base.memoized:
-        getattr(getattr(rule, fname), 'cache_clear')()
+
+class Base(common.Base):
+    this_mod: common.MaybeModT = TT
+
+
+class RuleTestCase(common.RuleTestCase):
+    base_cls = Base
+
+
+class CliTestCase(common.CliTestCase):
+    base_cls = Base
