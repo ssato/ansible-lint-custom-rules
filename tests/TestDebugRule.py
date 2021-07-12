@@ -7,7 +7,6 @@
 """Test cases for the rule, DebugRule.
 """
 import os
-import typing
 import unittest.mock
 
 import pytest
@@ -30,7 +29,6 @@ def test_is_enabled(env, exp):
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    memoized: typing.List[str] = ['enabled']
 
 
 class RuleTestCase(common.RuleTestCase):
@@ -42,10 +40,10 @@ class RuleTestCase(common.RuleTestCase):
     def test_base_get_rule_name(self):
         self.assertEqual(self.base.get_rule_name(), 'DebugRule')
 
-    def test_base_get_rule_instance_by_name(self):
-        rule = self.base.get_rule_instance_by_name(self.base.name)
-        self.assertTrue(bool(rule))
-        self.assertTrue(isinstance(rule, type(self.base.rule)))
+    def test_base_get_rule_class_by_name(self):
+        rule_class = self.base.get_rule_class_by_name(self.base.name)
+        self.assertTrue(bool(rule_class))
+        self.assertTrue(isinstance(rule_class(), type(self.base.rule)))
 
     def test_base_is_runnable(self):
         self.assertTrue(self.base.is_runnable())
@@ -53,6 +51,11 @@ class RuleTestCase(common.RuleTestCase):
     def test_list_test_data_dirs(self):
         self.assertTrue(self.list_test_data_dirs(True))
         self.assertTrue(self.list_test_data_dirs(False))
+
+    def test_clear_fns(self):
+        fns = self.base.clear_fns
+        self.assertTrue(fns)
+        self.assertTrue(len(fns) > 1)
 
 
 class CliTestCase(common.CliTestCase):
