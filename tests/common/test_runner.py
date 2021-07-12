@@ -4,6 +4,8 @@
 # pylint: disable=invalid-name,missing-function-docstring
 """Test cases of tests.common.runner.
 """
+import sys
+
 import pytest
 
 from ansiblelint.rules.DeprecatedModuleRule import DeprecatedModuleRule
@@ -157,7 +159,9 @@ def test_CliRunner_run(workdir, success):
     if success:
         assert res.result.returncode == 0
         assert res.result.stdout == ''
-        assert res.result.stderr == ''
+
+        if sys.version_info.minor >= 8:
+            assert res.result.stderr == ''
     else:
         assert res.result.returncode != 0
         assert bool(res.result.stdout)
