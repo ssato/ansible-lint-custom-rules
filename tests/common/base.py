@@ -11,7 +11,7 @@ import re
 import types
 import typing
 
-from . import constants, runner
+from . import constants, runner, utils
 
 
 MaybeModT = typing.Optional[types.ModuleType]
@@ -136,6 +136,9 @@ class Base:
         """
         for clear_fn in self.clear_fns:
             clear_fn()  # pylint: disable=not-callable
+
+        # Ensure all cache were cleared just in case.
+        utils.clear_all_lru_cache()  # May be too powerful.
 
     def list_test_data_dirs(self, subdir: str,
                             root: typing.Optional[pathlib.Path] = None

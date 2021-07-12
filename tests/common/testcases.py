@@ -47,7 +47,6 @@ class RuleTestCase(unittest.TestCase):
                 self.assertTrue(len(res.result) > 0, msg)  # It should fail.
 
             self.base.clear()
-            # utils.clear_all_lru_cache()  # May be too powerful.
 
     def test_success_cases_only_with_the_rule(self):
         """Run test cases only with the rule, should succeed."""
