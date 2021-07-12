@@ -24,7 +24,6 @@ def test_exceeds_max_lines(max_lines, expected):
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    memoized = ['max_lines', 'exceeds_max_lines']
 
 
 class RuleTestCase(common.RuleTestCase):

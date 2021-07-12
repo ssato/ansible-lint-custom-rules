@@ -15,7 +15,6 @@ from tests import common
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    memoized = ['valid_name_re', 'is_invalid_filename']
     default_skip_list = ['file_has_valid_name']
 
 
@@ -47,6 +46,6 @@ def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
 
     # pylint: disable=no-member
     monkeypatch.setitem(ansiblelint.config.options.rules, TT.ID, patch)
-    rule = Base.get_rule_instance_by_name(Base.get_rule_name())
-    assert rule.is_valid_filename(path) == expected
-    Base().clear()
+    base = Base()
+    assert base.rule.is_valid_filename(path) == expected
+    base.clear()

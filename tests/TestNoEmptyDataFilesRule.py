@@ -14,28 +14,24 @@ from rules import NoEmptyDataFilesRule as TT
 from tests import common
 
 
-_CLEAR_FUN = TT.yml_file_has_some_data.cache_clear
-
-
 @pytest.mark.parametrize(
-    'content,expected',
-    [('', False),
+    ('content', 'expected'),
+    (('', False),
      ('---\n', False),
      ('---\n{}\n', False),
-     ('---\na: 1\n', True)
-     ]
+     ('---\na: 1\n', True),
+     )
 )
 def test_yml_file_has_some_data(content, expected, tmp_path):
     path = tmp_path / 'test.yml'
     path.write_text(content)
 
     assert TT.yml_file_has_some_data(str(path)) == expected
-    _CLEAR_FUN()
+    TT.yml_file_has_some_data.cache_clear()
 
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    clear_fns: typing.List[typing.Callable] = [_CLEAR_FUN]
 
 
 class RuleTestCase(common.RuleTestCase):
