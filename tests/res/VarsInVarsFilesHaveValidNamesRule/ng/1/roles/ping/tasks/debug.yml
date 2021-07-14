@@ -1,0 +1,8 @@
+---
+- name: debug 1
+  debug:
+    var: foo
+
+- name: debug 2
+  debug:
+    var: bar.baz.foo_bar_baz

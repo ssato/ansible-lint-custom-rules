@@ -1,0 +1,8 @@
+---
+フー:
+foo.bar: 1
+bar.bar:
+  baz:
+    - foo
+    - bar
+    - baz
