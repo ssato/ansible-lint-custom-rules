@@ -28,15 +28,15 @@ DESC: str = r"""Rule to test if variables in vars files have valid names.
 
 - Options
 
-  - ``name`` gives a valid task filename pattern (regexp)
-  - ``unicode`` allows unicode characters are used in filenames
+  - ``name`` gives a valid variable name pattern (regexp)
+  - ``unicode`` allows unicode characters are used in variable names
 
 - Configuration
 
   .. code-block:: yaml
 
     rules:
-      tasks_file_has_valid_name:
+      vars_in_vars_files_have_valid_names:
         name: ^\w+$
         unicode: false
 """
@@ -62,7 +62,7 @@ def each_keys(data: 'odict[str, typing.Any]') -> typing.Iterator[str]:
 class VarsInVarsFilesHaveValidNamesRule(ansiblelint.rules.AnsibleLintRule):
     """
     Rule class to test if variables defined in vars files (host_vars,
-    group_vars, defaults, vars) have valid names follows the naming rules.
+    group_vars, defaults, vars) have valid names follow the naming rules.
     """
     id = ID
     shortdesc: str = 'Variable in vars files must have valid name'
