@@ -1,4 +1,4 @@
-%global pkgname ansiblelint_custom_rules
+%global pkgname ansiblelint_custom_rules_ex
 
 %global desc \
 Some ansible-lint custom rule impolementations as examples.
