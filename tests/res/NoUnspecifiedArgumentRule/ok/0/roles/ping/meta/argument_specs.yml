@@ -1,0 +1,13 @@
+---
+argument_specs:
+  main:
+    options:
+      ping_required_var:
+        type: "str"
+        required: true
+        description: "A required string variable."
+      ping_default_var:
+        type: "str"
+        required: false
+        default: 'pong'
+        description: "A string parameter with default."  

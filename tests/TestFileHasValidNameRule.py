@@ -46,6 +46,7 @@ def test_is_invalid_filename(path, name, unicode, expected, monkeypatch):
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
+    default_skip_list = ['no_unspecified_argument']
 
 
 class RuleTestCase(common.RuleTestCase):

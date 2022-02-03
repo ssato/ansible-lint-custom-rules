@@ -30,6 +30,7 @@ def test_yml_file_has_some_data(content, expected, tmp_path):
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
+    default_skip_list = ['no_unspecified_argument']
 
 
 class RuleTestCase(common.RuleTestCase):

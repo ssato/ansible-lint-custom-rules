@@ -1,0 +1,7 @@
+---
+ping_required_var:
+
+# internal dict variable
+ping_config:
+  home: '/opt'
+  enabled: yes

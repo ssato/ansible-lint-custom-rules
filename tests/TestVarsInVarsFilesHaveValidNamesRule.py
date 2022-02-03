@@ -12,7 +12,7 @@ from tests import common
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    default_skip_list = ['vars_should_not_be_used']
+    default_skip_list = ['vars_should_not_be_used','no_unspecified_argument']
 
 
 class RuleTestCase(common.RuleTestCase):
