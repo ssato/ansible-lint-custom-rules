@@ -29,7 +29,7 @@ def test_is_enabled(env, exp):
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    default_skip_list = ['no_unspecified_argument']
+    default_skip_list = ['no_unspecified_argument','role_vars_start_with_role_name']
 
 
 class RuleTestCase(common.RuleTestCase):
