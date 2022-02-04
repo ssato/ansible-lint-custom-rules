@@ -4,10 +4,7 @@
 # pylint: disable=invalid-name
 """Lint rule class to test if all role arguments are specified in meta/argument_specs.yml
 """
-import functools
-import re
 import typing
-import warnings
 import yaml
 
 import ansiblelint.rules
@@ -19,8 +16,7 @@ from yaml.resolver import BaseResolver
 from yaml.loader import SafeLoader
 
 from pathlib import Path
-from ansiblelint.utils import parse_yaml_linenumbers, parse_yaml_from_file, nested_items
-from ansiblelint.utils import LINE_NUMBER_KEY
+from ansiblelint.utils import parse_yaml_from_file, LINE_NUMBER_KEY
 
 if typing.TYPE_CHECKING:
     from ansiblelint.constants import odict
@@ -84,7 +80,7 @@ class LineLoader(SafeLoader):
         node_pair_lst_for_appending = []
 
         for key_node, value_node in node_pair_lst:
-            shadow_key_node = ScalarNode(tag=BaseResolver.DEFAULT_SCALAR_TAG, value='__line__' + key_node.value)
+            shadow_key_node = ScalarNode(tag=BaseResolver.DEFAULT_SCALAR_TAG, value=LINE_NUMBER_KEY + key_node.value)
             shadow_value_node = ScalarNode(tag=BaseResolver.DEFAULT_SCALAR_TAG, value=key_node.__line__)
             node_pair_lst_for_appending.append((shadow_key_node, shadow_value_node))
 
@@ -111,11 +107,11 @@ class NoUnspecifiedArgumentRule(ansiblelint.rules.AnsibleLintRule):
         if file.kind == 'vars':
             with open(str(file.path), 'r') as f:
                 variables = yaml.load(f, Loader=LineLoader)
-                for var_name in filter(lambda k: not k.startswith('__line__') and not isinstance(variables[k],dict), variables.keys()):
+                for var_name in filter(lambda k: not k.startswith(LINE_NUMBER_KEY) and not isinstance(variables[k],dict), variables.keys()):
                     if not _lookup_argument_specs(file.path, var_name):
                         results.append(
                             self.create_matcherror(
-                                details=f'{self.shortdesc}: {var_name}', filename=file, linenumber=variables["__line__"+var_name]
+                                details=f'{self.shortdesc}: {var_name}', filename=file, linenumber=variables[LINE_NUMBER_KEY+var_name]
                             )
                         )
         else:
