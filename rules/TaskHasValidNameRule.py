@@ -40,8 +40,9 @@ put run say see seem should show start take talk tell test think try turn use
 want will work would\
 """.split()
 
+VERBS_ALL: typing.List[str] = VERBS + [v.capitalize() for v in VERBS]
 DEFAULT_NAME_RE: typing.Pattern = re.compile(
-    r'(' + '|'.join(VERBS + [v.title() for v in VERBS]) + r')(\s+(\S+))+$',
+    r'(' + '|'.join(VERBS_ALL) + r')(\s+(\S+))+$',
     re.ASCII
 )
 
