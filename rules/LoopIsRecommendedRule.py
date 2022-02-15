@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
 
 
 ID: str = 'loop_is_recommended'
-DESC: str = """loop is recommended and use of with_* may be repalced with it.
+DESC: str = """loop is recommended and use of with_* may be replaced with it.
 See also:
 https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html
 """

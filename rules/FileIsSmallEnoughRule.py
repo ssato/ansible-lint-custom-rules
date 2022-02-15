@@ -27,7 +27,7 @@ ID: str = 'file_is_small_enough'
 
 C_MAX_LINES: str = 'max_lines'
 DEFAULT_MAX_LINES: int = 500
-DESC: str = """Rule to test if files are smalll enough.
+DESC: str = """Rule to test if files are small enough.
 
 - Options
 
