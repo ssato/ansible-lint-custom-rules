@@ -24,7 +24,7 @@ def test_exceeds_max_lines(max_lines, expected):
 
 class Base(common.Base):
     this_mod: common.MaybeModT = TT
-    default_skip_list = ['no_unspecified_argument']
+    default_skip_list = ['no_unspecified_argument','role_vars_start_with_role_name']
 
 
 class RuleTestCase(common.RuleTestCase):
