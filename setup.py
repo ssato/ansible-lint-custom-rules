@@ -6,8 +6,8 @@ import setuptools
 import setuptools.command.bdist_rpm
 
 
-NAME = "ansiblelint_custom_rules_ex"
-VERSION = "0.3.1"
+NAME = "ansiblelint_middleware_automation_custom_rules"
+VERSION = "0.0.1"
 
 # For daily snapshot versioning mode:
 if os.environ.get("_SNAPSHOT_BUILD", None) is not None:

@@ -1,24 +1,25 @@
 ---
 # .. seealso:: https://github.com/ymyzk/tox-gh-actions
 #
-name: Tests
+name: CI
 # yamllint disable-line rule:truthy
 on:
-  - push
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
 
 jobs:
   build:
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     strategy:
       max-parallel: 10
       matrix:
-        platform:
-          - ubuntu-latest
-          # - macos-latest
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.9]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
