@@ -13,7 +13,7 @@ About
    :target: https://coveralls.io/r/ssato/ansible-lint-custom-rules
    :alt: [Coverage Status]
 
-Some ansible-lint [#]_ custom rule class implementations.
+Some ansible-lint [#]_ custom rule class implementations as examples really works
 
 - Author: Satoru SATOH <ssato@redhat.com>
 - License: MIT
