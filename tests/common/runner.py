@@ -44,9 +44,17 @@ def get_lintables(fail_if_no_data: bool = True) -> typing.List['Lintable']:
 
     .. seealso:: ansiblelint.utils.get_lintables
     """
-    lintables = ansiblelint.utils.get_lintables(
-        opts=ansiblelint.config.options
-    )
+    try:
+        # for ansible-lint < 6.0.0
+        lintables = ansiblelint.utils.get_lintables(
+            options=ansiblelint.config.options
+        )
+    except TypeError:
+        # for ansible-lint >= 6.0.0
+        lintables = ansiblelint.utils.get_lintables(
+            opts=ansiblelint.config.options
+        )
+
     if not lintables:
         if fail_if_no_data:
             raise FileNotFoundError(
