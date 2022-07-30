@@ -54,8 +54,7 @@ def exceeds_max_lines(filepath: str, max_lines: int) -> bool:
     True
     """
     with open(filepath) as fobj:
-        # Which is better?
-        # return len(fobj.readliens()) > max_lines
+        # Might be better to return len(fobj.readliens()) > max_lines.
         for idx, _line in enumerate(fobj):
             if idx + 1 > max_lines:
                 return True
@@ -108,7 +107,7 @@ class FileIsSmallEnoughRule(ansiblelint.rules.AnsibleLintRule):
             if self.exceeds_max_lines(path):
                 return [
                     self.create_matcherror(
-                        message='File {path} may be too large',
+                        message=f'File {path} may be too large',
                         filename=path
                     )
                 ]
