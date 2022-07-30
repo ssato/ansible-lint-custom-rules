@@ -32,13 +32,13 @@ def test_is_invalid_filename(path, name, unicode, expected, monkeypatch):
     base = Base()
     rule = base.rule
     ansiblelint.config.options.rules = {
-        rule.id: dict(name=TT.DEFAULT_NAME_RE.pattern, unicode=False)
+        rule.id: {'name': TT.DEFAULT_NAME_RE.pattern, 'unicode': False}
     }
 
     if name:
         monkeypatch.setitem(
             ansiblelint.config.options.rules, TT.ID,
-            dict(name=name, unicode=unicode)
+            {'name': name, 'unicode': unicode}
         )
     assert rule.is_invalid_filename(path) == expected
     base.clear()

@@ -119,10 +119,10 @@ class Base:
         )
 
         args = (self.rule, constants.RULES_DIR)
-        kwargs = dict(
-            skip_list=self.default_skip_list,
-            enable_default=self.use_default_rules
-        )
+        kwargs = {
+            'skip_list': self.default_skip_list,
+            'enable_default': self.use_default_rules
+        }
         self.rule_runner = runner.RuleRunner(*args, **kwargs)
         self.cli_runner = runner.CliRunner(*args, **kwargs)
 

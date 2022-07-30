@@ -17,7 +17,7 @@ VALID_NAME_0 = 'Ensure foo is installed'
 INVALID_NAME_0 = 'foo'
 NAME_RE_0 = r'^\S+$'
 
-CNF_0 = dict(name=NAME_RE_0)
+CNF_0 = {'name': NAME_RE_0}
 
 
 @pytest.mark.parametrize(
@@ -32,7 +32,7 @@ CNF_0 = dict(name=NAME_RE_0)
 def test_is_invalid_task_name(name, evalue, expected, monkeypatch):
     monkeypatch.setitem(
         ansiblelint.config.options.rules, TT.ID,
-        dict(name=evalue)
+        {'name': evalue}
     )
     base = Base()
     rule = base.rule

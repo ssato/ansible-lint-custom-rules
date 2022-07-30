@@ -40,9 +40,9 @@ class CliTestCase(common.CliTestCase):
 )
 def test_is_valid_filename(path, name, unicode, expected, monkeypatch):
     if name:
-        patch = dict(name=name, unicode=unicode)
+        patch = {'name': name, 'unicode': unicode}
     else:
-        patch = dict(unicode=unicode)
+        patch = {'unicode': unicode}
 
     # pylint: disable=no-member
     monkeypatch.setitem(ansiblelint.config.options.rules, TT.ID, patch)

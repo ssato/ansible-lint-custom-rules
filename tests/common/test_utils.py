@@ -53,8 +53,8 @@ def test_clear_all_lru_cache():
 
 @pytest.mark.parametrize(
     ('updates', 'safe_list'),
-    ((dict(), constants.SAFE_ENV_VARS),
-     (dict(FOO='FOO'), constants.SAFE_ENV_VARS),
+    (({}, constants.SAFE_ENV_VARS),
+        ({'FOO': 'FOO'}, constants.SAFE_ENV_VARS),
      )
 )
 def test_get_env(updates, safe_list):

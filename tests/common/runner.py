@@ -189,7 +189,7 @@ class CliRunner(RuleRunner):
         with utils.chdir(workdir):
             ctx = make_context(workdir, fail_if_no_data=False)
 
-        conf = ctx.conf if ctx.conf else dict()
+        conf = ctx.conf if ctx.conf else {}
         env = utils.get_env(ctx.env or {})
 
         conf['skip_list'] = self.get_skip_list(isolated)
@@ -197,9 +197,15 @@ class CliRunner(RuleRunner):
         with tempfile.NamedTemporaryFile(mode='w') as cio:
             yaml.safe_dump(conf, cio)
 
-            opts = dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        check=False, shell=False, env=env, cwd=str(workdir),
-                        universal_newlines=True)
+            opts = {
+                'stdout': subprocess.PIPE,
+                'stderr': subprocess.PIPE,
+                'check': False,
+                'shell': False,
+                'env': env,
+                'cwd': str(workdir),
+                'universal_newlines': True
+            }
 
             # pylint: disable=subprocess-run-check
             res = subprocess.run(self.cmd + ['-c', cio.name], **opts)
