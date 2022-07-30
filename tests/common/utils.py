@@ -1,6 +1,5 @@
 # Copyright (C) 2020, 2021 Satoru SATOH <satoru.satoh@gmail.com>
 # SPDX-License-Identifier: MIT
-#
 """Common utility test routines and classes - utilities.
 """
 import contextlib
@@ -47,7 +46,7 @@ def get_env(env_updates: typing.Dict[str, str],
 
     .. seealso:: ansiblelint.testing.run_ansible_lint
     """
-    env = env_updates.copy() if env_updates else dict()
+    env = env_updates.copy() if env_updates else {}
 
     for val in safe_list:
         if val in os.environ and val not in env:
@@ -68,7 +67,7 @@ def load_data(path: pathlib.Path, warn: bool = False):
         with path.open(encoding='utf-8') as fio:
             return json.load(fio)
 
-    except (IOError, OSError) as exc:
+    except OSError as exc:
         warnings.warn(f'Failed to open {path!s}, exc={exc!r}')
 
     return {}
