@@ -35,7 +35,7 @@ def each_lru_cache_clear_fns(*objs):
             if isinstance(fun, functools._lru_cache_wrapper)
         ]
         for fun, _name in funcs:
-            yield getattr(fun, 'cache_clear')  # It should have this attr.
+            yield getattr(fun, 'cache_clear')  # noqa: B009
 
 
 class Base:
