@@ -8,7 +8,7 @@ import sys
 
 import pytest
 
-from ansiblelint.rules.DeprecatedModuleRule import DeprecatedModuleRule
+from ansiblelint.rules.deprecated_module import DeprecatedModuleRule
 from rules.BlockedModules import ID as OTHER_CUSTOM_RULE_ID_EX
 from rules.DebugRule import DebugRule
 from tests.common import constants, datatypes, runner as TT, utils

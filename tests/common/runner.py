@@ -45,7 +45,7 @@ def get_lintables(fail_if_no_data: bool = True) -> typing.List['Lintable']:
     .. seealso:: ansiblelint.utils.get_lintables
     """
     lintables = ansiblelint.utils.get_lintables(
-        options=ansiblelint.config.options
+        opts=ansiblelint.config.options
     )
     if not lintables:
         if fail_if_no_data:
