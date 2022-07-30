@@ -16,17 +16,14 @@ from tests.common import constants, datatypes, utils as TT
 
 
 def test_chdir(tmp_path):
-    # todo:
-    # a_file_path = tmp_path / 'a_file.txt'
-    # a_file_path.touch()
-    # assert a_file_path.exists() and a_file_path.is_file(), a_file_path
+    """
+    .. todo::
 
-    # with pytest.raises(NotADirectoryError):
-    #     TT.chdir(a_file_path)
+       Add some checks to make it more robust:
 
-    # with pytest.raises(FileNotFoundError):
-    #     TT.chdir(tmp_path / 'this_dir_should_not_exist')
-
+       - Does the parent dir of ``tmp_path`` exists if ``tmp_path`` is a file?
+       - Does the file ``tmp_path`` exists already if ``tmp_path`` is a file?
+    """
     pwd = pathlib.Path().cwd()
     with TT.chdir(tmp_path):
         assert pathlib.Path().cwd() != pwd
