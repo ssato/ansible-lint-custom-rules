@@ -44,7 +44,7 @@ def contains_vars_directive(path: str) -> bool:
             for line in fobj:
                 if VARS_RE.match(line):
                     return True
-    except (IOError, OSError) as exc:
+    except OSError as exc:
         warnings.warn(f'Failed to load {path}, exc={exc!r}')
 
     return False
