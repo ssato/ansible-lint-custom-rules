@@ -25,4 +25,5 @@ pytest-randomly
 pytest-xdist[psutil]
 pycodestyle
 pylint
-wemake-python-styleguide
+# Disable it because it looks strict and opionated.
+#wemake-python-styleguide
